@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stash",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Save products from any shop into a compact local stash.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
@@ -51,6 +51,7 @@
         "content/styles/panel-3.js",
         "content/styles/panel-4.js",
         "content/styles/panel-5.js",
+        "content/styles/panel-currency.js",
         "content/styles/panel.js",
         "content/styles/overlay.js",
         "content/pricing/dom.js",

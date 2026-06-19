@@ -22,6 +22,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/styles/panel-3.js",
   "content/styles/panel-4.js",
   "content/styles/panel-5.js",
+  "content/styles/panel-currency.js",
   "content/styles/panel.js",
   "content/styles/overlay.js",
   "content/pricing/dom.js",

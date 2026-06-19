@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-currency-picker-v1";
+var CONTENT_VERSION = "2026-06-19-currency-picker-v2";
 
 
 var STORAGE_KEY = "stash.items.v1";

@@ -148,6 +148,8 @@ function bindPanelCurrencyEvents(root) {
   root.querySelector("[data-currency-trigger]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
+    panelState.settingsOpen = false;
+    root.querySelector(".wp-settings")?.setAttribute("hidden", "");
     togglePanelCurrencySelect(event.currentTarget);
   });
 
