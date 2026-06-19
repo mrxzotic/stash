@@ -174,6 +174,24 @@ assert.equal(
 );
 assert.equal(cloudmonsterProduct.priceAmount, 130, "On PDP image ranking should preserve price");
 
+const aboutBlankUrl =
+  "https://about---blank.com/en-eu/products/alpaca-crew-alpaca-mix-light-grey";
+const aboutBlankPrice = sandbox.findBestPrice([
+  "From 8 €/month with Klarna Learn more",
+  "€254,95"
+]);
+assert.equal(aboutBlankPrice.amount, 254.95, "Installment copy should not win as price");
+assert.equal(
+  sandbox.parsePricesFromText("From 8 €/month with Klarna Learn more").length,
+  0,
+  "Installment text should not produce product price candidates"
+);
+assert.equal(
+  sandbox.cleanProductTitle("alpaca crew light grey - XS", "about:blank", aboutBlankUrl),
+  "Alpaca Crew Light Grey",
+  "Variant size suffixes should not leak into product titles"
+);
+
 const pdpImage =
   "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
 sandbox.location = new URL("https://www.on.com/en-fi/shop/last-season");

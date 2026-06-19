@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-whole-price-jsonld-title-favicon-on-pdp-best-image-img-v1";
+var CONTENT_VERSION = "2026-06-19-price-installments-title-size-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

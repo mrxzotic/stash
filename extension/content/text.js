@@ -207,6 +207,7 @@ function cleanTitle(value, brand = "") {
       .replace(/\bnew season\b/gi, "")
       .replace(/\b(?:available in|colour|color|size|sizes|view product|product details)\b/gi, "")
       .replace(/\s+\b(?=[A-Za-z0-9]*\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{7,}\b$/g, "")
+      .replace(/\s+(?:[-–—|])\s*(?:xxs|xs|s|m|l|xl|xxl|xxxl|o\/s|os|one size)$/i, "")
       .replace(/\s+(?:[-–—|])\s+(?:all|available|shop|select|size|men|women|unisex)\b.*$/i, "")
       .replace(/\s+\b(?:men|women|mens|womens|unisex)\b$/i, "")
       .replace(/\s+in\s+(black|white|blue|red|green|pink|grey|gray|brown|beige)$/i, " $1"),

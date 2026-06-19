@@ -56,7 +56,7 @@ function visiblePriceCandidateEntries(scope = document) {
     }
 
     priceTextsFromElement(node).forEach((text) => {
-      if (text.length <= 96 && looksLikePrice(text)) {
+      if (text.length <= 96 && looksLikePrice(text) && !isInstallmentPriceText(text)) {
         candidates.push({
           text,
           score: priceElementScore(node, text),
@@ -103,6 +103,10 @@ function priceTextsFromElement(element) {
     .map(cleanText)
     .filter(Boolean)
     .flatMap((text) => {
+      if (isInstallmentPriceText(text)) {
+        return [];
+      }
+
       const prices = parsePricesFromText(text);
       return prices.length ? prices.map((price) => price.originalText) : [text];
     })
