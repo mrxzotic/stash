@@ -209,49 +209,125 @@ assert.equal(
   "Product page price scan should ignore related item prices"
 );
 
-const pdpImage =
-  "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
-sandbox.location = new URL("https://www.on.com/en-fi/shop/last-season");
-sandbox.document.title = "Last season";
-sandbox.fetch = async () => ({
-  ok: true,
-  text: async () => "<html></html>",
-  json: async () => ({})
-});
-sandbox.DOMParser = class {
-  parseFromString() {
-    return {
-      title: "Women's Cloudrunner 2 | On",
-      body: { textContent: "" },
-      querySelectorAll: () => [],
-      querySelector: (selector) => {
-        if (selector.includes("og:image")) {
-          return { content: pdpImage };
-        }
-        return null;
-      }
-    };
-  }
-};
-
-sandbox.enrichProduct({
-  fromContext: true,
-  title: "Cloudrunner 2",
-  brand: "On",
-  url: onProductUrl,
-  priceText: "125 €",
-  priceAmount: 125,
-  currency: "EUR",
-  imageUrl: lowResOnImage
-}).then((enriched) => {
-  assert.equal(enriched.imageUrl, pdpImage, "Context cards should enrich image from the PDP");
-  assert.equal(enriched.priceAmount, 125, "PDP image enrichment should preserve card price");
-  assert.equal(enriched.title, "Cloudrunner 2", "PDP image enrichment should preserve card title");
+runAsyncSmoke().then(() => {
   console.log("product URL classifier and extraction smoke passed");
 }).catch((error) => {
   console.error(error);
   process.exit(1);
 });
+
+async function runAsyncSmoke() {
+  const pyeUrl = "https://pyeoptics.com/shop/catalogue/theo-m_8772/";
+  const pyeImage =
+    "https://image.pyeoptics.com/images/products/2026/06/09/1781017670/800x400/1angle1.jpg";
+  const pyeDoc = {
+    title: "Купить очки Theo M Ripe banana | P.Y.E.",
+    body: { textContent: "Очки для зрения Theo M 12 300 ₽ 13 000 ₽" },
+    querySelectorAll: () => [],
+    querySelector: (selector) => {
+      if (selector.includes("description")) {
+        return {
+          content:
+            "Закажите очки Theo M Ripe banana в интернет-магазине оптики P.Y.E. Цена: 12300 рублей."
+        };
+      }
+      if (selector.includes("og:title")) {
+        return { content: "Очки Theo M Ripe banana купить за 12300 руб. | P.Y.E." };
+      }
+      if (selector.includes("og:image")) {
+        return { content: pyeImage };
+      }
+      if (selector.includes("og:url")) {
+        return { content: pyeUrl };
+      }
+      return null;
+    }
+  };
+
+  const pyeExtracted = sandbox.extractFromFetchedProductPage(pyeDoc, pyeUrl);
+  assert.equal(pyeExtracted.title, "Theo M", "PYE model names should come from PDP slugs");
+  assert.equal(pyeExtracted.brand, "PYE", "PYE saves should use the canonical brand");
+  assert.equal(pyeExtracted.priceAmount, 12300, "PYE saves should use the current PDP price");
+  assert.equal(
+    pyeExtracted.compareAtPriceAmount,
+    undefined,
+    "PYE current price should not create a compare-at price"
+  );
+  assert.equal(pyeExtracted.imageUrl, pyeImage, "PYE saves should use the PDP image");
+
+  sandbox.location = new URL("https://pyeoptics.com/opravy-ochki-dlya-zreniya/vse-ochki-opravy/");
+  sandbox.document.title = "Очки для зрения";
+  sandbox.fetch = async () => ({
+    ok: true,
+    text: async () => "<html></html>",
+    json: async () => ({})
+  });
+  sandbox.DOMParser = class {
+    parseFromString() {
+      return pyeDoc;
+    }
+  };
+
+  const pyeEnriched = await sandbox.enrichProduct({
+    fromContext: true,
+    title: "Очки Для Зрения",
+    brand: "pyeoptics.com",
+    url: pyeUrl,
+    priceText: "12 300 ₽",
+    priceAmount: 12300,
+    currency: "RUB",
+    compareAtPriceText: "13 000 ₽",
+    compareAtPriceAmount: 13000
+  });
+  assert.equal(pyeEnriched.title, "Theo M", "PYE PDP data should replace listing noise");
+  assert.equal(pyeEnriched.brand, "PYE", "PYE PDP data should replace source-domain brands");
+  assert.equal(pyeEnriched.priceAmount, 12300, "PYE enrichment should keep current price");
+  assert.equal(
+    pyeEnriched.compareAtPriceAmount,
+    undefined,
+    "PYE enrichment should drop listing compare-at prices"
+  );
+  assert.equal(pyeEnriched.imageUrl, pyeImage, "PYE enrichment should fill the missing image");
+
+  const pdpImage =
+    "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
+  sandbox.location = new URL("https://www.on.com/en-fi/shop/last-season");
+  sandbox.document.title = "Last season";
+  sandbox.fetch = async () => ({
+    ok: true,
+    text: async () => "<html></html>",
+    json: async () => ({})
+  });
+  sandbox.DOMParser = class {
+    parseFromString() {
+      return {
+        title: "Women's Cloudrunner 2 | On",
+        body: { textContent: "" },
+        querySelectorAll: () => [],
+        querySelector: (selector) => {
+          if (selector.includes("og:image")) {
+            return { content: pdpImage };
+          }
+          return null;
+        }
+      };
+    }
+  };
+
+  const enriched = await sandbox.enrichProduct({
+    fromContext: true,
+    title: "Cloudrunner 2",
+    brand: "On",
+    url: onProductUrl,
+    priceText: "125 €",
+    priceAmount: 125,
+    currency: "EUR",
+    imageUrl: lowResOnImage
+  });
+  assert.equal(enriched.imageUrl, pdpImage, "Context cards should enrich image from the PDP");
+  assert.equal(enriched.priceAmount, 125, "PDP image enrichment should preserve card price");
+  assert.equal(enriched.title, "Cloudrunner 2", "PDP image enrichment should preserve card title");
+}
 
 function fakePriceElement(text, options = {}) {
   return {

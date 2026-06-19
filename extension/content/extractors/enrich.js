@@ -5,12 +5,16 @@ async function enrichProduct(product) {
 
   const pageProduct = await fetchProductPageProduct(product);
   if (pageProduct.title || pageProduct.priceText || pageProduct.imageUrl) {
-    const preferFetchedImage = shouldPreferFetchedImage(product, pageProduct);
-    product = shouldPreferFetchedProduct(product, pageProduct)
-      ? mergeProducts([pageProduct, product])
-      : mergeProducts([product, pageProduct]);
-    if (preferFetchedImage) {
-      product = compactObject({ ...product, imageUrl: pageProduct.imageUrl });
+    if (pageProduct.fromPyeProductPage) {
+      product = mergeProducts([pageProduct]);
+    } else {
+      const preferFetchedImage = shouldPreferFetchedImage(product, pageProduct);
+      product = shouldPreferFetchedProduct(product, pageProduct)
+        ? mergeProducts([pageProduct, product])
+        : mergeProducts([product, pageProduct]);
+      if (preferFetchedImage) {
+        product = compactObject({ ...product, imageUrl: pageProduct.imageUrl });
+      }
     }
   }
 
@@ -93,6 +97,7 @@ function needsFetchedProductPage(product) {
       (!product.priceText ||
         !Number.isFinite(product.priceAmount) ||
         !product.imageUrl ||
+        isPyeProductUrl(product.url) ||
         needsFetchedProductImage(product) ||
         looksLikeDescriptiveTitle(product.title) ||
         !product.title)
@@ -104,10 +109,73 @@ function needsFetchedProductImage(product) {
 }
 
 function extractFromFetchedProductPage(doc, productUrl) {
+  const pyeProduct = extractPyeProductFromFetchedPage(doc, productUrl);
+  if (pyeProduct.fromPyeProductPage) return pyeProduct;
+
   const jsonProduct = findJsonLdProductInDocument(doc, productUrl);
   const metaProduct = extractMetaProductFromDocument(doc, productUrl);
   const priceProduct = extractPriceFromFetchedDocument(doc);
   return mergeProducts([jsonProduct, metaProduct, priceProduct]);
+}
+
+function extractPyeProductFromFetchedPage(doc, productUrl) {
+  if (!isPyeProductUrl(productUrl)) {
+    return {};
+  }
+
+  const title = pyeProductTitleFromUrl(productUrl) || pyeProductTitleFromMeta(doc);
+  const priceSource =
+    `${fetchedMetaContent(doc, "description")} ${fetchedMetaContent(doc, "og:title")} ${doc.title || ""}`;
+  const price = normalizePrice({ amount: pyePriceAmountFromText(priceSource), currency: "RUB" });
+  const image = fetchedMetaContent(doc, "og:image") || fetchedMetaContent(doc, "twitter:image");
+
+  return compactObject({
+    title: cleanProductTitle(title, "PYE", productUrl),
+    brand: "PYE",
+    url: normalizeUrl(productUrl),
+    priceText: price.originalText,
+    priceAmount: price.amount,
+    currency: price.currency,
+    imageUrl: toAbsoluteUrlFor(image, productUrl),
+    fromPyeProductPage: true
+  });
+}
+
+function isPyeProductUrl(productUrl) {
+  try {
+    const url = new URL(productUrl, location.href);
+    return /(^|\.)pyeoptics\.com$/i.test(url.hostname) &&
+      /\/shop\/catalogue\/[^/]+\/?$/i.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function pyeProductTitleFromUrl(productUrl) {
+  try {
+    const url = new URL(productUrl, location.href);
+    const slug = url.pathname.split("/").filter(Boolean).pop() || "";
+    return cleanText(decodeURIComponent(slug)).replace(/[_-]\d+$/i, "").replace(/[-_]+/g, " ");
+  } catch {
+    return "";
+  }
+}
+
+function pyeProductTitleFromMeta(doc) {
+  return cleanText(fetchedMetaContent(doc, "og:title") || doc.title)
+    .replace(/\s*\|\s*P\.?Y\.?E\.?.*$/i, "")
+    .replace(/\s+купить\s+за\s+[\d\s]+(?:руб(?:\.|лей|ля)?|₽).*$/i, "")
+    .replace(/^купить\s+очки\s+/i, "")
+    .replace(/^очки\s+/i, "");
+}
+
+function pyePriceAmountFromText(value) {
+  const match = cleanText(value).match(/(?:цена|за)\s*:?\s*([\d\s]+)(?:руб(?:\.|лей|ля)?|₽)/i);
+  return numericPrice(match?.[1]);
+}
+
+function fetchedMetaContent(doc, property) {
+  return cleanText(doc.querySelector(`meta[property="${property}"], meta[name="${property}"]`)?.content || "");
 }
 
 async function fetchShopifyProduct(productUrl) {

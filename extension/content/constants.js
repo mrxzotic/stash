@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-ignore-related-product-prices-v1";
+var CONTENT_VERSION = "2026-06-19-pye-product-page-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
