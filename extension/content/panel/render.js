@@ -1,4 +1,4 @@
-function renderStashPanel() {
+function renderStashPanel(options = {}) {
   const root = getPanelRoot();
   const displayItems = panelState.items.map(normalizePanelItem);
   const visibleItems = displayItems
@@ -75,8 +75,24 @@ function renderStashPanel() {
 
   bindPanelEvents(root);
   focusPanelSearch(root);
+  animatePanelSummaryAfterRender(root, displayItems, options.summaryAnimationFrom);
   refreshPanelSummaryRate();
   panelState.hasRenderedPanel = true;
+}
+
+function animatePanelSummaryAfterRender(root, displayItems, previousValue) {
+  if (!previousValue) {
+    return;
+  }
+
+  const total = root.querySelector("[data-total-value]");
+  if (!total) {
+    return;
+  }
+
+  const nextValue = formatPanelSummaryTotal(displayItems, panelState.summaryCurrency);
+  total.textContent = previousValue;
+  setPanelTotalText(total, nextValue, { animate: true });
 }
 
 function renderPanelTopbarHtml(displayItems) {

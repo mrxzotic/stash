@@ -62,6 +62,26 @@ function convertToRubSync(amount, currency) {
   return Math.round(amount * rate);
 }
 
+function panelSummaryTextForItems(items) {
+  return formatPanelSummaryTotal(
+    (Array.isArray(items) ? items : []).map(normalizePanelItem),
+    panelState.summaryCurrency
+  );
+}
+
+function panelItemsTotalSignature(items) {
+  return (Array.isArray(items) ? items : []).map((item) => {
+    const normalized = normalizePanelItem(item);
+    const price = normalized.price || {};
+    return [
+      normalized.id,
+      price.rubAmount,
+      price.amount,
+      price.currency
+    ].join(":");
+  }).join("|");
+}
+
 function renderPanelSummaryOnly(options = {}) {
   const root = document.getElementById("stash-panel-root")?.shadowRoot;
   const total = root?.querySelector("[data-total-value]");

@@ -8,11 +8,12 @@ async function saveCurrentProduct(message) {
     message.category && message.category !== "auto" && hasCategory(categories, message.category)
       ? message.category
       : inferCategory(product, categories);
+  const summaryAnimationFrom = panelState.open ? panelSummaryTextForItems(panelState.items) : "";
   const item = await normalizeItem(product, category, categories);
   const items = await upsertItem(item);
 
   if (panelState.open) {
-    showSavedItemInPanel(item, items, categories);
+    showSavedItemInPanel(item, items, categories, { summaryAnimationFrom });
   } else {
     showSavedOverlay(item, items, categories);
   }
@@ -48,7 +49,7 @@ function closeStashPanel() {
   window.clearTimeout(panelState.highlightTimer);
 }
 
-function showSavedItemInPanel(item, items, categories) {
+function showSavedItemInPanel(item, items, categories, options = {}) {
   clearSavedOverlay();
   panelState.items = items;
   panelState.categories = categories;
@@ -63,7 +64,7 @@ function showSavedItemInPanel(item, items, categories) {
     panelState.searchOpen = false;
   }
 
-  renderStashPanel();
+  renderStashPanel({ summaryAnimationFrom: options.summaryAnimationFrom });
   window.clearTimeout(panelState.highlightTimer);
   panelState.highlightTimer = window.setTimeout(() => {
     if (!panelState.open || panelState.highlightedItemId !== item.id) {

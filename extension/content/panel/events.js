@@ -272,9 +272,15 @@ function focusPanelSearch(root) {
 }
 
 async function removePanelItem(id) {
-  panelState.items = panelState.items.filter((item) => normalizePanelItem(item).id !== id);
+  const previousSummary = panelSummaryTextForItems(panelState.items);
+  const nextItems = panelState.items.filter((item) => normalizePanelItem(item).id !== id);
+  if (nextItems.length === panelState.items.length) {
+    return;
+  }
+
+  panelState.items = nextItems;
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderStashPanel();
+  renderStashPanel({ summaryAnimationFrom: previousSummary });
 }
 
 function safelyRunPanelAction(action) {

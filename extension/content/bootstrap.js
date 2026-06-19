@@ -51,12 +51,17 @@ function initializeStashContent() {
   
     let requiresFullRender = false;
     let settingsChanged = false;
+    let summaryAnimationFrom = "";
   
     if (changes[STORAGE_KEY]) {
-      panelState.items = Array.isArray(changes[STORAGE_KEY].newValue)
+      const nextItems = Array.isArray(changes[STORAGE_KEY].newValue)
         ? changes[STORAGE_KEY].newValue
         : [];
-      requiresFullRender = true;
+      if (panelItemsTotalSignature(panelState.items) !== panelItemsTotalSignature(nextItems)) {
+        summaryAnimationFrom = panelSummaryTextForItems(panelState.items);
+        requiresFullRender = true;
+      }
+      panelState.items = nextItems;
     }
   
     if (changes[CATEGORY_STORAGE_KEY]) {
@@ -77,6 +82,10 @@ function initializeStashContent() {
       panelState.backgroundTheme = settings.backgroundTheme;
       settingsChanged = true;
     }
+
+    if (!requiresFullRender && !settingsChanged) {
+      return;
+    }
   
     if (settingsChanged && !requiresFullRender) {
       syncPanelSettingsControls();
@@ -85,7 +94,7 @@ function initializeStashContent() {
       return;
     }
   
-    renderStashPanel();
+    renderStashPanel({ summaryAnimationFrom });
   });
 }
 
