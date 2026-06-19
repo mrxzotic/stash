@@ -4,6 +4,25 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
+const constantsSource = fs.readFileSync(path.join(root, "extension/content/constants.js"), "utf8");
+const bootstrapSource = fs.readFileSync(path.join(root, "extension/content/bootstrap.js"), "utf8");
+const backgroundSource = fs.readFileSync(path.join(root, "extension/background.js"), "utf8");
+const contentVersion = constantsSource.match(/CONTENT_VERSION\s*=\s*"([^"]+)"/)?.[1];
+
+assert.ok(contentVersion, "Content version should be declared");
+assert.ok(
+  backgroundSource.includes(`CONTENT_SCRIPT_VERSION = "${contentVersion}"`),
+  "Background should require the current content script version"
+);
+assert.match(backgroundSource, /STASH_PING_V2/, "Background should ping versioned content scripts");
+assert.match(backgroundSource, /STASH_SAVE_V2/, "Background should send versioned save messages");
+assert.match(bootstrapSource, /STASH_SAVE_V2/, "Content script should handle versioned saves");
+assert.match(
+  bootstrapSource,
+  /version:\s*CONTENT_VERSION/,
+  "Content script ping should report the active content version"
+);
+
 const sandbox = {
   URL,
   console,
@@ -217,22 +236,22 @@ runAsyncSmoke().then(() => {
 });
 
 async function runAsyncSmoke() {
-  const pyeUrl = "https://pyeoptics.com/shop/catalogue/theo-m_8772/";
+  const pyeUrl = "https://pyeoptics.com/shop/catalogue/theo-m_8773/";
   const pyeImage =
-    "https://image.pyeoptics.com/images/products/2026/06/09/1781017670/800x400/1angle1.jpg";
+    "https://image.pyeoptics.com/images/products/2026/06/09/1781017663/800x400/1angle1.jpg";
   const pyeDoc = {
-    title: "Купить очки Theo M Ripe banana | P.Y.E.",
+    title: "Купить очки Theo M Cirrus | P.Y.E.",
     body: { textContent: "Очки для зрения Theo M 12 300 ₽ 13 000 ₽" },
     querySelectorAll: () => [],
     querySelector: (selector) => {
       if (selector.includes("description")) {
         return {
           content:
-            "Закажите очки Theo M Ripe banana в интернет-магазине оптики P.Y.E. Цена: 12300 рублей."
+            "Закажите очки Theo M Cirrus в интернет-магазине оптики P.Y.E. Цена: 12300 рублей."
         };
       }
       if (selector.includes("og:title")) {
-        return { content: "Очки Theo M Ripe banana купить за 12300 руб. | P.Y.E." };
+        return { content: "Очки Theo M Cirrus купить за 12300 руб. | P.Y.E." };
       }
       if (selector.includes("og:image")) {
         return { content: pyeImage };

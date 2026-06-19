@@ -18,19 +18,23 @@ function initializeStashContent() {
   );
   
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message?.type === "STASH_PING") {
-      sendResponse({ ok: true });
+    if (hasContentVersionMismatch(message)) {
+      return false;
+    }
+
+    if (isStashPingMessage(message)) {
+      sendResponse({ ok: true, version: CONTENT_VERSION });
       return false;
     }
   
-    if (message?.type === "STASH_TOGGLE_PANEL") {
+    if (isStashToggleMessage(message)) {
       toggleStashPanel()
         .then((result) => sendResponse(result))
         .catch((error) => sendResponse({ ok: false, error: error.message }));
       return true;
     }
   
-    if (message?.type !== "STASH_SAVE") {
+    if (!isStashSaveMessage(message)) {
       return false;
     }
   
@@ -99,3 +103,19 @@ function initializeStashContent() {
 }
 
 initializeStashContent();
+
+function hasContentVersionMismatch(message) {
+  return Boolean(message?.contentVersion && message.contentVersion !== CONTENT_VERSION);
+}
+
+function isStashPingMessage(message) {
+  return message?.type === "STASH_PING" || message?.type === "STASH_PING_V2";
+}
+
+function isStashToggleMessage(message) {
+  return message?.type === "STASH_TOGGLE_PANEL" || message?.type === "STASH_TOGGLE_PANEL_V2";
+}
+
+function isStashSaveMessage(message) {
+  return message?.type === "STASH_SAVE" || message?.type === "STASH_SAVE_V2";
+}

@@ -1,6 +1,10 @@
 const MENU_ROOT_ID = "stash-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
+const CONTENT_SCRIPT_VERSION = "2026-06-19-versioned-content-messages-v1";
+const MESSAGE_PING = "STASH_PING_V2";
+const MESSAGE_SAVE = "STASH_SAVE_V2";
+const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
 const CONTENT_SCRIPT_FILES = [
   "content/constants.js",
   "content/lifecycle.js",
@@ -105,7 +109,8 @@ async function handleActionClick(tab) {
 
   try {
     await chrome.tabs.sendMessage(tab.id, {
-      type: "STASH_TOGGLE_PANEL"
+      type: MESSAGE_TOGGLE_PANEL,
+      contentVersion: CONTENT_SCRIPT_VERSION
     });
   } catch (error) {
     console.warn("Stash could not open on this page", error);
@@ -123,7 +128,8 @@ async function handleSaveClick(info, tab) {
 
   try {
     await chrome.tabs.sendMessage(tab.id, {
-      type: "STASH_SAVE",
+      type: MESSAGE_SAVE,
+      contentVersion: CONTENT_SCRIPT_VERSION,
       category: "auto",
       context: {
         pageUrl: info.pageUrl,
@@ -142,20 +148,31 @@ function isSupportedUrl(url) {
 }
 
 async function ensureContentScript(tabId) {
-  try {
-    await chrome.tabs.sendMessage(tabId, { type: "STASH_PING" });
+  const response = await pingContentScript(tabId);
+  if (response?.version === CONTENT_SCRIPT_VERSION) {
     return true;
+  }
+
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: CONTENT_SCRIPT_FILES
+    });
+    return (await pingContentScript(tabId))?.version === CONTENT_SCRIPT_VERSION;
+  } catch (error) {
+    console.warn("Stash could not inject content script", error);
+    return false;
+  }
+}
+
+async function pingContentScript(tabId) {
+  try {
+    return await chrome.tabs.sendMessage(tabId, {
+      type: MESSAGE_PING,
+      contentVersion: CONTENT_SCRIPT_VERSION
+    });
   } catch {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        files: CONTENT_SCRIPT_FILES
-      });
-      return true;
-    } catch (error) {
-      console.warn("Stash could not inject content script", error);
-      return false;
-    }
+    return null;
   }
 }
 
