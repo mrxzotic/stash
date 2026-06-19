@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stash",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "description": "Save products from any shop into a compact local stash.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
@@ -43,6 +43,7 @@
         "content/extractors/dom.js",
         "content/extractors/embedded.js",
         "content/extractors/enrich.js",
+        "content/extractors/anchors.js",
         "content/extractors/context.js",
         "content/storage.js",
         "content/overlays.js",
