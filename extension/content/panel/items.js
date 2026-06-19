@@ -139,11 +139,9 @@ function rollPanelTotalText(total, value, pill) {
   total.classList.add("is-counting");
   pill?.classList.add("is-recounting");
 
-  const startValue = fromValue === toValue
-    ? Math.max(0, toValue - Math.max(7, Math.ceil(toValue * 0.06)))
-    : fromValue;
+  const startValue = fromValue;
   const startedAt = performance.now();
-  const duration = 2000;
+  const duration = 1500;
 
   const tick = (timestamp) => {
     const progress = Math.min(1, (timestamp - startedAt) / duration);

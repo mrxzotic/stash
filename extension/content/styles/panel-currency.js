@@ -38,11 +38,11 @@ function panelCurrencyStyles() {
     }
 
     .wp-total-value.is-counting {
-      animation: wpCurrencyCount 1400ms cubic-bezier(.16, 1, .3, 1) both;
+      animation: wpCurrencyCount 1100ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-total.is-recounting {
-      animation: wpCurrencyPillCount 1800ms cubic-bezier(.16, 1, .3, 1) both;
+      animation: wpCurrencyPillCount 1400ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-total-chevron {
