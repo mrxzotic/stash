@@ -1,6 +1,8 @@
 function isNoiseLine(value) {
   return /^(new|new in|new season|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|copy|copied|shipping|returns|free shipping)$/i.test(
     cleanText(value)
+  ) || /^\d+\s+available\s+colou?rs?$/i.test(
+    cleanText(value)
   ) || /^(favorite|share|copy link|copied link|telegram|vk|vkontakte|whatsapp|pinterest|поделиться|скопировать|скопировать ссылку|ссылка скопирована|вконтакте|избранное)$/i.test(
     cleanText(value)
   ) || /^image:/i.test(cleanText(value));
@@ -77,7 +79,41 @@ function sourceNameFromUrl(value) {
 }
 
 function faviconUrlFromUrl(value) {
-  return "";
+  let target;
+  try {
+    target = new URL(value || location.href, location.href);
+  } catch {
+    return "";
+  }
+
+  return faviconUrlFromDocument(target);
+}
+
+function faviconUrlFromDocument(target) {
+  const links = Array.from(
+    document.querySelectorAll('link[rel~="icon"][href], link[rel="shortcut icon"][href], link[rel="apple-touch-icon"][href]')
+  );
+
+  return links
+    .map((link) => ({
+      url: toAbsoluteUrl(link.getAttribute("href")),
+      score: faviconLinkScore(link)
+    }))
+    .filter((candidate) => candidate.url)
+    .filter((candidate) => {
+      try {
+        return new URL(candidate.url).origin === target.origin;
+      } catch {
+        return false;
+      }
+    })
+    .sort((a, b) => b.score - a.score)[0]?.url || "";
+}
+
+function faviconLinkScore(link) {
+  const rel = cleanText(link.getAttribute("rel")).toLowerCase();
+  const size = Number.parseInt(cleanText(link.getAttribute("sizes")), 10) || 0;
+  return (rel.includes("shortcut") ? 30 : 0) + (rel === "icon" ? 20 : 0) + size;
 }
 
 function cleanTitle(value, brand = "") {
@@ -129,6 +165,10 @@ function shouldPreferUrlTitle(title, urlTitle) {
   }
 
   if (looksLikeDescriptiveTitle(title)) {
+    return true;
+  }
+
+  if (looksLikeProductName(urlTitle) && !looksLikeProductName(title)) {
     return true;
   }
 

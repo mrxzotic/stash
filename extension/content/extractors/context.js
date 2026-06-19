@@ -240,13 +240,21 @@ function findProductLink(target, scope, context, initialLink) {
     return { href: context.linkUrl, textContent: "" };
   }
 
-  if (initialLink?.href) {
+  if (initialLink?.href && isProductLikeUrl(initialLink.href)) {
     return initialLink;
   }
 
   const links = Array.from(scope?.querySelectorAll?.("a[href]") || []);
+  const productLink = links.find((link) => isProductLikeUrl(link.href));
+  if (productLink) {
+    return productLink;
+  }
+
+  if (initialLink?.href) {
+    return initialLink;
+  }
+
   return (
-    links.find((link) => isProductLikeUrl(link.href)) ||
     links.find((link) => link.getBoundingClientRect().width > 20) ||
     null
   );
@@ -290,10 +298,28 @@ function imageScore(image) {
 function isProductLikeUrl(value) {
   try {
     const url = new URL(value, location.href);
-    return /\/(product|products|item|items|p)\//i.test(url.pathname);
+    return (
+      /\/(product|products|item|items|p)\//i.test(url.pathname) ||
+      looksLikeSkuProductPath(url)
+    );
   } catch {
     return false;
   }
+}
+
+function looksLikeSkuProductPath(url) {
+  const segments = url.pathname.split("/").filter(Boolean);
+  const skuSegment = segments.at(-1) || "";
+  const titleSegment = segments.at(-2) || "";
+  if (!/\.html?$/i.test(skuSegment) || !titleSegment) {
+    return false;
+  }
+
+  const sku = skuSegment.replace(/\.html?$/i, "");
+  return (
+    /^[a-z]{1,6}\d{2,}(?:[-_][a-z0-9]+)*$/i.test(sku) &&
+    looksLikeProductName(cleanUrlTitleSegment(titleSegment))
+  );
 }
 
 function findParentLink(target) {

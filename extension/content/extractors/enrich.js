@@ -79,6 +79,7 @@ function needsFetchedProductPage(product) {
     product?.url &&
       (!product.priceText ||
         !Number.isFinite(product.priceAmount) ||
+        !product.imageUrl ||
         looksLikeDescriptiveTitle(product.title) ||
         !product.title)
   );
