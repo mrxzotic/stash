@@ -51,7 +51,7 @@ function visiblePriceCandidateEntries(scope = document) {
   const candidates = [];
 
   Array.from(scope.querySelectorAll?.(selectors) || []).forEach((node) => {
-    if (!isUsablePriceElement(node)) {
+    if (!isUsablePriceElement(node) || isForeignProductPriceElement(node)) {
       return;
     }
 
@@ -77,6 +77,36 @@ function visiblePriceCandidateEntries(scope = document) {
       return true;
     })
     .slice(0, 8);
+}
+
+function isForeignProductPriceElement(element) {
+  if (!isProductLikeUrl(location.href)) {
+    return false;
+  }
+
+  const foreignSection = element.closest?.(
+    "#shop-the-look, [id*='recommend' i], [class*='recommend' i], [class*='related' i]"
+  );
+  if (foreignSection) {
+    return true;
+  }
+
+  const productLink = closestPriceProductLink(element);
+  return Boolean(productLink && !sameProductPageUrl(productLink, location.href));
+}
+
+function closestPriceProductLink(element) {
+  const anchor = element.closest?.("a[href]");
+  if (anchor?.href && isProductLikeUrl(anchor.href)) {
+    return anchor.href;
+  }
+
+  const context = element.closest?.("[data-product], product-card, modal, article, li");
+  const link = context?.matches?.("a[href]")
+    ? context
+    : context?.querySelector?.("a[data-product][href], a[href*='/products/']");
+
+  return link?.href && isProductLikeUrl(link.href) ? link.href : "";
 }
 
 function priceTextsFromElement(element) {

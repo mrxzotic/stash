@@ -23,6 +23,7 @@ vm.createContext(sandbox);
   "extension/content/media.js",
   "extension/content/text.js",
   "extension/content/storage-settings.js",
+  "extension/content/pricing/dom.js",
   "extension/content/pricing/rates.js",
   "extension/content/pricing/parse.js",
   "extension/content/extractors/main.js",
@@ -191,6 +192,22 @@ assert.equal(
   "Alpaca Crew Light Grey",
   "Variant size suffixes should not leak into product titles"
 );
+sandbox.location = new URL(aboutBlankUrl);
+sandbox.window.getComputedStyle = () => ({
+  display: "block",
+  visibility: "visible",
+  opacity: "1"
+});
+const aboutBlankMainPrice = fakePriceElement("€235,95", { inMain: true });
+const aboutBlankRelatedPrice = fakePriceElement("€71,95", { inShopTheLook: true });
+const aboutBlankPriceScope = {
+  querySelectorAll: () => [aboutBlankRelatedPrice, aboutBlankMainPrice]
+};
+assert.equal(
+  sandbox.visiblePriceCandidates(aboutBlankPriceScope).join("|"),
+  "236 €",
+  "Product page price scan should ignore related item prices"
+);
 
 const pdpImage =
   "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
@@ -235,3 +252,25 @@ sandbox.enrichProduct({
   console.error(error);
   process.exit(1);
 });
+
+function fakePriceElement(text, options = {}) {
+  return {
+    className: options.className || "",
+    id: options.id || "",
+    innerText: text,
+    textContent: text,
+    dataset: {},
+    getAttribute: () => "",
+    getBoundingClientRect: () => ({ width: 80, height: 20 }),
+    matches: () => false,
+    closest: (selector) => {
+      if (selector.includes("#shop-the-look")) {
+        return options.inShopTheLook ? {} : null;
+      }
+      if (selector === "main") {
+        return options.inMain ? {} : null;
+      }
+      return null;
+    }
+  };
+}
