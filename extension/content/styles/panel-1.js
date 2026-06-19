@@ -200,7 +200,7 @@ function panelStylesChunk1() {
 
     .wp-topbar {
       position: relative;
-      z-index: 3;
+      z-index: 8;
       display: flex;
       align-items: center;
       justify-content: space-between;

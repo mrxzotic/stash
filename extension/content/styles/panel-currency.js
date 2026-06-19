@@ -41,6 +41,10 @@ function panelCurrencyStyles() {
       animation: wpCurrencyCount 560ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
+    .wp-total.is-recounting {
+      animation: wpCurrencyPillCount 560ms cubic-bezier(.16, 1, .3, 1) both;
+    }
+
     .wp-total-chevron {
       width: 14px;
       height: 14px;
@@ -191,6 +195,26 @@ function panelCurrencyStyles() {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
+      }
+    }
+
+    @keyframes wpCurrencyPillCount {
+      0% {
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.8) inset,
+          0 0 0 rgba(15, 23, 42, 0);
+      }
+
+      48% {
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.9) inset,
+          0 12px 30px rgba(15, 23, 42, 0.12);
+      }
+
+      100% {
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.8) inset,
+          0 0 0 rgba(15, 23, 42, 0);
       }
     }
   `;

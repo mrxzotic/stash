@@ -99,7 +99,7 @@ function summaryCurrencyPickerOptions(currentCurrency = "") {
     options.push(selectedCurrency);
   }
 
-  return options.sort((left, right) => left.localeCompare(right));
+  return options;
 }
 
 function isSummaryCurrency(currency) {

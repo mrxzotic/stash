@@ -317,7 +317,9 @@ async function savePanelSettings(nextSettings, options = {}) {
     renderPanelSummaryOnly({
       animate: options.animateSummary || previousCurrency !== settings.summaryCurrency
     });
-    refreshPanelSummaryRate();
+    refreshPanelSummaryRate({
+      animateSummary: options.animateSummary || previousCurrency !== settings.summaryCurrency
+    });
     return;
   }
 

@@ -106,16 +106,70 @@ function syncPanelSettingsControls() {
 }
 
 function setPanelTotalText(total, value, options = {}) {
-  const shouldAnimate = options.animate && total.textContent !== value;
-  total.textContent = value;
+  const shouldAnimate = Boolean(options.animate);
+  const pill = total.closest(".wp-total");
   if (!shouldAnimate) {
+    cancelPanelTotalAnimation(total);
+    total.textContent = value;
+    total.classList.remove("is-counting");
+    pill?.classList.remove("is-recounting");
+    return;
+  }
+
+  rollPanelTotalText(total, value, pill);
+}
+
+function rollPanelTotalText(total, value, pill) {
+  const fromValue = summaryIntegerFromText(total.textContent);
+  const toValue = summaryIntegerFromText(value);
+  cancelPanelTotalAnimation(total);
+  if (!Number.isFinite(fromValue) || !Number.isFinite(toValue)) {
+    total.textContent = value;
     return;
   }
 
   total.classList.remove("is-counting");
-  window.requestAnimationFrame(() => {
-    total.classList.add("is-counting");
-  });
+  pill?.classList.remove("is-recounting");
+  void total.offsetWidth;
+  total.classList.add("is-counting");
+  pill?.classList.add("is-recounting");
+
+  const startValue = fromValue === toValue
+    ? Math.max(0, toValue - Math.max(7, Math.ceil(toValue * 0.06)))
+    : fromValue;
+  const startedAt = performance.now();
+  const duration = 820;
+
+  const tick = (timestamp) => {
+    const progress = Math.min(1, (timestamp - startedAt) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const currentValue = startValue + (toValue - startValue) * eased;
+    total.textContent = formatSummaryCurrency(currentValue, panelState.summaryCurrency);
+
+    if (progress < 1) {
+      total.__stashTotalAnimationFrame = window.requestAnimationFrame(tick);
+      return;
+    }
+
+    total.textContent = value;
+    total.__stashTotalAnimationFrame = 0;
+    total.classList.remove("is-counting");
+    pill?.classList.remove("is-recounting");
+  };
+
+  total.__stashTotalAnimationFrame = window.requestAnimationFrame(tick);
+}
+
+function cancelPanelTotalAnimation(total) {
+  if (total.__stashTotalAnimationFrame) {
+    window.cancelAnimationFrame(total.__stashTotalAnimationFrame);
+    total.__stashTotalAnimationFrame = 0;
+  }
+}
+
+function summaryIntegerFromText(value) {
+  const digits = String(value || "").replace(/[^\d]/g, "");
+  return digits ? Number(digits) : 0;
 }
 
 function syncPanelCurrencyControl(root) {
@@ -168,7 +222,7 @@ function syncPanelSelectControl(root, { selector, datasetKey, value, label, meta
   menu?.setAttribute("hidden", "");
 }
 
-function refreshPanelSummaryRate() {
+function refreshPanelSummaryRate(options = {}) {
   const currency = cleanText(panelState.summaryCurrency).toUpperCase();
   const currentRate = panelState.summaryRate;
   if (!panelState.open || !currency || panelState.summaryRateLoading === currency) {
@@ -197,7 +251,7 @@ function refreshPanelSummaryRate() {
         source: rate.source || "fallback",
         updatedAt: rate.updatedAt || Date.now()
       };
-      renderPanelSummaryOnly();
+      renderPanelSummaryOnly({ animate: options.animateSummary });
     })
     .catch(() => {
       const fallbackRate = DEFAULT_RUB_RATES[currency];
@@ -207,7 +261,7 @@ function refreshPanelSummaryRate() {
         source: "fallback",
         updatedAt: Date.now()
       };
-      renderPanelSummaryOnly();
+      renderPanelSummaryOnly({ animate: options.animateSummary });
     })
     .finally(() => {
       if (panelState.summaryRateLoading === currency) {
