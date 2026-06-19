@@ -106,6 +106,10 @@ function syncPanelSettingsControls() {
 }
 
 function setPanelTotalText(total, value, options = {}) {
+  if (options.skipWhileAnimating && total.__stashTotalAnimationFrame) {
+    return;
+  }
+
   const shouldAnimate = Boolean(options.animate);
   const pill = total.closest(".wp-total");
   if (!shouldAnimate) {
@@ -138,7 +142,7 @@ function rollPanelTotalText(total, value, pill) {
     ? Math.max(0, toValue - Math.max(7, Math.ceil(toValue * 0.06)))
     : fromValue;
   const startedAt = performance.now();
-  const duration = 1400;
+  const duration = 2000;
 
   const tick = (timestamp) => {
     const progress = Math.min(1, (timestamp - startedAt) / duration);
@@ -251,7 +255,10 @@ function refreshPanelSummaryRate(options = {}) {
         source: rate.source || "fallback",
         updatedAt: rate.updatedAt || Date.now()
       };
-      renderPanelSummaryOnly({ animate: options.animateSummary });
+      renderPanelSummaryOnly({
+        animate: options.animateSummary,
+        skipWhileAnimating: true
+      });
     })
     .catch(() => {
       const fallbackRate = DEFAULT_RUB_RATES[currency];
@@ -261,7 +268,10 @@ function refreshPanelSummaryRate(options = {}) {
         source: "fallback",
         updatedAt: Date.now()
       };
-      renderPanelSummaryOnly({ animate: options.animateSummary });
+      renderPanelSummaryOnly({
+        animate: options.animateSummary,
+        skipWhileAnimating: true
+      });
     })
     .finally(() => {
       if (panelState.summaryRateLoading === currency) {
