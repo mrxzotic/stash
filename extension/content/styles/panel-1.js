@@ -81,27 +81,21 @@ function panelStylesChunk1() {
       display: grid;
       place-items: center;
       padding: 0;
-      border: 1px solid rgba(10, 10, 10, 0.08);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.96);
-      color: rgba(8, 11, 16, 0.58);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.82),
-        0 12px 32px rgba(0, 0, 0, 0.14);
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: rgba(8, 11, 16, 0.5);
+      box-shadow: none;
       pointer-events: auto;
       transform: translateZ(0);
       transition:
         color 160ms ease,
-        transform 180ms cubic-bezier(.16, 1, .3, 1),
-        border-color 160ms ease,
-        background 160ms ease;
+        transform 180ms cubic-bezier(.16, 1, .3, 1);
       animation: wpPanelCloseIn 220ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-panel-close:hover {
       color: rgba(8, 11, 16, 0.92);
-      border-color: rgba(10, 10, 10, 0.13);
-      background: #ffffff;
       transform: translateY(-1px) scale(1.04) translateZ(0);
     }
 
