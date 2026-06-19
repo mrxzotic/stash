@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Wishlisted",
+  "version": "0.1.6",
+  "description": "Save products from any shop into a clean visual wishlist.",
+  "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' http: https: data:"
+  },
+  "action": {
+    "default_title": "Wishlisted",
+    "default_icon": {
+      "16": "icons/wishlisted-cart-16.png",
+      "32": "icons/wishlisted-cart-32.png",
+      "48": "icons/wishlisted-cart-48.png",
+      "128": "icons/wishlisted-cart-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/wishlisted-cart-16.png",
+    "32": "icons/wishlisted-cart-32.png",
+    "48": "icons/wishlisted-cart-48.png",
+    "128": "icons/wishlisted-cart-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["fonts/onest.ttf"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ]
+}
