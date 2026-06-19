@@ -311,17 +311,20 @@ async function savePanelSettings(nextSettings, options = {}) {
   panelState.summaryCurrency = settings.summaryCurrency;
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
-  await setLocalStorageValue(SETTINGS_STORAGE_KEY, settings);
   if (options.rerender === false) {
+    const shouldAnimateSummary =
+      options.animateSummary || previousCurrency !== settings.summaryCurrency;
     syncPanelSettingsControls();
     renderPanelSummaryOnly({
-      animate: options.animateSummary || previousCurrency !== settings.summaryCurrency
+      animate: shouldAnimateSummary
     });
     refreshPanelSummaryRate({
-      animateSummary: options.animateSummary || previousCurrency !== settings.summaryCurrency
+      animateSummary: shouldAnimateSummary
     });
+    await setLocalStorageValue(SETTINGS_STORAGE_KEY, settings);
     return;
   }
 
+  await setLocalStorageValue(SETTINGS_STORAGE_KEY, settings);
   renderStashPanel();
 }
