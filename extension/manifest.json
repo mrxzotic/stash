@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Wishlisted",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Save products from any shop into a clean visual wishlist.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],

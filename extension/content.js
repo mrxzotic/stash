@@ -1,5 +1,5 @@
 (() => {
-  const CONTENT_VERSION = "2026-06-19-product-page-context-v1";
+  const CONTENT_VERSION = "2026-06-19-product-page-variant-context-v1";
 
   if (window.__wishlistedContentVersion === CONTENT_VERSION) {
     return;
@@ -1138,7 +1138,7 @@
       contextualProduct.fromContext &&
       (contextualProduct.url || contextualProduct.title || contextualProduct.imageUrl);
     const contextUrl = contextualProduct.url ? normalizeUrl(contextualProduct.url) : "";
-    const pageProductSources = [
+    const basePageProductSources = [
       commonSelectorProduct,
       microdataProduct,
       jsonLdProduct,
@@ -1146,15 +1146,38 @@
       metaProduct,
       pagePriceProduct
     ];
-    const hasPageProductDetails = pageProductSources.some(
+    const hasPageProductDetails = basePageProductSources.some(
       (source) => source.title || source.priceAmount || source.priceText || source.imageUrl
     );
-    const isProductPageContext =
+    const currentPageIsProduct = isProductLikeUrl(pageUrl) && hasPageProductDetails;
+    const pageProductSources = currentPageIsProduct
+      ? [
+          jsonLdProduct,
+          metaProduct,
+          microdataProduct,
+          commonSelectorProduct,
+          embeddedProduct,
+          pagePriceProduct
+        ]
+      : basePageProductSources;
+    const contextLinkUrl = context.linkUrl ? normalizeUrl(context.linkUrl) : "";
+    const clickedDifferentProduct =
+      !currentPageIsProduct &&
       hasClickedProduct &&
-      !context.linkUrl &&
-      (!contextUrl || contextUrl === pageUrl) &&
-      (isProductLikeUrl(pageUrl) || hasPageProductDetails);
-    const sources = hasClickedProduct
+      contextUrl &&
+      !sameProductPageUrl(contextUrl, pageUrl) &&
+      isProductLikeUrl(contextUrl);
+    const linkedDifferentProduct =
+      !currentPageIsProduct &&
+      contextLinkUrl &&
+      !sameProductPageUrl(contextLinkUrl, pageUrl) &&
+      isProductLikeUrl(contextLinkUrl);
+    const isProductPageContext =
+      currentPageIsProduct ||
+      (!clickedDifferentProduct &&
+        !linkedDifferentProduct &&
+        (isProductLikeUrl(pageUrl) || hasPageProductDetails));
+    const sources = hasClickedProduct && !isProductPageContext
       ? [contextualProduct]
       : [
           jsonLdProduct,
@@ -1166,10 +1189,19 @@
         ];
     const detailSources = isProductPageContext ? pageProductSources : sources;
     const urlSources = isProductPageContext ? [contextualProduct, ...pageProductSources] : sources;
-    const imageSources = hasClickedProduct
-      ? [contextualProduct, ...(isProductPageContext ? pageProductSources : [])]
-      : sources;
-    const url = firstValue(urlSources, "url") || pageUrl;
+    const pageImageSources = [
+      jsonLdProduct,
+      metaProduct,
+      commonSelectorProduct,
+      microdataProduct,
+      embeddedProduct
+    ];
+    const imageSources = isProductPageContext
+      ? [...pageImageSources, contextualProduct]
+      : hasClickedProduct
+        ? [contextualProduct]
+        : sources;
+    const url = isProductPageContext ? pageUrl : firstValue(urlSources, "url") || pageUrl;
     const price = normalizePrice({
       amount: firstValue(detailSources, "priceAmount"),
       currency: firstValue(detailSources, "currency"),
@@ -1195,7 +1227,8 @@
       compareAtPriceAmount: price.compareAtAmount,
       isSale: price.isSale,
       imageUrl: firstValue(imageSources, "imageUrl"),
-      rawCategory: firstValue(detailSources, "rawCategory") || contextualProduct.rawCategory
+      rawCategory: firstValue(detailSources, "rawCategory") || contextualProduct.rawCategory,
+      fromProductPage: isProductPageContext
     });
   }
 
@@ -1223,9 +1256,10 @@
       return {};
     }
 
-    const offer = Array.isArray(product.offers)
-      ? product.offers[0]
-      : product.offers || {};
+    const offers = Array.isArray(product.offers)
+      ? product.offers
+      : [product.offers].filter(Boolean);
+    const offer = offers.find((candidate) => offerMatchesCurrentUrl(candidate)) || offers[0] || {};
     const image = Array.isArray(product.image) ? product.image[0] : product.image;
     const brand =
       typeof product.brand === "string"
@@ -1273,6 +1307,27 @@
         collectProducts(value, products);
       }
     }
+  }
+
+  function offerMatchesCurrentUrl(offer) {
+    const offerUrl = offer?.url;
+    if (!offerUrl) {
+      return false;
+    }
+
+    try {
+      const current = new URL(location.href);
+      const candidate = new URL(offerUrl, location.href);
+      const currentVariant = current.searchParams.get("variant");
+      const candidateVariant = candidate.searchParams.get("variant");
+      if (currentVariant && candidateVariant) {
+        return currentVariant === candidateVariant;
+      }
+    } catch {
+      return false;
+    }
+
+    return sameProductPageUrl(offerUrl, location.href);
   }
 
   function extractFromMicrodata() {
@@ -1732,14 +1787,31 @@
   }
 
   async function enrichProduct(product) {
+    if (hasCompletePageProduct(product)) {
+      return product;
+    }
+
     const shopifyProduct = await fetchShopifyProduct(product.url);
     if (!shopifyProduct.title && !shopifyProduct.priceText && !shopifyProduct.imageUrl) {
       return product;
     }
 
+    if (shopifyProduct.fromSelectedVariant) {
+      return mergeProducts([shopifyProduct, product]);
+    }
+
     return product.fromContext
       ? mergeProducts([product, shopifyProduct])
       : mergeProducts([shopifyProduct, product]);
+  }
+
+  function hasCompletePageProduct(product) {
+    return Boolean(
+      product?.fromProductPage &&
+        product.title &&
+        product.imageUrl &&
+        (product.priceText || Number.isFinite(product.priceAmount))
+    );
   }
 
   async function fetchShopifyProduct(productUrl) {
@@ -1778,12 +1850,16 @@
   }
 
   function shopifyProductToItem(product, productUrl) {
+    const selectedVariant = selectedShopifyVariant(product, productUrl);
     const currency =
       findVisibleCurrencyCode(document.body) ||
       currencyFromText(findVisiblePriceText(document.body));
-    const amount = normalizeRawProductPrice(product.price ?? product.price_min);
+    const amount = normalizeRawProductPrice(
+      selectedVariant?.price ?? product.price ?? product.price_min
+    );
     const compareAtAmount = normalizeRawProductPrice(
-      product.compare_at_price ??
+      selectedVariant?.compare_at_price ??
+        product.compare_at_price ??
         product.compare_at_price_min ??
         product.variants?.find((variant) => variant?.compare_at_price)?.compare_at_price
     );
@@ -1797,12 +1873,13 @@
         : undefined
     });
     const image =
+      bestShopifyVariantImage(product, selectedVariant) ||
       bestShopifyImage(product.featured_image) ||
       bestShopifyImage(product.images) ||
       bestShopifyImage(product.featuredImage);
 
     return compactObject({
-      title: cleanTitle(product.title, product.vendor),
+      title: cleanTitle(shopifyTitle(product, productUrl, selectedVariant), product.vendor),
       brand: cleanBrandName(product.vendor),
       url: normalizeUrl(productUrl),
       priceText: price.originalText,
@@ -1814,8 +1891,78 @@
       imageUrl: toAbsoluteUrl(image),
       rawCategory: cleanText(
         [product.type, ...(Array.isArray(product.tags) ? product.tags : [])].join(" ")
-      )
+      ),
+      fromSelectedVariant: Boolean(selectedVariant)
     });
+  }
+
+  function selectedShopifyVariant(product, productUrl) {
+    const variantId = variantIdFromUrl(productUrl);
+    if (!variantId || !Array.isArray(product?.variants)) {
+      return null;
+    }
+
+    return product.variants.find((variant) => String(variant?.id) === variantId) || null;
+  }
+
+  function variantIdFromUrl(productUrl) {
+    try {
+      return new URL(productUrl, location.href).searchParams.get("variant");
+    } catch {
+      return "";
+    }
+  }
+
+  function shopifyTitle(product, productUrl, selectedVariant) {
+    const handleTitle = productTitleFromProductUrl(productUrl);
+    if (selectedVariant && handleTitle) {
+      return handleTitle;
+    }
+
+    return product.title || handleTitle;
+  }
+
+  function productTitleFromProductUrl(productUrl) {
+    try {
+      const url = new URL(productUrl, location.href);
+      const match = url.pathname.match(/\/products\/([^/?#]+)/i);
+      if (!match) {
+        return "";
+      }
+
+      return decodeURIComponent(match[1])
+        .replace(/[-_]+/g, " ")
+        .replace(/\s+in\s+([a-z]+)$/i, " $1");
+    } catch {
+      return "";
+    }
+  }
+
+  function bestShopifyVariantImage(product, variant) {
+    if (!variant) {
+      return "";
+    }
+
+    const directImage =
+      bestShopifyImage(variant.featured_image) ||
+      bestShopifyImage(variant.image) ||
+      bestShopifyImage(variant.image_url);
+    if (directImage) {
+      return directImage;
+    }
+
+    const imageId = variant.image_id || variant.featured_image?.id;
+    if (!imageId) {
+      return "";
+    }
+
+    const images = [
+      ...(Array.isArray(product.images) ? product.images : []),
+      product.featured_image,
+      product.featuredImage
+    ].filter(Boolean);
+    const match = images.find((image) => String(image?.id) === String(imageId));
+    return bestShopifyImage(match);
   }
 
   function bestShopifyImage(value) {
@@ -4659,6 +4806,30 @@
     } catch {
       return location.href;
     }
+  }
+
+  function sameProductPageUrl(left, right) {
+    try {
+      const leftUrl = new URL(left || location.href, location.href);
+      const rightUrl = new URL(right || location.href, location.href);
+      const leftHandle = productHandleFromUrl(leftUrl);
+      const rightHandle = productHandleFromUrl(rightUrl);
+      if (leftHandle && rightHandle) {
+        return leftUrl.origin === rightUrl.origin && leftHandle === rightHandle;
+      }
+
+      return (
+        leftUrl.origin === rightUrl.origin &&
+        leftUrl.pathname.replace(/\/+$/, "") === rightUrl.pathname.replace(/\/+$/, "")
+      );
+    } catch {
+      return normalizeUrl(left) === normalizeUrl(right);
+    }
+  }
+
+  function productHandleFromUrl(url) {
+    return decodeURIComponent(url.pathname.match(/\/products\/([^/?#]+)/i)?.[1] || "")
+      .toLocaleLowerCase();
   }
 
   function toAbsoluteUrl(value) {
