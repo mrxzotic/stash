@@ -106,11 +106,12 @@ function syncPanelSettingsControls() {
 }
 
 function setPanelTotalText(total, value, options = {}) {
-  if (options.skipWhileAnimating && total.__stashTotalAnimationFrame) {
+  const shouldAnimate = Boolean(options.animate);
+  if (total.__stashTotalAnimationFrame && (!shouldAnimate || options.skipWhileAnimating)) {
+    total.__stashPendingTotalValue = value;
     return;
   }
 
-  const shouldAnimate = Boolean(options.animate);
   const pill = total.closest(".wp-total");
   if (!shouldAnimate) {
     cancelPanelTotalAnimation(total);
@@ -155,7 +156,9 @@ function rollPanelTotalText(total, value, pill) {
       return;
     }
 
-    total.textContent = value;
+    const finalValue = total.__stashPendingTotalValue || value;
+    total.textContent = finalValue;
+    total.__stashPendingTotalValue = "";
     total.__stashTotalAnimationFrame = 0;
     total.classList.remove("is-counting");
     pill?.classList.remove("is-recounting");
@@ -169,6 +172,7 @@ function cancelPanelTotalAnimation(total) {
     window.cancelAnimationFrame(total.__stashTotalAnimationFrame);
     total.__stashTotalAnimationFrame = 0;
   }
+  total.__stashPendingTotalValue = "";
 }
 
 function summaryIntegerFromText(value) {
