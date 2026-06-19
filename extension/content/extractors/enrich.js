@@ -51,7 +51,7 @@ function shouldPreferFetchedProduct(product, pageProduct) {
 
 function shouldPreferFetchedImage(product, pageProduct) {
   return Boolean(
-    product?.fromContext &&
+    (product?.fromContext || needsOnProductImageUpgrade(product)) &&
       product?.imageUrl &&
       pageProduct?.imageUrl &&
       normalizeUrl(product.imageUrl) !== normalizeUrl(pageProduct.imageUrl)
@@ -105,7 +105,7 @@ function needsFetchedProductPage(product) {
 }
 
 function needsFetchedProductImage(product) {
-  return Boolean(product?.fromContext && product?.url && product?.imageUrl);
+  return Boolean(product?.url && product?.imageUrl && (product.fromContext || needsOnProductImageUpgrade(product)));
 }
 
 function extractFromFetchedProductPage(doc, productUrl) {

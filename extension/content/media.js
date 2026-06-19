@@ -59,6 +59,27 @@ function shouldRankProductImageSources(productUrl) {
   }
 }
 
+function needsOnProductImageUpgrade(product) {
+  return Boolean(product?.url && product?.imageUrl && isOnProductUrl(product.url) && isOnUploadProductImage(product.imageUrl));
+}
+
+function isOnProductUrl(value) {
+  try {
+    return /(^|\.)on\.com$/i.test(new URL(value || location.href, location.href).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isOnUploadProductImage(value) {
+  try {
+    const url = new URL(value || "", location.href);
+    return /^upload\.on-running\.com$/i.test(url.hostname) && /\/spree\/products\/\d+\/product\//i.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
 function productImageUrlScore(value, index) {
   try {
     const url = new URL(value || "", location.href);

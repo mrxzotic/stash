@@ -1,7 +1,7 @@
 const MENU_ROOT_ID = "stash-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
-const CONTENT_SCRIPT_VERSION = "2026-06-19-pye-listing-embedded-v1";
+const CONTENT_SCRIPT_VERSION = "2026-06-19-on-image-upgrade-v1";
 const MESSAGE_PING = "STASH_PING_V2";
 const MESSAGE_SAVE = "STASH_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";

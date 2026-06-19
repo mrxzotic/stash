@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-pye-listing-embedded-v1";
+var CONTENT_VERSION = "2026-06-19-on-image-upgrade-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

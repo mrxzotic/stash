@@ -336,8 +336,11 @@ async function runAsyncSmoke() {
   );
   assert.equal(pyeEnriched.imageUrl, pyeImage, "PYE enrichment should fill the missing image");
 
-  const pdpImage =
-    "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
+  const onHyperUrl =
+    "https://www.on.com/en-fi/products/cloudmonster-3-hyper-ls-u-3ug1001/unisex/black-apollo-shoes-3UG10014670";
+  const onUploadImage =
+    "https://upload.on-running.com/spree/products/9445/product/d1a6e9b279bcc08a5a978c23e99228863c6b6f90.png?1781575500";
+  const onCtfImage = "https://images.ctfassets.net/hnk2vsx53n6l/1tbMPAFietv1U5gDC2xu3b/eaf243482d51d0cbfa9c27b1e3035832/d1a6e9b279bcc08a5a978c23e99228863c6b6f90.png";
   sandbox.location = new URL("https://www.on.com/en-fi/shop/last-season");
   sandbox.document.title = "Last season";
   sandbox.fetch = async (url) => String(url).endsWith(".js")
@@ -346,32 +349,32 @@ async function runAsyncSmoke() {
   sandbox.DOMParser = class {
     parseFromString() {
       return {
-        title: "Women's Cloudrunner 2 | On",
+        title: "LightSpray Cloudmonster 3 Hyper | On",
         body: { textContent: "" },
-        querySelectorAll: () => [],
-        querySelector: (selector) => {
-          if (selector.includes("og:image")) {
-            return { content: pdpImage };
-          }
-          return null;
-        }
+        querySelectorAll: () => [{
+          textContent: JSON.stringify({
+            "@type": "Product",
+            name: "LightSpray Cloudmonster 3 Hyper",
+            hasVariant: [{ "@type": "Product", name: "LightSpray Cloudmonster 3 Hyper Black | Apollo", image: onCtfImage, offers: { url: onHyperUrl, price: 280, priceCurrency: "EUR" } }]
+          })
+        }],
+        querySelector: () => null
       };
     }
   };
 
   const enriched = await sandbox.enrichProduct({
-    fromContext: true,
-    title: "Cloudrunner 2",
+    title: "LightSpray Cloudmonster 3 Hyper",
     brand: "On",
-    url: onProductUrl,
-    priceText: "125 €",
-    priceAmount: 125,
+    url: onHyperUrl,
+    priceText: "280 €",
+    priceAmount: 280,
     currency: "EUR",
-    imageUrl: lowResOnImage
+    imageUrl: onUploadImage
   });
-  assert.equal(enriched.imageUrl, pdpImage, "Context cards should enrich image from the PDP");
-  assert.equal(enriched.priceAmount, 125, "PDP image enrichment should preserve card price");
-  assert.equal(enriched.title, "Cloudrunner 2", "PDP image enrichment should preserve card title");
+  assert.equal(enriched.imageUrl, onCtfImage, "On upload thumbnails should upgrade from PDP JSON-LD");
+  assert.equal(enriched.priceAmount, 280, "On image enrichment should preserve card price");
+  assert.equal(enriched.title, "Lightspray Cloudmonster 3 Hyper", "On image enrichment should preserve card title");
 }
 
 function fakePriceElement(text, options = {}) {

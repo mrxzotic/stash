@@ -86,7 +86,13 @@ function findJsonLdProductInDocument(doc, productUrl) {
 }
 
 function productMatchesUrl(product, productUrl) {
-  return product?.url && sameProductPageUrl(toAbsoluteUrlFor(product.url, productUrl), productUrl);
+  const offers = Array.isArray(product?.offers)
+    ? product.offers
+    : [product?.offers].filter(Boolean);
+  return Boolean(
+    (product?.url && sameProductPageUrl(toAbsoluteUrlFor(product.url, productUrl), productUrl)) ||
+      offers.some((offer) => offerMatchesUrl(offer, productUrl))
+  );
 }
 
 function selectJsonLdProduct(products, targetUrl) {
