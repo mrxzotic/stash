@@ -9,6 +9,7 @@
 
 # Local tooling artifacts
 .playwright-cli/
+extension/assets/
 node_modules/
 npm-debug.log*
 
