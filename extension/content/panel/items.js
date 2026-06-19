@@ -17,7 +17,7 @@ function normalizePanelItem(item) {
     brand: cleanBrand,
     category: item.category || panelState.categories[0]?.id || "tops",
     sourceDomain,
-    faviconUrl: item.faviconUrl || faviconUrlFromUrl(url),
+    faviconUrl: faviconUrlForSource(url, item.faviconUrl),
     price
   };
 }

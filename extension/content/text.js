@@ -90,6 +90,22 @@ function faviconUrlFromUrl(value) {
   return faviconUrlFromDocument(target);
 }
 
+function faviconUrlForSource(value, storedFaviconUrl = "") {
+  let target;
+  try {
+    target = new URL(value || location.href, location.href);
+  } catch {
+    return cleanText(storedFaviconUrl);
+  }
+
+  const stored = cleanText(storedFaviconUrl);
+  if (stored && !shouldReplaceStoredFavicon(target, stored)) {
+    return stored;
+  }
+
+  return faviconUrlFromDocument(target);
+}
+
 function faviconUrlFromDocument(target) {
   const links = sameSiteHost(location.hostname, target.hostname)
     ? Array.from(document.querySelectorAll("link[rel][href]")).filter(isFaviconLink)
@@ -143,6 +159,20 @@ function fallbackFaviconUrl(target) {
   }
 
   return `${target.origin}/favicon.ico`;
+}
+
+function shouldReplaceStoredFavicon(target, storedFaviconUrl) {
+  let stored;
+  try {
+    stored = new URL(storedFaviconUrl, target.href);
+  } catch {
+    return false;
+  }
+
+  return (
+    sameSiteHost(target.hostname, "www.aimeleondore.com") &&
+    /\/favicon\.ico$/i.test(stored.pathname)
+  );
 }
 
 function sameSiteHost(left, right) {

@@ -122,7 +122,7 @@ async function normalizeItem(product, category, categories) {
     id: productId(url),
     source: product.source || sourceNameFromUrl(url),
     sourceDomain,
-    faviconUrl: product.faviconUrl || faviconUrlFromUrl(url),
+    faviconUrl: faviconUrlForSource(url, product.faviconUrl),
     url,
     title,
     brand: cleanBrandName(product.brand) || sourceNameFromUrl(url),
