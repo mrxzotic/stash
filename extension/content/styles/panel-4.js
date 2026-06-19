@@ -162,7 +162,11 @@ function panelStylesChunk4() {
       background: var(--card);
       font-size: var(--text-body);
       font-weight: 720;
-      transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+      transition:
+        background 140ms ease,
+        color 140ms ease,
+        border-color 140ms ease,
+        padding 180ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-filter-shell {
@@ -172,6 +176,11 @@ function panelStylesChunk4() {
     }
 
     .wp-filter-shell:not(.is-all) .wp-filter {
+      padding-right: 16px;
+    }
+
+    .wp-filter-shell:not(.is-all):hover .wp-filter,
+    .wp-filter-shell:not(.is-all):focus-within .wp-filter {
       padding-right: 32px;
     }
 
@@ -185,8 +194,8 @@ function panelStylesChunk4() {
       position: absolute;
       top: 50%;
       right: 9px;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       display: grid;
       place-items: center;
       border: 0;
@@ -195,17 +204,18 @@ function panelStylesChunk4() {
       color: currentColor;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(-50%);
+      transform: translate(4px, -50%) scale(0.86);
       transition:
-        opacity 120ms ease,
-        background 120ms ease,
-        color 120ms ease;
+        opacity 160ms ease,
+        color 120ms ease,
+        transform 180ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-filter-shell:hover .wp-filter-remove,
     .wp-filter-shell:focus-within .wp-filter-remove {
       opacity: 0.74;
       pointer-events: auto;
+      transform: translate(0, -50%) scale(1);
     }
 
     .wp-filter-shell.is-active .wp-filter-remove {
@@ -225,24 +235,28 @@ function panelStylesChunk4() {
     }
 
     .wp-filter-remove-icon {
-      width: 13px;
-      height: 13px;
+      width: 12px;
+      height: 12px;
       stroke: currentColor;
-      stroke-width: 2.2;
+      stroke-width: 2.35;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
     .wp-filter-add {
-      width: 32px;
+      width: 28px;
+      height: 28px;
+      align-self: center;
       padding: 0;
+      display: grid;
+      place-items: center;
     }
 
     .wp-filter-add-icon {
-      width: 18px;
-      height: 18px;
+      width: 15px;
+      height: 15px;
       stroke: currentColor;
-      stroke-width: 2.6;
+      stroke-width: 2.7;
       stroke-linecap: round;
       stroke-linejoin: round;
     }

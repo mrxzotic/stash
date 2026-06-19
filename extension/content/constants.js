@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-on-card-pdp-image-menu-v1";
+var CONTENT_VERSION = "2026-06-19-on-card-pdp-image-menu-pills-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
