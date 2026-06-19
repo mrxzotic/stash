@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-product-card-extract-currency-roll-v1";
+var CONTENT_VERSION = "2026-06-19-currency-roll-retarget-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
