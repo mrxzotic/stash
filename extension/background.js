@@ -14,6 +14,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/extractors/dom.js",
   "content/extractors/embedded.js",
   "content/extractors/enrich.js",
+  "content/extractors/anchors.js",
   "content/extractors/context.js",
   "content/storage.js",
   "content/overlays.js",

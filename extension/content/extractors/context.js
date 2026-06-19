@@ -68,10 +68,13 @@ function extractFromContext(context) {
     return {};
   }
 
-  const initialLink = findClosestProductLink(target) || findParentLink(target);
-  const scope = expandProductScopeToDetails(findProductScope(target, initialLink), target);
-  const link = findProductLink(target, scope, context, initialLink);
-  const image = findProductImage(target, scope);
+  const contextLink = findContextLinkByUrl(context.linkUrl);
+  const contextImage = findContextImageByUrl(context.srcUrl);
+  const anchor = contextLink || contextImage || target;
+  const initialLink = contextLink || findClosestProductLink(anchor) || findParentLink(anchor);
+  const scope = expandProductScopeToDetails(findProductScope(anchor, initialLink), anchor);
+  const link = findProductLink(anchor, scope, context, initialLink);
+  const image = contextImage || findProductImage(anchor, scope);
   const linkUrl = context.linkUrl || link?.href || "";
   const textLines = getTextLines(scope);
   const imageAlt = cleanText(image?.alt);
@@ -237,7 +240,9 @@ function findClosestProductLink(target) {
 
 function findProductLink(target, scope, context, initialLink) {
   if (context.linkUrl) {
-    return { href: context.linkUrl, textContent: "" };
+    return findContextLinkByUrl(context.linkUrl, scope) ||
+      findContextLinkByUrl(context.linkUrl) ||
+      { href: context.linkUrl, textContent: "" };
   }
 
   if (initialLink?.href && isProductLikeUrl(initialLink.href)) {

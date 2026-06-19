@@ -107,8 +107,8 @@ function syncPanelSettingsControls() {
 
 function setPanelTotalText(total, value, options = {}) {
   const shouldAnimate = Boolean(options.animate);
-  if (total.__stashTotalAnimationFrame && (!shouldAnimate || options.skipWhileAnimating)) {
-    total.__stashPendingTotalValue = value;
+  if (total.__stashTotalAnimation) {
+    retargetPanelTotalAnimation(total, value);
     return;
   }
 
@@ -139,38 +139,62 @@ function rollPanelTotalText(total, value, pill) {
   total.classList.add("is-counting");
   pill?.classList.add("is-recounting");
 
-  const startValue = fromValue;
-  const startedAt = performance.now();
-  const duration = 1500;
+  total.__stashTotalAnimation = {
+    duration: 1500,
+    finalText: value,
+    frame: 0,
+    pill,
+    startValue: fromValue,
+    startedAt: performance.now(),
+    targetValue: toValue
+  };
 
   const tick = (timestamp) => {
-    const progress = Math.min(1, (timestamp - startedAt) / duration);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const currentValue = startValue + (toValue - startValue) * eased;
-    total.textContent = formatSummaryCurrency(currentValue, panelState.summaryCurrency);
-
-    if (progress < 1) {
-      total.__stashTotalAnimationFrame = window.requestAnimationFrame(tick);
+    const state = total.__stashTotalAnimation;
+    if (!state) {
       return;
     }
 
-    const finalValue = total.__stashPendingTotalValue || value;
-    total.textContent = finalValue;
-    total.__stashPendingTotalValue = "";
-    total.__stashTotalAnimationFrame = 0;
+    const progress = Math.min(1, (timestamp - state.startedAt) / state.duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const currentValue = state.startValue + (state.targetValue - state.startValue) * eased;
+    total.textContent = formatSummaryCurrency(currentValue, panelState.summaryCurrency);
+
+    if (progress < 1) {
+      state.frame = window.requestAnimationFrame(tick);
+      return;
+    }
+
+    total.textContent = state.finalText;
+    total.__stashTotalAnimation = null;
     total.classList.remove("is-counting");
-    pill?.classList.remove("is-recounting");
+    state.pill?.classList.remove("is-recounting");
   };
 
-  total.__stashTotalAnimationFrame = window.requestAnimationFrame(tick);
+  total.__stashTotalAnimation.frame = window.requestAnimationFrame(tick);
+}
+
+function retargetPanelTotalAnimation(total, value) {
+  const state = total.__stashTotalAnimation;
+  const nextValue = summaryIntegerFromText(value);
+  if (!state || !Number.isFinite(nextValue)) {
+    return;
+  }
+
+  const now = performance.now();
+  const elapsed = now - state.startedAt;
+  state.duration = Math.max(450, state.duration - elapsed);
+  state.finalText = value;
+  state.startValue = summaryIntegerFromText(total.textContent);
+  state.startedAt = now;
+  state.targetValue = nextValue;
 }
 
 function cancelPanelTotalAnimation(total) {
-  if (total.__stashTotalAnimationFrame) {
-    window.cancelAnimationFrame(total.__stashTotalAnimationFrame);
-    total.__stashTotalAnimationFrame = 0;
+  if (total.__stashTotalAnimation?.frame) {
+    window.cancelAnimationFrame(total.__stashTotalAnimation.frame);
   }
-  total.__stashPendingTotalValue = "";
+  total.__stashTotalAnimation = null;
 }
 
 function summaryIntegerFromText(value) {
