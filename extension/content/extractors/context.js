@@ -303,8 +303,11 @@ function imageScore(image) {
 function isProductLikeUrl(value) {
   try {
     const url = new URL(value, location.href);
+    const isFarfetchProduct =
+      /^(?:.+\.)?farfetch\.com$/i.test(url.hostname) && /-item-\d+\.aspx$/i.test(url.pathname);
     return (
       /\/(product|products|item|items|p)\//i.test(url.pathname) ||
+      isFarfetchProduct ||
       looksLikeSkuProductPath(url)
     );
   } catch {
