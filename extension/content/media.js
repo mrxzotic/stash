@@ -15,15 +15,21 @@ function bestImageFromElement(image) {
 function bestProductImageUrl(context, image, scope) {
   const candidates = [];
 
-  if (context.srcUrl) {
-    candidates.push({ url: context.srcUrl, score: 50000 });
+  if (context.srcUrl && !image) {
+    candidates.push({ url: context.srcUrl, score: 12000 });
   }
 
-  candidates.push(...imageCandidatesFromElement(image, 7000));
+  candidates.push(...imageCandidatesFromElement(image, 7000 + imageRoleScore(image)));
 
-  Array.from(scope?.querySelectorAll?.("img") || []).forEach((scopeImage) => {
+  Array.from(scope?.querySelectorAll?.("img") || []).forEach((scopeImage, index) => {
+    const firstProductImageBonus = Math.max(0, 5200 - index * 800);
     candidates.push(
-      ...imageCandidatesFromElement(scopeImage, Math.max(0, imageScore(scopeImage) / 100))
+      ...imageCandidatesFromElement(
+        scopeImage,
+        Math.max(0, imageScore(scopeImage) / 100) +
+          firstProductImageBonus +
+          imageRoleScore(scopeImage)
+      )
     );
   });
 
@@ -32,6 +38,43 @@ function bestProductImageUrl(context, image, scope) {
       .filter((candidate) => isUsableProductImageUrl(candidate.url))
       .sort((a, b) => b.score - a.score)[0]?.url || ""
   );
+}
+
+function imageRoleScore(image) {
+  const signal = imageSignal(image);
+  let score = 0;
+
+  if (/\b(packshot|flat|flatlay|product|still|cutout|pdp|primary|main|front)\b/i.test(signal)) {
+    score += 4200;
+  }
+
+  if (/\b(model|lifestyle|lookbook|campaign|editorial|worn|wearing|onbody|on-body|hover|alternate|portrait|fullbody)\b/i.test(signal)) {
+    score -= 7200;
+  }
+
+  return score;
+}
+
+function imageSignal(image) {
+  if (!image) {
+    return "";
+  }
+
+  return [
+    image.currentSrc,
+    image.src,
+    image.alt,
+    image.title,
+    image.getAttribute("aria-label"),
+    image.getAttribute("data-alt"),
+    image.getAttribute("data-image-type"),
+    image.getAttribute("data-testid"),
+    image.className,
+    image.closest?.("picture")?.className,
+    image.parentElement?.className
+  ]
+    .map(cleanText)
+    .join(" ");
 }
 
 function imageCandidatesFromElement(image, baseScore = 0) {
