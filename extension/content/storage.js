@@ -32,7 +32,7 @@ async function getLocalStorageValue(keys) {
 function normalizeExtensionError(error) {
   if (/extension context invalidated/i.test(String(error?.message || error))) {
     removeStaleExtensionRoots();
-    return new Error("Wishlisted was reloaded. Refresh this page and try again.");
+    return new Error("Stash was reloaded. Refresh this page and try again.");
   }
   return error;
 }

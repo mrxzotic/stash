@@ -1,10 +1,10 @@
-function initializeWishlistedContent() {
-  if (window.__wishlistedContentVersion === CONTENT_VERSION) {
+function initializeStashContent() {
+  if (window.__stashContentVersion === CONTENT_VERSION) {
     return;
   }
 
-  window.__wishlistedContentVersion = CONTENT_VERSION;
-  window.__wishlistedContentLoaded = true;
+  window.__stashContentVersion = CONTENT_VERSION;
+  window.__stashContentLoaded = true;
 
   removeStaleExtensionRoots();
   
@@ -18,19 +18,19 @@ function initializeWishlistedContent() {
   );
   
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message?.type === "WISHLISTED_PING") {
+    if (message?.type === "STASH_PING") {
       sendResponse({ ok: true });
       return false;
     }
   
-    if (message?.type === "WISHLISTED_TOGGLE_PANEL") {
-      toggleWishlistPanel()
+    if (message?.type === "STASH_TOGGLE_PANEL") {
+      toggleStashPanel()
         .then((result) => sendResponse(result))
         .catch((error) => sendResponse({ ok: false, error: error.message }));
       return true;
     }
   
-    if (message?.type !== "WISHLISTED_SAVE") {
+    if (message?.type !== "STASH_SAVE") {
       return false;
     }
   
@@ -85,8 +85,8 @@ function initializeWishlistedContent() {
       return;
     }
   
-    renderWishlistPanel();
+    renderStashPanel();
   });
 }
 
-initializeWishlistedContent();
+initializeStashContent();

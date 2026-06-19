@@ -19,25 +19,25 @@ async function saveCurrentProduct(message) {
   return { ok: true, item };
 }
 
-async function toggleWishlistPanel() {
+async function toggleStashPanel() {
   if (panelState.open) {
-    closeWishlistPanel();
+    closeStashPanel();
     return { ok: true, open: false };
   }
 
-  await openWishlistPanel();
+  await openStashPanel();
   return { ok: true, open: true };
 }
 
-async function openWishlistPanel() {
+async function openStashPanel() {
   await loadPanelData();
   panelState.open = true;
   panelState.hasRenderedPanel = false;
-  renderWishlistPanel();
+  renderStashPanel();
 }
 
-function closeWishlistPanel() {
-  const host = document.getElementById("wishlisted-panel-root");
+function closeStashPanel() {
+  const host = document.getElementById("stash-panel-root");
   if (host) {
     host.remove();
   }
@@ -63,28 +63,28 @@ function showSavedItemInPanel(item, items, categories) {
     panelState.searchOpen = false;
   }
 
-  renderWishlistPanel();
+  renderStashPanel();
   window.clearTimeout(panelState.highlightTimer);
   panelState.highlightTimer = window.setTimeout(() => {
     if (!panelState.open || panelState.highlightedItemId !== item.id) {
       return;
     }
     panelState.highlightedItemId = "";
-    renderWishlistPanel();
+    renderStashPanel();
   }, 1400);
 }
 
 function clearSavedOverlay() {
-  const host = document.getElementById("wishlisted-extension-root");
+  const host = document.getElementById("stash-extension-root");
   if (host?.shadowRoot) {
-    window.clearTimeout(host.shadowRoot.__wishlistedTimer);
+    window.clearTimeout(host.shadowRoot.__stashTimer);
     host.shadowRoot.innerHTML = "";
   }
 }
 
 function removeStaleExtensionRoots() {
-  document.getElementById("wishlisted-panel-root")?.remove();
-  document.getElementById("wishlisted-extension-root")?.remove();
+  document.getElementById("stash-panel-root")?.remove();
+  document.getElementById("stash-extension-root")?.remove();
 }
 
 async function loadPanelData() {

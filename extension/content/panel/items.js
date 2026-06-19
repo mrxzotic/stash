@@ -63,7 +63,7 @@ function convertToRubSync(amount, currency) {
 }
 
 function renderPanelSummaryOnly() {
-  const root = document.getElementById("wishlisted-panel-root")?.shadowRoot;
+  const root = document.getElementById("stash-panel-root")?.shadowRoot;
   const total = root?.querySelector(".wp-total");
   const count = root?.querySelector(".wp-count");
   if (!total || !count) {
@@ -76,7 +76,7 @@ function renderPanelSummaryOnly() {
 }
 
 function syncPanelSettingsControls() {
-  const root = document.getElementById("wishlisted-panel-root")?.shadowRoot;
+  const root = document.getElementById("stash-panel-root")?.shadowRoot;
   if (!root) {
     return;
   }

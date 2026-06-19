@@ -97,7 +97,7 @@ function priceTextsFromElement(element) {
 function isUsablePriceElement(element) {
   if (
     !element ||
-    element.closest?.("#wishlisted-panel-root, #wishlisted-extension-root") ||
+    element.closest?.("#stash-panel-root, #stash-extension-root") ||
     element.closest?.("[aria-hidden='true']")
   ) {
     return false;

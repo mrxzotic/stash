@@ -13,14 +13,14 @@ function bindPanelEvents(root) {
     if (panelState.searchOpen) {
       panelState.settingsOpen = false;
     }
-    renderWishlistPanel();
+    renderStashPanel();
   });
   root.querySelector("[data-panel-settings]")?.addEventListener("click", () => {
     panelState.settingsOpen = !panelState.settingsOpen;
     if (panelState.settingsOpen) {
       panelState.searchOpen = false;
     }
-    renderWishlistPanel();
+    renderStashPanel();
   });
   root.querySelector("[data-search]")?.addEventListener("input", (event) => {
     panelState.searchQuery = event.target.value;
@@ -69,7 +69,7 @@ function bindPanelEvents(root) {
     }
     panelState.searchOpen = false;
     panelState.activeCategory = button.dataset.category;
-    renderWishlistPanel();
+    renderStashPanel();
   });
   root.querySelector(".wp-items")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-remove-id]");
@@ -126,16 +126,16 @@ function bindPanelEvents(root) {
   root.querySelector("[data-reset-categories]")?.addEventListener("click", () => {
     safelyRunPanelAction(() => savePanelCategories(DEFAULT_CATEGORIES));
   });
-  if (!root.__wishlistedPanelKeydownBound) {
+  if (!root.__stashPanelKeydownBound) {
     root.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        closeWishlistPanel();
+        closeStashPanel();
       }
     });
-    root.__wishlistedPanelKeydownBound = true;
+    root.__stashPanelKeydownBound = true;
   }
 
-  if (!root.__wishlistedPanelClickawayBound) {
+  if (!root.__stashPanelClickawayBound) {
     root.addEventListener("click", (event) => {
       const target = event.target;
       if (target.closest?.(".wp-inline-search") || target.closest?.("[data-panel-search]")) {
@@ -144,7 +144,7 @@ function bindPanelEvents(root) {
 
       if (panelState.searchOpen) {
         panelState.searchOpen = false;
-        renderWishlistPanel();
+        renderStashPanel();
         return;
       }
 
@@ -154,10 +154,10 @@ function bindPanelEvents(root) {
 
       if (panelState.settingsOpen) {
         panelState.settingsOpen = false;
-        renderWishlistPanel();
+        renderStashPanel();
       }
     });
-    root.__wishlistedPanelClickawayBound = true;
+    root.__stashPanelClickawayBound = true;
   }
 }
 
@@ -201,7 +201,7 @@ function focusPanelSearch(root) {
 async function removePanelItem(id) {
   panelState.items = panelState.items.filter((item) => normalizePanelItem(item).id !== id);
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderWishlistPanel();
+  renderStashPanel();
 }
 
 function safelyRunPanelAction(action) {
@@ -225,7 +225,7 @@ async function savePanelCategories(nextCategories) {
     panelState.activeCategory = "all";
   }
   await setLocalStorageValue(CATEGORY_STORAGE_KEY, panelState.categories);
-  renderWishlistPanel();
+  renderStashPanel();
 }
 
 async function savePanelSettings(nextSettings, options = {}) {
@@ -245,5 +245,5 @@ async function savePanelSettings(nextSettings, options = {}) {
     return;
   }
 
-  renderWishlistPanel();
+  renderStashPanel();
 }

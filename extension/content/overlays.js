@@ -10,22 +10,22 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
         <h2>${escapeHtml(item.title)}</h2>
         ${renderSitePriceHtml(item, "wl")}
       </article>
-      <button class="wl-open-button" type="button" data-open-wishlist>
+      <button class="wl-open-button" type="button" data-open-stash>
         ${lucideLinkIcon("wl-button-icon")}
-        <span>Open wishlist</span>
+        <span>Open Stash</span>
       </button>
     </section>
   `;
 
-  root.querySelector("[data-open-wishlist]")?.addEventListener("click", () => {
-    window.clearTimeout(root.__wishlistedTimer);
+  root.querySelector("[data-open-stash]")?.addEventListener("click", () => {
+    window.clearTimeout(root.__stashTimer);
     root.innerHTML = "";
-    safelyRunPanelAction(() => openWishlistPanel());
+    safelyRunPanelAction(() => openStashPanel());
   });
   bindImageFallbacks(root);
 
-  window.clearTimeout(root.__wishlistedTimer);
-  root.__wishlistedTimer = window.setTimeout(() => {
+  window.clearTimeout(root.__stashTimer);
+  root.__stashTimer = window.setTimeout(() => {
     root.innerHTML = "";
   }, 8000);
 }
@@ -39,17 +39,17 @@ function showErrorOverlay(error) {
       <span>${escapeHtml(error.message || "Try a product page or product card.")}</span>
     </div>
   `;
-  window.clearTimeout(root.__wishlistedTimer);
-  root.__wishlistedTimer = window.setTimeout(() => {
+  window.clearTimeout(root.__stashTimer);
+  root.__stashTimer = window.setTimeout(() => {
     root.innerHTML = "";
   }, 2600);
 }
 
 function getOverlayRoot() {
-  let host = document.getElementById("wishlisted-extension-root");
+  let host = document.getElementById("stash-extension-root");
   if (!host) {
     host = document.createElement("div");
-    host.id = "wishlisted-extension-root";
+    host.id = "stash-extension-root";
     host.style.position = "fixed";
     host.style.inset = "0";
     host.style.zIndex = "2147483647";
@@ -65,10 +65,10 @@ function getOverlayRoot() {
 }
 
 function getPanelRoot() {
-  let host = document.getElementById("wishlisted-panel-root");
+  let host = document.getElementById("stash-panel-root");
   if (!host) {
     host = document.createElement("div");
-    host.id = "wishlisted-panel-root";
+    host.id = "stash-panel-root";
     host.style.position = "fixed";
     host.style.inset = "0";
     host.style.zIndex = "2147483646";

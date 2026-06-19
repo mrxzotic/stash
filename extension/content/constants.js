@@ -1,12 +1,12 @@
-var CONTENT_VERSION = "2026-06-19-module-split-v1";
+var CONTENT_VERSION = "2026-06-19-stash-brand-v1";
 
 
-var STORAGE_KEY = "wishlisted.items.v1";
-var RATE_STORAGE_KEY = "wishlisted.rubRates.v1";
-var CATEGORY_STORAGE_KEY = "wishlisted.categories.v1";
-var CATEGORY_SCHEMA_STORAGE_KEY = "wishlisted.categories.schema.v1";
+var STORAGE_KEY = "stash.items.v1";
+var RATE_STORAGE_KEY = "stash.rubRates.v1";
+var CATEGORY_STORAGE_KEY = "stash.categories.v1";
+var CATEGORY_SCHEMA_STORAGE_KEY = "stash.categories.schema.v1";
 var CATEGORY_SCHEMA_VERSION = 2;
-var SETTINGS_STORAGE_KEY = "wishlisted.settings.v1";
+var SETTINGS_STORAGE_KEY = "stash.settings.v1";
 var DEFAULT_SETTINGS = {
   summaryCurrency: "USD",
   backgroundTheme: "warm"

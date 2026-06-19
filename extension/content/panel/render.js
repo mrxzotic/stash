@@ -1,4 +1,4 @@
-function renderWishlistPanel() {
+function renderStashPanel() {
   const root = getPanelRoot();
   const displayItems = panelState.items.map(normalizePanelItem);
   const visibleItems = displayItems
@@ -17,7 +17,7 @@ function renderWishlistPanel() {
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
-    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Wishlisted">
+    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stash">
       <header class="wp-topbar${panelState.searchOpen ? " is-searching" : ""}">
         ${panelState.searchOpen ? `
           <label class="wp-inline-search">
@@ -30,7 +30,7 @@ function renderWishlistPanel() {
             <span class="wp-count">${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}</span>
           </span>
           <div class="wp-actions">
-            <span class="wp-total" aria-label="Wishlist total">${escapeHtml(formatPanelSummaryTotal(displayItems, panelState.summaryCurrency))}</span>
+            <span class="wp-total" aria-label="Stash total">${escapeHtml(formatPanelSummaryTotal(displayItems, panelState.summaryCurrency))}</span>
             <button class="wp-icon-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
               ${lucideSearchIcon()}
             </button>
@@ -89,7 +89,7 @@ function renderWishlistPanel() {
         </section>
       </section>
 
-      <nav class="wp-filters" aria-label="Wishlist categories">
+      <nav class="wp-filters" aria-label="Stash categories">
         ${filterCategories.map(
           (category) => `
             <button class="wp-filter${category.id === panelState.activeCategory ? " is-active" : ""}" data-category="${escapeAttribute(category.id)}" type="button">
@@ -197,7 +197,7 @@ function renderPanelItemsHtml(items) {
 function bindImageFallbacks(root) {
   root.querySelectorAll(".wp-media img, .wl-image img").forEach((image) => {
     syncProductImageRatio(image);
-    if (image.__wishlistedImageFallbackBound) {
+    if (image.__stashImageFallbackBound) {
       return;
     }
     image.addEventListener("load", () => syncProductImageRatio(image));
@@ -207,7 +207,7 @@ function bindImageFallbacks(root) {
         : "wp-image-placeholder";
       image.replaceWith(svgElementFromHtml(lucideImageIcon(placeholderClass)));
     });
-    image.__wishlistedImageFallbackBound = true;
+    image.__stashImageFallbackBound = true;
   });
 }
 

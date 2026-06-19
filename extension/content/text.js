@@ -1,5 +1,5 @@
 function isNoiseLine(value) {
-  return /^(new|new in|new season|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|wishlist|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|copy|copied|shipping|returns|free shipping)$/i.test(
+  return /^(new|new in|new season|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|copy|copied|shipping|returns|free shipping)$/i.test(
     cleanText(value)
   ) || /^(favorite|share|copy link|copied link|telegram|vk|vkontakte|whatsapp|pinterest|поделиться|скопировать|скопировать ссылку|ссылка скопирована|вконтакте|избранное)$/i.test(
     cleanText(value)

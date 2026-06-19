@@ -1,4 +1,4 @@
-const MENU_ROOT_ID = "wishlisted-save-root";
+const MENU_ROOT_ID = "stash-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const CONTENT_SCRIPT_FILES = [
@@ -55,7 +55,7 @@ async function rebuildContextMenus() {
   await contextMenusRemoveAll();
   await contextMenusCreate({
     id: MENU_ROOT_ID,
-    title: "Save to Wishlisted",
+    title: "Save to Stash",
     contexts: CONTEXTS,
     documentUrlPatterns: PAGE_PATTERNS
   });
@@ -102,10 +102,10 @@ async function handleActionClick(tab) {
 
   try {
     await chrome.tabs.sendMessage(tab.id, {
-      type: "WISHLISTED_TOGGLE_PANEL"
+      type: "STASH_TOGGLE_PANEL"
     });
   } catch (error) {
-    console.warn("Wishlisted could not open on this page", error);
+    console.warn("Stash could not open on this page", error);
   }
 }
 
@@ -120,7 +120,7 @@ async function handleSaveClick(info, tab) {
 
   try {
     await chrome.tabs.sendMessage(tab.id, {
-      type: "WISHLISTED_SAVE",
+      type: "STASH_SAVE",
       category: "auto",
       context: {
         pageUrl: info.pageUrl,
@@ -130,7 +130,7 @@ async function handleSaveClick(info, tab) {
       }
     });
   } catch (error) {
-    console.warn("Wishlisted could not save this page", error);
+    console.warn("Stash could not save this page", error);
   }
 }
 
@@ -140,7 +140,7 @@ function isSupportedUrl(url) {
 
 async function ensureContentScript(tabId) {
   try {
-    await chrome.tabs.sendMessage(tabId, { type: "WISHLISTED_PING" });
+    await chrome.tabs.sendMessage(tabId, { type: "STASH_PING" });
     return true;
   } catch {
     try {
@@ -150,7 +150,7 @@ async function ensureContentScript(tabId) {
       });
       return true;
     } catch (error) {
-      console.warn("Wishlisted could not inject content script", error);
+      console.warn("Stash could not inject content script", error);
       return false;
     }
   }
@@ -165,18 +165,18 @@ async function cleanupOpenTabs() {
         .map((tab) =>
           chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            func: cleanupWishlistedDom
+            func: cleanupStashDom
           })
         )
     );
   } catch (error) {
-    console.warn("Wishlisted could not clean open tabs", error);
+    console.warn("Stash could not clean open tabs", error);
   }
 }
 
-function cleanupWishlistedDom() {
-  document.getElementById("wishlisted-panel-root")?.remove();
-  document.getElementById("wishlisted-extension-root")?.remove();
-  delete window.__wishlistedContentVersion;
-  delete window.__wishlistedContentLoaded;
+function cleanupStashDom() {
+  document.getElementById("stash-panel-root")?.remove();
+  document.getElementById("stash-extension-root")?.remove();
+  delete window.__stashContentVersion;
+  delete window.__stashContentLoaded;
 }

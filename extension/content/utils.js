@@ -235,7 +235,7 @@ function productId(url) {
     hash = (hash << 5) - hash + url.charCodeAt(index);
     hash |= 0;
   }
-  return `wishlisted-${Math.abs(hash)}`;
+  return `stash-${Math.abs(hash)}`;
 }
 
 function clamp(value, min, max) {

@@ -1,6 +1,6 @@
-# Wishlisted Design Rules
+# Stash Design Rules
 
-Primary surface: a compact in-page wishlist widget for saving products from any shop.
+Primary surface: a compact in-page stash widget for saving products from any shop.
 
 - Base radius is `8px` for panels, cards, buttons, inputs, images, popovers, toasts, and framed controls.
 - Category filters are true rounded pills.
