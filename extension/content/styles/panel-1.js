@@ -56,17 +56,14 @@ function panelStylesChunk1() {
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.7),
         0 28px 80px var(--shell-shadow);
-      -webkit-backdrop-filter: blur(30px) saturate(1.22);
       backdrop-filter: blur(30px) saturate(1.22);
       color: var(--foreground);
       pointer-events: auto;
       overflow: hidden;
       isolation: isolate;
       contain: layout style;
-      -webkit-transform: translate3d(0, 0, 0);
-      transform: translate3d(0, 0, 0);
+      transform: translateZ(0);
       backface-visibility: hidden;
-      will-change: transform;
       scrollbar-width: none;
       animation: wpPanelIn 260ms cubic-bezier(.16, 1, .3, 1) both;
     }
@@ -118,10 +115,9 @@ function panelStylesChunk1() {
       background-blend-mode: soft-light, normal, normal, normal;
       -webkit-backdrop-filter: blur(16px) saturate(1.08);
       backdrop-filter: blur(16px) saturate(1.08);
-      -webkit-transform: translate3d(0, 0, 0);
-      transform: translate3d(0, 0, 0);
+      transform: translateZ(0);
       backface-visibility: hidden;
-      will-change: transform;
+      will-change: opacity;
       contain: paint;
     }
 
