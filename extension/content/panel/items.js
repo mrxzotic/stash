@@ -138,7 +138,7 @@ function rollPanelTotalText(total, value, pill) {
     ? Math.max(0, toValue - Math.max(7, Math.ceil(toValue * 0.06)))
     : fromValue;
   const startedAt = performance.now();
-  const duration = 820;
+  const duration = 1400;
 
   const tick = (timestamp) => {
     const progress = Math.min(1, (timestamp - startedAt) / duration);
