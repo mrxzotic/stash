@@ -13,5 +13,6 @@ Work like a pragmatic product engineer.
 - Source modules target `400` lines max. New modules must stay under that. Existing oversized files are legacy debt; do not grow them for broad features. If a change would add meaningful size to an oversized file, extract a focused module first or record a refactor task.
 - Render/component functions target `80` lines max; parser/extraction helpers target `120` lines max. Split by responsibility before adding another branch to a large function.
 - Chrome Web Store readiness is a hard constraint: no remote executable code, no `eval`, no unnecessary permissions, no hidden collection of personal data, no background scraping beyond user-triggered save/open flows, and every new network request must be documented and non-executable.
+- Card data quality is a hard constraint: never ship visible titles containing SKU/catalog/article IDs, raw SEO/material descriptions, availability copy, social/share text, or other parser noise. If the parser cannot produce a short commercial model name plus brand and visible site price when a price exists on the page, fix the parser before polishing UI.
 - Do not add visible containers, pills, cards, badges, or backgrounds around simple text or icons unless explicitly requested.
 - Keep final updates short and factual.

@@ -1,5 +1,5 @@
 (() => {
-  const CONTENT_VERSION = "2026-06-19-product-page-variant-context-v1";
+  const CONTENT_VERSION = "2026-06-19-strict-card-model-v1";
 
   if (window.__wishlistedContentVersion === CONTENT_VERSION) {
     return;
@@ -106,7 +106,12 @@
     ["tom ford fashion", "Tom Ford"],
     ["tomford", "Tom Ford"],
     ["loewe", "Loewe"],
-    ["rimowa", "RIMOWA"]
+    ["rimowa", "RIMOWA"],
+    ["on", "On"],
+    ["suitsupply", "Suitsupply"],
+    ["about blank", "about:blank"],
+    ["about:blank", "about:blank"],
+    ["marcelo miracles", "Marcelo Miracles"]
   ]);
 
   let lastContextTarget = null;
@@ -827,7 +832,7 @@
       ...item,
       id: item.id || productId(url),
       url,
-      title: cleanTitle(title, cleanBrand) || "Saved Product",
+      title: cleanProductTitle(title, cleanBrand, url) || "Saved Product",
       brand: cleanBrand,
       category: item.category || panelState.categories[0]?.id || "tops",
       sourceDomain,
@@ -1215,9 +1220,10 @@
       sourceDomain: sourceDomainFromUrl(url),
       faviconUrl: faviconUrlFromUrl(url),
       url,
-      title: cleanTitle(
+      title: cleanProductTitle(
         firstValue(detailSources, "title") || contextualProduct.title || document.title,
-        firstValue(detailSources, "brand") || contextualProduct.brand
+        firstValue(detailSources, "brand") || contextualProduct.brand,
+        url
       ),
       brand: cleanBrandName(firstValue(detailSources, "brand") || contextualProduct.brand) || sourceNameFromUrl(url),
       priceText: price.originalText,
@@ -1280,6 +1286,110 @@
     });
   }
 
+  function findJsonLdProductInDocument(doc, productUrl) {
+    const products = [];
+
+    Array.from(doc.querySelectorAll('script[type="application/ld+json"]')).forEach((script) => {
+      const raw = script.textContent?.trim();
+      if (!raw) {
+        return;
+      }
+
+      try {
+        collectProducts(JSON.parse(raw), products);
+      } catch {
+        // Ignore malformed merchant JSON-LD.
+      }
+    });
+
+    const product = products.find((candidate) => productMatchesUrl(candidate, productUrl)) || products[0];
+    if (!product) {
+      return {};
+    }
+
+    const offers = Array.isArray(product.offers)
+      ? product.offers
+      : [product.offers].filter(Boolean);
+    const offer = offers.find((candidate) => offerMatchesUrl(candidate, productUrl)) || offers[0] || {};
+    const image = Array.isArray(product.image) ? product.image[0] : product.image;
+    const brand =
+      typeof product.brand === "string"
+        ? product.brand
+        : product.brand?.name || product.manufacturer?.name;
+
+    return compactObject({
+      title: cleanProductTitle(product.name, brand, productUrl),
+      brand: cleanBrandName(brand),
+      url: normalizeUrl(toAbsoluteUrlFor(product.url || productUrl, productUrl)),
+      priceText: formatOriginalPrice(offer.price, offer.priceCurrency),
+      priceAmount: numericPrice(offer.price),
+      currency: cleanText(offer.priceCurrency),
+      compareAtPriceText: formatOriginalPrice(offer.highPrice || offer.priceSpecification?.price, offer.priceCurrency),
+      compareAtPriceAmount: numericPrice(offer.highPrice || offer.priceSpecification?.price),
+      imageUrl: toAbsoluteUrlFor(image, productUrl),
+      rawCategory: cleanText(product.category)
+    });
+  }
+
+  function productMatchesUrl(product, productUrl) {
+    return product?.url && sameProductPageUrl(toAbsoluteUrlFor(product.url, productUrl), productUrl);
+  }
+
+  function extractMetaProductFromDocument(doc, productUrl) {
+    const meta = (property) =>
+      doc.querySelector(`meta[property="${property}"], meta[name="${property}"]`)?.content || "";
+    const title =
+      meta("og:title") ||
+      meta("twitter:title") ||
+      doc.querySelector("h1")?.textContent ||
+      doc.title;
+    const brand =
+      meta("product:brand") ||
+      meta("twitter:data1") ||
+      doc.querySelector('[data-component*="Brand" i]')?.textContent;
+    const priceText =
+      meta("product:price:amount") ||
+      meta("og:price:amount") ||
+      meta("twitter:data2");
+    const currency =
+      meta("product:price:currency") ||
+      meta("og:price:currency") ||
+      currencyFromText(priceText);
+    const price = normalizePrice({ text: priceText, currency });
+
+    return compactObject({
+      title: cleanProductTitle(stripPriceFromText(title), brand, productUrl),
+      brand: cleanBrandName(brand),
+      url: normalizeUrl(toAbsoluteUrlFor(meta("og:url") || productUrl, productUrl)),
+      imageUrl: toAbsoluteUrlFor(meta("og:image") || meta("twitter:image"), productUrl),
+      priceText: price.originalText,
+      priceAmount: price.amount,
+      currency: price.currency,
+      compareAtPriceText: price.compareAtText,
+      compareAtPriceAmount: price.compareAtAmount,
+      isSale: price.isSale
+    });
+  }
+
+  function extractPriceFromFetchedDocument(doc) {
+    const lines = cleanText(doc.body?.textContent || "")
+      .split(/(?<=[^\d])\s+(?=[^\d])|\n+/)
+      .map(cleanText)
+      .filter((line) => line.length <= 96)
+      .filter((line) => looksLikePrice(line) && !/shipping|delivery|returns|free/i.test(line))
+      .slice(0, 40);
+    const price = findBestPrice(lines);
+
+    return compactObject({
+      priceText: price.originalText,
+      priceAmount: price.amount,
+      currency: price.currency,
+      compareAtPriceText: price.compareAtText,
+      compareAtPriceAmount: price.compareAtAmount,
+      isSale: price.isSale
+    });
+  }
+
   function collectProducts(node, products) {
     if (!node) {
       return;
@@ -1310,13 +1420,17 @@
   }
 
   function offerMatchesCurrentUrl(offer) {
+    return offerMatchesUrl(offer, location.href);
+  }
+
+  function offerMatchesUrl(offer, targetUrl) {
     const offerUrl = offer?.url;
     if (!offerUrl) {
       return false;
     }
 
     try {
-      const current = new URL(location.href);
+      const current = new URL(targetUrl, location.href);
       const candidate = new URL(offerUrl, location.href);
       const currentVariant = current.searchParams.get("variant");
       const candidateVariant = candidate.searchParams.get("variant");
@@ -1327,7 +1441,7 @@
       return false;
     }
 
-    return sameProductPageUrl(offerUrl, location.href);
+    return sameProductPageUrl(offerUrl, targetUrl);
   }
 
   function extractFromMicrodata() {
@@ -1361,7 +1475,7 @@
     const price = normalizePrice({ text: priceText, currency });
 
     return compactObject({
-      title: cleanTitle(title, brand),
+      title: cleanProductTitle(title, brand, itemProp(product, "url") || location.href),
       brand: cleanBrandName(brand),
       url: normalizeUrl(
         itemProp(product, "url") ||
@@ -1426,7 +1540,7 @@
       metaContent("twitter:image");
 
     return compactObject({
-      title: cleanTitle(title, brand),
+      title: cleanProductTitle(title, brand, location.href),
       brand: cleanBrandName(brand),
       url: normalizeUrl(
         document.querySelector('link[rel="canonical"]')?.href ||
@@ -1595,7 +1709,7 @@
       productUrlFromHandle(object.handle || object.slug || object.path);
 
     return compactObject({
-      title: cleanTitle(title, brand),
+      title: cleanProductTitle(title, brand, url),
       brand: cleanBrandName(brand),
       url: url ? normalizeUrl(toAbsoluteUrl(url)) : "",
       priceText: price.originalText,
@@ -1646,6 +1760,13 @@
         object.displayPrice ??
         object.minPrice ??
         object.price_min ??
+        object.selectedVariant?.price ??
+        object.selectedOrFirstAvailableVariant?.price ??
+        object.variants?.[0]?.price ??
+        object.priceRange?.minVariantPrice ??
+        object.priceRange?.minimumVariantPrice ??
+        object.priceRange?.min ??
+        object.priceRange?.minimum_price?.final_price ??
         object.prices?.current ??
         object.prices?.price ??
         object.prices?.sale ??
@@ -1704,6 +1825,8 @@
       firstPriceObject(object.currentPrice) ||
       firstPriceObject(object.finalPrice) ||
       firstPriceObject(object.prices) ||
+      firstPriceObject(object.priceRange?.minVariantPrice) ||
+      firstPriceObject(object.priceRange?.minimumVariantPrice) ||
       firstPriceObject(object.offer) ||
       firstPriceObject(object.offers) ||
       {};
@@ -1737,12 +1860,16 @@
   }
 
   function productScore(product) {
+    const url = product.url ? normalizeUrl(product.url) : "";
+    const title = cleanText(product.title);
     return (
-      (product.title ? 4 : 0) +
+      (title ? 4 : 0) +
       (product.priceAmount ? 3 : 0) +
       (product.currency ? 2 : 0) +
       (product.imageUrl ? 2 : 0) +
-      (product.url ? 1 : 0)
+      (url ? 1 : 0) +
+      (url && sameProductPageUrl(url, location.href) ? 10 : 0) +
+      (looksLikeDescriptiveTitle(title) ? -6 : 0)
     );
   }
 
@@ -1791,6 +1918,13 @@
       return product;
     }
 
+    const pageProduct = await fetchProductPageProduct(product);
+    if (pageProduct.title || pageProduct.priceText || pageProduct.imageUrl) {
+      product = shouldPreferFetchedProduct(product, pageProduct)
+        ? mergeProducts([pageProduct, product])
+        : mergeProducts([product, pageProduct]);
+    }
+
     const shopifyProduct = await fetchShopifyProduct(product.url);
     if (!shopifyProduct.title && !shopifyProduct.priceText && !shopifyProduct.imageUrl) {
       return product;
@@ -1812,6 +1946,64 @@
         product.imageUrl &&
         (product.priceText || Number.isFinite(product.priceAmount))
     );
+  }
+
+  function shouldPreferFetchedProduct(product, pageProduct) {
+    return Boolean(
+      (!product?.priceText && !Number.isFinite(product?.priceAmount) && pageProduct?.priceText) ||
+        looksLikeDescriptiveTitle(product?.title) ||
+        !product?.title
+    );
+  }
+
+  async function fetchProductPageProduct(product) {
+    if (!needsFetchedProductPage(product)) {
+      return {};
+    }
+
+    let url;
+    try {
+      url = new URL(product.url, location.href);
+    } catch {
+      return {};
+    }
+
+    if (!/^https?:$/i.test(url.protocol) || url.origin !== location.origin) {
+      return {};
+    }
+
+    try {
+      const response = await fetch(url.toString(), {
+        credentials: "same-origin",
+        cache: "force-cache"
+      });
+      if (!response.ok) {
+        return {};
+      }
+
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      return extractFromFetchedProductPage(doc, url.toString());
+    } catch {
+      return {};
+    }
+  }
+
+  function needsFetchedProductPage(product) {
+    return Boolean(
+      product?.url &&
+        (!product.priceText ||
+          !Number.isFinite(product.priceAmount) ||
+          looksLikeDescriptiveTitle(product.title) ||
+          !product.title)
+    );
+  }
+
+  function extractFromFetchedProductPage(doc, productUrl) {
+    const jsonProduct = findJsonLdProductInDocument(doc, productUrl);
+    const metaProduct = extractMetaProductFromDocument(doc, productUrl);
+    const priceProduct = extractPriceFromFetchedDocument(doc);
+    return mergeProducts([jsonProduct, metaProduct, priceProduct]);
   }
 
   async function fetchShopifyProduct(productUrl) {
@@ -1879,7 +2071,11 @@
       bestShopifyImage(product.featuredImage);
 
     return compactObject({
-      title: cleanTitle(shopifyTitle(product, productUrl, selectedVariant), product.vendor),
+      title: cleanProductTitle(
+        shopifyTitle(product, productUrl, selectedVariant),
+        product.vendor,
+        productUrl
+      ),
       brand: cleanBrandName(product.vendor),
       url: normalizeUrl(productUrl),
       priceText: price.originalText,
@@ -2014,7 +2210,11 @@
       sourceDomain: sourceDomainFromUrl(url),
       faviconUrl: faviconUrlFromUrl(url),
       url,
-      title: cleanTitle(firstValue(sources, "title") || document.title, firstValue(sources, "brand")),
+      title: cleanProductTitle(
+        firstValue(sources, "title") || document.title,
+        firstValue(sources, "brand"),
+        url
+      ),
       brand: cleanBrandName(firstValue(sources, "brand")) || sourceNameFromUrl(url),
       priceText: price.originalText,
       priceAmount: price.amount,
@@ -2073,7 +2273,7 @@
       document.querySelector('[data-component*="Brand" i]')?.textContent;
 
     return compactObject({
-      title: cleanTitle(stripPriceFromText(title), brand),
+      title: cleanProductTitle(stripPriceFromText(title), brand, context.linkUrl || location.href),
       brand: cleanBrandName(brand),
       url: normalizeUrl(
         context.linkUrl ||
@@ -2098,7 +2298,7 @@
     }
 
     const initialLink = findClosestProductLink(target) || findParentLink(target);
-    const scope = findProductScope(target, initialLink);
+    const scope = expandProductScopeToDetails(findProductScope(target, initialLink), target);
     const link = findProductLink(target, scope, context, initialLink);
     const image = findProductImage(target, scope);
     const linkUrl = context.linkUrl || link?.href || "";
@@ -2115,7 +2315,7 @@
 
     return compactObject({
       fromContext: true,
-      title: cleanTitle(stripPriceFromText(title), brand),
+      title: cleanProductTitle(stripPriceFromText(title), brand, linkUrl || location.href),
       brand: cleanBrandName(brand),
       url: linkUrl ? normalizeUrl(linkUrl) : "",
       imageUrl: bestProductImageUrl(context, image, scope),
@@ -2156,6 +2356,48 @@
       .sort((a, b) => b.score - a.score || a.area - b.area);
 
     return scored[0]?.node || link?.closest("article, li, div, a") || target.closest?.("article, li, div, a") || target;
+  }
+
+  function expandProductScopeToDetails(scope, target) {
+    let best = scope || target;
+    let bestScore = productDetailScore(best);
+    let node = best?.parentElement;
+    const maxArea = Math.max(1, window.innerWidth * window.innerHeight * 0.5);
+
+    for (let depth = 0; node && node !== document.body && depth < 5; depth += 1) {
+      const area = elementArea(node);
+      if (area > maxArea) {
+        break;
+      }
+
+      const score = productDetailScore(node);
+      if (score > bestScore) {
+        best = node;
+        bestScore = score;
+      }
+
+      node = node.parentElement;
+    }
+
+    return best;
+  }
+
+  function productDetailScore(element) {
+    if (!element) {
+      return 0;
+    }
+
+    const lines = getTextLines(element);
+    const text = lines.join(" ");
+    let score = productScopeScore(element);
+
+    if (findBestPrice(lines).amount) score += 10;
+    if (lines.some(looksLikeProductName)) score += 4;
+    if (lines.some(isBrandLikeLine)) score += 2;
+    if (looksLikeDescriptiveTitle(text)) score -= 6;
+    if (text.length > 700) score -= 8;
+
+    return score;
   }
 
   function productScopeScore(element) {
@@ -2426,7 +2668,9 @@
       compareAtText: product.compareAtPriceText
     });
     const rubPrice = await convertPriceToRub(price);
-    const title = cleanTitle(stripPriceFromText(product.title), product.brand) || "Saved Product";
+    const title =
+      cleanProductTitle(stripPriceFromText(product.title), product.brand, url) ||
+      "Saved Product";
     const inferredCategory = hasCategory(categories, category)
       ? category
       : inferCategory(product, categories);
@@ -4616,7 +4860,7 @@
   }
 
   function looksLikeProductName(value) {
-    return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|coats?|trousers?|pants|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|totes?|backpacks?|luggage|suitcases?|check-?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|dresses?|skirts?|blazers?|zips?|pullovers?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
+    return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|coats?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|totes?|backpacks?|luggage|suitcases?|check-?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
       cleanText(value)
     );
   }
@@ -4695,11 +4939,110 @@
         .replace(/\s*-\s*AIM[ÉE] LEON DORE.*$/i, "")
         .replace(/\bnew season\b/gi, "")
         .replace(/\b(?:available in|colour|color|size|sizes|view product|product details)\b/gi, "")
+        .replace(/\s+\b(?=[A-Za-z0-9]*\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{7,}\b$/g, "")
+        .replace(/\s+(?:[-–—|])\s+(?:all|available|shop|select|size|men|women|unisex)\b.*$/i, "")
+        .replace(/\s+\b(?:men|women|mens|womens|unisex)\b$/i, "")
         .replace(/\s+in\s+(black|white|blue|red|green|pink|grey|gray|brown|beige)$/i, " $1"),
       brandText
     );
 
     return titleCaseTitle(cleaned);
+  }
+
+  function cleanProductTitle(value, brand = "", url = "") {
+    const title = cleanTitle(value, brand);
+    const urlTitle = cleanTitle(productTitleFromUrl(url), brand);
+
+    if (!title) {
+      return urlTitle;
+    }
+
+    if (shouldPreferUrlTitle(title, urlTitle)) {
+      return urlTitle;
+    }
+
+    return title;
+  }
+
+  function shouldPreferUrlTitle(title, urlTitle) {
+    if (!urlTitle || urlTitle.length < 5) {
+      return false;
+    }
+
+    if (!title) {
+      return true;
+    }
+
+    if (looksLikeDescriptiveTitle(title)) {
+      return true;
+    }
+
+    const titleWords = title.split(/\s+/).filter(Boolean).length;
+    const urlWords = urlTitle.split(/\s+/).filter(Boolean).length;
+    return title.length > 64 && urlTitle.length < title.length && urlWords >= 2 && urlWords <= titleWords;
+  }
+
+  function looksLikeDescriptiveTitle(value) {
+    const text = cleanText(value);
+    if (!text) {
+      return false;
+    }
+
+    return (
+      /\b(?:all season|stretch cotton|cervotessile|crafted from|made from|composition|product details|select size|add to basket|add to cart)\b/i.test(text) ||
+      /\bby\s+[A-Z][\p{L}\s.,'-]{6,}$/iu.test(text) ||
+      text.split(/\s+/).filter(Boolean).length > 12
+    );
+  }
+
+  function productTitleFromUrl(value) {
+    if (!value) {
+      return "";
+    }
+
+    try {
+      const url = new URL(value, location.href);
+      const candidates = url.pathname
+        .split("/")
+        .filter(Boolean)
+        .reverse()
+        .map(cleanUrlTitleSegment)
+        .filter(isUsableUrlTitleSegment);
+
+      return candidates[0] || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function cleanUrlTitleSegment(value) {
+    return cleanText(decodeURIComponent(value || ""))
+      .replace(/\.(?:html?|aspx|php)$/i, "")
+      .replace(/\bitem[-_\s]*\d+.*$/i, "")
+      .replace(/[-_]+/g, " ")
+      .replace(/\s+in\s+([a-z]+)$/i, " $1")
+      .replace(/\b(?:men|women|mens|womens|unisex|kids)\b$/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isUsableUrlTitleSegment(value) {
+    const text = cleanText(value);
+    if (!text || text.length < 4) {
+      return false;
+    }
+
+    if (
+      /^(?:en|us|usa|uk|gb|eu|ru|ru ru|products?|collections?|catalog|shopping|men|women|sale|new|item|p|dp)$/i.test(text)
+    ) {
+      return false;
+    }
+
+    if (/^[a-z]{0,4}[-_\s]?\d{3,}[a-z0-9\s-]*$/i.test(text)) {
+      return false;
+    }
+
+    return text.split(/\s+/).length >= 2 || looksLikeProductName(text);
   }
 
   function stripTitleActionNoise(value) {
@@ -4838,6 +5181,18 @@
     }
     try {
       return new URL(value, location.href).toString();
+    } catch {
+      return "";
+    }
+  }
+
+  function toAbsoluteUrlFor(value, baseUrl) {
+    if (!value) {
+      return "";
+    }
+
+    try {
+      return new URL(value, baseUrl || location.href).toString();
     } catch {
       return "";
     }

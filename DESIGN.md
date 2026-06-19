@@ -28,6 +28,7 @@ Primary surface: a compact in-page wishlist widget for saving products from any 
 - Sale items stay minimal but visually show sale state: current site price in red, then the regular compare-at price in parentheses with strikethrough.
 - Empty zero-item state is centered and uses a contour T-shirt SVG plus CTA copy.
 - Product titles are stored and displayed in title case, not all caps.
+- Product titles must be short commercial model names. Strip SKU/catalog/article IDs such as trailing alphanumeric codes, material/spec descriptions, availability copy, SEO tails, and share/action text from visible cards.
 - Brand labels should be canonicalized when possible: strip locale/domain suffixes like `EU` and normalize known shop domains such as `tomfordfashion` to `Tom Ford`.
 - Saving while the widget is open updates the widget directly, not a separate overlay.
 - Saving while the widget is closed shows a clean centered confirmation with `Added:`, item image, name, price, and a small centered pill button with a link icon to open the widget.
