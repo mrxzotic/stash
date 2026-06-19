@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-whole-price-title-summary-counter-v1";
+var CONTENT_VERSION = "2026-06-19-whole-price-title-summary-counter-hover-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

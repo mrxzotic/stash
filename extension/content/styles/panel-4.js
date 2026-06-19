@@ -197,8 +197,49 @@ function panelStylesChunk4() {
     }
 
     .wp-item {
+      position: relative;
+      z-index: 0;
       min-width: 0;
+      isolation: isolate;
+      transform: translateY(0);
+      transition: transform 180ms cubic-bezier(.16, 1, .3, 1);
       animation: wpItemIn 240ms cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .wp-item::before {
+      content: "";
+      position: absolute;
+      inset: -10px -8px -12px;
+      z-index: -1;
+      border-radius: calc(var(--radius) + 12px);
+      background:
+        radial-gradient(circle at 18% 20%, rgba(115, 196, 255, 0.7), transparent 34%),
+        radial-gradient(circle at 82% 18%, rgba(255, 144, 221, 0.62), transparent 36%),
+        radial-gradient(circle at 54% 92%, rgba(174, 255, 196, 0.56), transparent 40%),
+        conic-gradient(from 130deg at 50% 50%, rgba(255, 255, 255, 0), rgba(174, 209, 255, 0.8), rgba(255, 190, 235, 0.72), rgba(210, 255, 226, 0.66), rgba(255, 255, 255, 0));
+      opacity: 0;
+      pointer-events: none;
+      filter: blur(18px) saturate(1.22);
+      transform: scale(0.96);
+      transition:
+        opacity 180ms ease,
+        transform 220ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .wp-item:hover,
+    .wp-item:focus-within {
+      transform: translateY(-3px);
+    }
+
+    .wp-item:hover::before,
+    .wp-item:focus-within::before {
+      opacity: 0.15;
+      transform: scale(1);
+    }
+
+    .wp-item:active {
+      transform: translateY(-1px);
+      transition-duration: 80ms;
     }
 
     .wp-item.is-new .wp-media {
