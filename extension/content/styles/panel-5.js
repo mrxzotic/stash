@@ -165,5 +165,51 @@ function panelStylesChunk5() {
         transform: translateY(0) scale(1);
       }
     }
+
+    @keyframes wpCurrencyMenuIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.96);
+        filter: blur(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes wpCurrencyOptionIn {
+      from {
+        opacity: 0;
+        transform: translateY(-3px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes wpCurrencyCount {
+      0% {
+        opacity: 0.2;
+        transform: translateY(7px) scale(.94);
+        filter: blur(4px);
+      }
+
+      52% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.04);
+        filter: blur(0);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
   `;
 }

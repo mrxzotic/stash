@@ -138,7 +138,8 @@ function panelStylesChunk2() {
     .wp-settings-head {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
+      gap: 12px;
       padding: 0;
       margin: 0 0 8px;
     }
@@ -149,6 +150,31 @@ function panelStylesChunk2() {
       line-height: 1.2;
       font-weight: 780;
       letter-spacing: 0;
+    }
+
+    .wp-settings-promo {
+      min-width: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--foreground);
+      font-size: var(--text-body);
+      font-weight: 720;
+      line-height: 1;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .wp-settings-promo img {
+      width: 28px;
+      height: 28px;
+      display: block;
+      border-radius: var(--radius);
+      object-fit: cover;
+    }
+
+    .wp-settings-promo:hover {
+      color: var(--muted);
     }
 
     .wp-text-button,

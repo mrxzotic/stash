@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stash",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Save products from any shop into a compact local stash.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
@@ -34,6 +34,7 @@
         "content/constants.js",
         "content/lifecycle.js",
         "content/panel/render.js",
+        "content/panel/settings-promo.js",
         "content/panel/events.js",
         "content/panel/items.js",
         "content/icons.js",
@@ -62,6 +63,12 @@
         "content/bootstrap.js"
       ],
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/alex-kornev.png"],
+      "matches": ["http://*/*", "https://*/*"]
     }
   ]
 }

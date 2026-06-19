@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-search-field-v1";
+var CONTENT_VERSION = "2026-06-19-currency-picker-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -100,6 +100,7 @@ var LEADING_SYMBOL_CURRENCIES = new Set([
 ]);
 var CURRENCY_CODE_PATTERN =
   "USD|EUR|GBP|JPY|AUD|CAD|CHF|CNY|KRW|RUB|UAH|AED|SAR|QAR|KWD|BHD|OMR|TRY|KZT|GEL|AMD|PLN|SEK|NOK|DKK|HKD|SGD";
+var SUMMARY_CURRENCY_PICKER_OPTIONS = ["EUR", "GBP", "RUB", "UAH", "USD"];
 var RATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 var BRAND_ALIASES = new Map([
   ["aime leon dore eu", "Aimé Leon Dore"],

@@ -92,6 +92,16 @@ function summaryCurrencyOptions() {
   return Object.keys(DEFAULT_RUB_RATES);
 }
 
+function summaryCurrencyPickerOptions(currentCurrency = "") {
+  const selectedCurrency = cleanText(currentCurrency).toUpperCase();
+  const options = SUMMARY_CURRENCY_PICKER_OPTIONS.filter(isSummaryCurrency);
+  if (selectedCurrency && isSummaryCurrency(selectedCurrency) && !options.includes(selectedCurrency)) {
+    options.push(selectedCurrency);
+  }
+
+  return options.sort((left, right) => left.localeCompare(right));
+}
+
 function isSummaryCurrency(currency) {
   return summaryCurrencyOptions().includes(cleanText(currency).toUpperCase());
 }

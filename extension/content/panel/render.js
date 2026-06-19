@@ -12,7 +12,6 @@ function renderStashPanel() {
     { id: "all", label: "All" },
     ...panelState.categories
   ];
-  const summaryCurrencies = summaryCurrencyOptions();
   const backgroundThemes = backgroundThemeOptions();
 
   root.innerHTML = `
@@ -23,20 +22,10 @@ function renderStashPanel() {
       <section class="wp-settings wp-popover" ${panelState.settingsOpen ? "" : "hidden"}>
         <div class="wp-settings-head">
           <h2>Settings</h2>
+          ${renderSettingsPromo()}
         </div>
         <section class="wp-settings-section" aria-label="General settings">
           <div class="wp-settings-section-title">General</div>
-          ${renderSettingsSelect({
-            label: "Currency",
-            ariaLabel: "Summary currency",
-            value: panelState.summaryCurrency,
-            options: summaryCurrencies.map((currency) => ({
-              value: currency,
-              label: currency,
-              meta: currencySymbol(currency)
-            })),
-            dataAttribute: "data-summary-currency"
-          })}
           ${renderSettingsSelect({
             label: "Background",
             ariaLabel: "Background theme",
@@ -119,13 +108,38 @@ function renderPanelSummaryHtml(displayItems) {
       <span class="wp-count">${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}</span>
     </span>
     <div class="wp-actions">
-      <span class="wp-total" aria-label="Stash total">${escapeHtml(formatPanelSummaryTotal(displayItems, panelState.summaryCurrency))}</span>
+      <div class="wp-currency-select" data-currency-root>
+        <button class="wp-total" type="button" aria-label="Choose summary currency" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
+          <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(displayItems, panelState.summaryCurrency))}</span>
+          ${lucideChevronDownIcon("wp-total-chevron")}
+        </button>
+        ${renderCurrencyMenuHtml()}
+      </div>
       <button class="wp-icon-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
         ${lucideSearchIcon()}
       </button>
       <button class="wp-icon-button wp-settings-button${panelState.settingsOpen ? " is-active" : ""}" type="button" aria-label="Settings" aria-expanded="${panelState.settingsOpen}" data-panel-settings>
         ${lucideSettingsIcon()}
       </button>
+    </div>
+  `;
+}
+
+function renderCurrencyMenuHtml() {
+  const currencies = summaryCurrencyPickerOptions(panelState.summaryCurrency);
+
+  return `
+    <div class="wp-currency-menu" role="menu" hidden data-currency-menu>
+      ${currencies.map((currency) => {
+        const isSelected = currency === panelState.summaryCurrency;
+        return `
+          <button class="wp-currency-option${isSelected ? " is-selected" : ""}" type="button" role="menuitemradio" aria-checked="${isSelected}" data-summary-currency="${escapeAttribute(currency)}">
+            <span class="wp-currency-check">${isSelected ? lucideCheckIcon("wp-currency-check-icon") : ""}</span>
+            <span>${escapeHtml(currency)}</span>
+            <span class="wp-currency-symbol">${escapeHtml(currencySymbol(currency))}</span>
+          </button>
+        `;
+      }).join("")}
     </div>
   `;
 }

@@ -5,6 +5,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/constants.js",
   "content/lifecycle.js",
   "content/panel/render.js",
+  "content/panel/settings-promo.js",
   "content/panel/events.js",
   "content/panel/items.js",
   "content/icons.js",

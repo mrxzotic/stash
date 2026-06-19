@@ -62,9 +62,9 @@ function convertToRubSync(amount, currency) {
   return Math.round(amount * rate);
 }
 
-function renderPanelSummaryOnly() {
+function renderPanelSummaryOnly(options = {}) {
   const root = document.getElementById("stash-panel-root")?.shadowRoot;
-  const total = root?.querySelector(".wp-total");
+  const total = root?.querySelector("[data-total-value]");
   const count = root?.querySelector(".wp-count");
   if (!total || !count) {
     return;
@@ -72,7 +72,11 @@ function renderPanelSummaryOnly() {
 
   const displayItems = panelState.items.map(normalizePanelItem);
   count.textContent = `${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}`;
-  total.textContent = formatPanelSummaryTotal(displayItems, panelState.summaryCurrency);
+  setPanelTotalText(
+    total,
+    formatPanelSummaryTotal(displayItems, panelState.summaryCurrency),
+    options
+  );
 }
 
 function syncPanelSettingsControls() {
@@ -88,13 +92,7 @@ function syncPanelSettingsControls() {
     });
   }
 
-  syncPanelSelectControl(root, {
-    selector: "[data-summary-currency]",
-    datasetKey: "summaryCurrency",
-    value: panelState.summaryCurrency,
-    label: panelState.summaryCurrency,
-    meta: currencySymbol(panelState.summaryCurrency)
-  });
+  syncPanelCurrencyControl(root);
 
   const backgroundLabel =
     backgroundThemeOptions().find((theme) => theme.id === panelState.backgroundTheme)?.label ||
@@ -105,6 +103,37 @@ function syncPanelSettingsControls() {
     value: panelState.backgroundTheme,
     label: backgroundLabel
   });
+}
+
+function setPanelTotalText(total, value, options = {}) {
+  const shouldAnimate = options.animate && total.textContent !== value;
+  total.textContent = value;
+  if (!shouldAnimate) {
+    return;
+  }
+
+  total.classList.remove("is-counting");
+  window.requestAnimationFrame(() => {
+    total.classList.add("is-counting");
+  });
+}
+
+function syncPanelCurrencyControl(root) {
+  const trigger = root.querySelector("[data-currency-trigger]");
+  const menu = root.querySelector("[data-currency-menu]");
+  root.querySelectorAll("[data-summary-currency]").forEach((button) => {
+    const isSelected = cleanText(button.dataset.summaryCurrency) === panelState.summaryCurrency;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-checked", String(isSelected));
+    const checkSlot = button.querySelector(".wp-currency-check");
+    if (checkSlot) {
+      checkSlot.innerHTML = isSelected ? lucideCheckIcon("wp-currency-check-icon") : "";
+    }
+  });
+
+  trigger?.setAttribute("aria-expanded", "false");
+  menu?.setAttribute("hidden", "");
+  trigger?.closest("[data-currency-root]")?.classList.remove("is-open");
 }
 
 function syncPanelSelectControl(root, { selector, datasetKey, value, label, meta = "" }) {

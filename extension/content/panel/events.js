@@ -6,6 +6,7 @@ function bindPanelEvents(root) {
 
   bindImageFallbacks(root);
   bindPanelSearchEvents(root);
+  bindPanelCurrencyEvents(root);
 
   root.querySelector("[data-panel-settings]")?.addEventListener("click", () => {
     panelState.settingsOpen = !panelState.settingsOpen;
@@ -19,18 +20,6 @@ function bindPanelEvents(root) {
     if (trigger) {
       event.preventDefault();
       toggleSettingsSelect(trigger);
-      return;
-    }
-
-    const currencyButton = event.target.closest("[data-summary-currency]");
-    if (currencyButton) {
-      event.preventDefault();
-      const currency = cleanText(currencyButton.dataset.summaryCurrency).toUpperCase();
-      if (isSummaryCurrency(currency)) {
-        safelyRunPanelAction(() =>
-          savePanelSettings({ summaryCurrency: currency }, { rerender: false })
-        );
-      }
       return;
     }
 
@@ -138,6 +127,10 @@ function bindPanelEvents(root) {
         return;
       }
 
+      if (!target.closest?.("[data-currency-root]")) {
+        closePanelCurrencySelect(root);
+      }
+
       if (target.closest?.(".wp-popover") || target.closest?.("[data-panel-settings]")) {
         return;
       }
@@ -149,6 +142,37 @@ function bindPanelEvents(root) {
     });
     root.__stashPanelClickawayBound = true;
   }
+}
+
+function bindPanelCurrencyEvents(root) {
+  root.querySelector("[data-currency-trigger]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    togglePanelCurrencySelect(event.currentTarget);
+  });
+
+  root.querySelector("[data-currency-menu]")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-summary-currency]");
+    if (!button) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const currency = cleanText(button.dataset.summaryCurrency).toUpperCase();
+    if (!isSummaryCurrency(currency)) {
+      return;
+    }
+
+    closePanelCurrencySelect(root);
+    if (currency === panelState.summaryCurrency) {
+      return;
+    }
+
+    safelyRunPanelAction(() =>
+      savePanelSettings({ summaryCurrency: currency }, { rerender: false, animateSummary: true })
+    );
+  });
 }
 
 function bindPanelSearchEvents(root) {
@@ -184,6 +208,28 @@ function syncSearchClearButton(root) {
   const hasQuery = Boolean(panelState.searchQuery);
   clearButton.disabled = !hasQuery;
   clearButton.classList.toggle("is-visible", hasQuery);
+}
+
+function togglePanelCurrencySelect(trigger) {
+  const selectRoot = trigger.closest("[data-currency-root]");
+  const menu = selectRoot?.querySelector("[data-currency-menu]");
+  if (!selectRoot || !menu) {
+    return;
+  }
+
+  const willOpen = menu.hidden;
+  closePanelCurrencySelect(selectRoot.getRootNode());
+  menu.hidden = !willOpen;
+  selectRoot.classList.toggle("is-open", willOpen);
+  trigger.setAttribute("aria-expanded", String(willOpen));
+}
+
+function closePanelCurrencySelect(scope) {
+  scope.querySelectorAll?.("[data-currency-root]").forEach((selectRoot) => {
+    selectRoot.classList.remove("is-open");
+    selectRoot.querySelector("[data-currency-menu]")?.setAttribute("hidden", "");
+    selectRoot.querySelector("[data-currency-trigger]")?.setAttribute("aria-expanded", "false");
+  });
 }
 
 function toggleSettingsSelect(trigger) {
@@ -254,6 +300,7 @@ async function savePanelCategories(nextCategories) {
 }
 
 async function savePanelSettings(nextSettings, options = {}) {
+  const previousCurrency = panelState.summaryCurrency;
   const settings = normalizePanelSettings({
     summaryCurrency: panelState.summaryCurrency,
     backgroundTheme: panelState.backgroundTheme,
@@ -265,7 +312,9 @@ async function savePanelSettings(nextSettings, options = {}) {
   await setLocalStorageValue(SETTINGS_STORAGE_KEY, settings);
   if (options.rerender === false) {
     syncPanelSettingsControls();
-    renderPanelSummaryOnly();
+    renderPanelSummaryOnly({
+      animate: options.animateSummary || previousCurrency !== settings.summaryCurrency
+    });
     refreshPanelSummaryRate();
     return;
   }
