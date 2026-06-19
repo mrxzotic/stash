@@ -4,7 +4,7 @@ function findBestPrice(...groups) {
   for (const value of values) {
     const prices = parsePricesFromText(value);
     const price = prices.length
-      ? priceWithCompareAt(prices[prices.length - 1], prices)
+      ? priceWithCompareAt(currentPriceCandidate(prices), prices)
       : normalizePrice({ text: value });
     if (Number.isFinite(price.amount) && price.currency) {
       return price;
@@ -90,7 +90,7 @@ function parsePriceFromText(value, fallbackCurrency) {
 
   const prices = parsePricesFromText(text);
   if (prices.length) {
-    return priceWithCompareAt(prices[prices.length - 1], prices);
+    return priceWithCompareAt(currentPriceCandidate(prices), prices);
   }
 
   const symbolBefore = text.match(/([$€£¥₽₴])\s*([\d][\d\s.,]*)/);
@@ -122,6 +122,23 @@ function parsePriceFromText(value, fallbackCurrency) {
   }
 
   return {};
+}
+
+function currentPriceCandidate(prices) {
+  if (prices.length < 2) {
+    return prices[0];
+  }
+
+  const currency = cleanText(prices[0].currency).toUpperCase();
+  const sameCurrency = prices.every(
+    (price) => cleanText(price.currency).toUpperCase() === currency
+  );
+  if (!sameCurrency) {
+    return prices[prices.length - 1];
+  }
+
+  const priced = prices.filter((price) => Number.isFinite(price.amount));
+  return priced.sort((a, b) => a.amount - b.amount)[0] || prices[prices.length - 1];
 }
 
 function priceWithCompareAt(price, candidates = []) {

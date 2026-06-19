@@ -88,4 +88,42 @@ assert.equal(extracted.brand, "DSQUARED2");
 assert.equal(extracted.priceAmount, 470);
 assert.equal(extracted.imageUrl, "https://cdn.example/dsquared2-sneakers.jpg");
 
+const onProductUrl =
+  "https://www.on.com/en-fi/products/cloudrunner-2-w-3we1013/womens/frost-white-shoes-3WE10130622";
+const onPrice = sandbox.findBestPrice([
+  "Last season Cloudrunner 2 Women - Road running, cushioned support, Helion superfoam €125.00 €160.00"
+]);
+assert.equal(onPrice.amount, 125, "On sale cards should keep the current price");
+assert.equal(onPrice.compareAtAmount, 160, "On sale cards should keep the full price as compare-at");
+assert.equal(
+  sandbox.cleanProductTitle("Frost White Shoes", "On", onProductUrl),
+  "Cloudrunner 2",
+  "On product URLs should prefer the model slug over color-only image text"
+);
+
+const lowResOnImage =
+  "https://upload.on-running.com/spree/products/4791/product/low-frost-white.png?width=320";
+const highResOnImage =
+  "https://upload.on-running.com/spree/products/4791/product/high-frost-white.png?width=1600";
+const clickedImage = {
+  srcset: `${lowResOnImage} 320w, ${highResOnImage} 1600w`,
+  currentSrc: lowResOnImage,
+  src: lowResOnImage,
+  naturalWidth: 320,
+  width: 320,
+  getAttribute: () => "",
+  closest: () => null,
+  getBoundingClientRect: () => ({ left: 0, top: 0, width: 320, height: 180 })
+};
+sandbox.lastContextPoint = { x: 160, y: 90 };
+assert.equal(
+  sandbox.bestProductImageUrl(
+    { srcUrl: lowResOnImage },
+    clickedImage,
+    { querySelectorAll: () => [clickedImage] }
+  ),
+  highResOnImage,
+  "Image clicks should prefer higher-resolution srcset candidates over context srcUrl"
+);
+
 console.log("product URL classifier and extraction smoke passed");

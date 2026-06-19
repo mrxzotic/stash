@@ -16,7 +16,7 @@ function bestProductImageUrl(context, image, scope) {
   const candidates = [];
 
   if (context.srcUrl) {
-    candidates.push({ url: context.srcUrl, score: 50000 });
+    candidates.push({ url: context.srcUrl, score: 6500 });
   }
 
   candidates.push(...imageCandidatesFromElement(image, 7000));
@@ -85,7 +85,7 @@ function imageCandidatesFromElement(image, baseScore = 0) {
 
   candidates.push({
     url: image.currentSrc || image.src,
-    score: baseScore + 9000 + (image.naturalWidth || image.width || 0)
+    score: baseScore + 1000 + (image.naturalWidth || image.width || 0)
   });
 
   return candidates.filter((candidate) => isUsableProductImageUrl(candidate.url));

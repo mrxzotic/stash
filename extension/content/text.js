@@ -182,9 +182,19 @@ function shouldPreferUrlTitle(title, urlTitle) {
     return true;
   }
 
+  if (looksLikeOnModelTitle(urlTitle) && !looksLikeOnModelTitle(title)) {
+    return true;
+  }
+
   const titleWords = title.split(/\s+/).filter(Boolean).length;
   const urlWords = urlTitle.split(/\s+/).filter(Boolean).length;
   return title.length > 64 && urlTitle.length < title.length && urlWords >= 2 && urlWords <= titleWords;
+}
+
+function looksLikeOnModelTitle(value) {
+  return /\bcloud(?:runner|monster|surfer|vista|flyer|nova|swift|tilt|zone|boom|rock|ultra|flow|stratus|away)\b/i.test(
+    cleanText(value)
+  );
 }
 
 function looksLikeDescriptiveTitle(value) {
@@ -207,6 +217,11 @@ function productTitleFromUrl(value) {
 
   try {
     const url = new URL(value, location.href);
+    const onTitle = onProductTitleFromUrl(url);
+    if (onTitle) {
+      return onTitle;
+    }
+
     const candidates = url.pathname
       .split("/")
       .filter(Boolean)
@@ -218,6 +233,21 @@ function productTitleFromUrl(value) {
   } catch {
     return "";
   }
+}
+
+function onProductTitleFromUrl(url) {
+  if (!/(?:^|\.)on\.com$/i.test(url.hostname)) {
+    return "";
+  }
+
+  const segments = url.pathname.split("/").filter(Boolean);
+  const productIndex = segments.findIndex((segment) => segment.toLowerCase() === "products");
+  const slug = productIndex >= 0 ? segments[productIndex + 1] : "";
+  if (!slug) {
+    return "";
+  }
+
+  return cleanUrlTitleSegment(slug.replace(/-(?:m|w|kids?)-[a-z0-9]+$/i, ""));
 }
 
 function cleanUrlTitleSegment(value) {
