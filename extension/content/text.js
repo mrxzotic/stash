@@ -91,9 +91,9 @@ function faviconUrlFromUrl(value) {
 }
 
 function faviconUrlFromDocument(target) {
-  const links = Array.from(
-    document.querySelectorAll('link[rel~="icon"][href], link[rel="shortcut icon"][href], link[rel="apple-touch-icon"][href]')
-  );
+  const links = sameSiteHost(location.hostname, target.hostname)
+    ? Array.from(document.querySelectorAll("link[rel][href]")).filter(isFaviconLink)
+    : [];
 
   return links
     .map((link) => ({
@@ -101,20 +101,60 @@ function faviconUrlFromDocument(target) {
       score: faviconLinkScore(link)
     }))
     .filter((candidate) => candidate.url)
-    .filter((candidate) => {
-      try {
-        return new URL(candidate.url).origin === target.origin;
-      } catch {
-        return false;
-      }
-    })
-    .sort((a, b) => b.score - a.score)[0]?.url || "";
+    .sort((a, b) => b.score - a.score)[0]?.url || fallbackFaviconUrl(target);
+}
+
+function isFaviconLink(link) {
+  const rel = cleanText(link.getAttribute("rel")).toLowerCase();
+  return rel.includes("icon");
 }
 
 function faviconLinkScore(link) {
   const rel = cleanText(link.getAttribute("rel")).toLowerCase();
-  const size = Number.parseInt(cleanText(link.getAttribute("sizes")), 10) || 0;
-  return (rel.includes("shortcut") ? 30 : 0) + (rel === "icon" ? 20 : 0) + size;
+  const type = cleanText(link.getAttribute("type")).toLowerCase();
+  const href = cleanText(link.getAttribute("href")).toLowerCase();
+  const size = faviconLinkSize(link);
+  return (
+    (rel.includes("apple-touch-icon") ? 80 : 0) +
+    (rel.includes("icon") ? 60 : 0) +
+    (rel.includes("shortcut") ? 20 : 0) +
+    (type.includes("png") || /\.png(?:[?#]|$)/i.test(href) ? 18 : 0) +
+    (type.includes("svg") || /\.svg(?:[?#]|$)/i.test(href) ? 8 : 0) +
+    (type.includes("x-icon") || /\.ico(?:[?#]|$)/i.test(href) ? 6 : 0) +
+    Math.min(size, 256)
+  );
+}
+
+function faviconLinkSize(link) {
+  return cleanText(link.getAttribute("sizes"))
+    .split(/\s+/)
+    .map((size) => Number.parseInt(size, 10) || 0)
+    .sort((a, b) => b - a)[0] || 0;
+}
+
+function fallbackFaviconUrl(target) {
+  const host = target.hostname.toLowerCase();
+  if (host === "eu.aimeleondore.com") {
+    return "https://eu.aimeleondore.com/cdn/shop/files/32x32_110654c9-b299-44a8-b950-40e12e132f45.png?v=1679431768";
+  }
+
+  if (sameSiteHost(host, "www.aimeleondore.com")) {
+    return "https://www.aimeleondore.com/cdn/shop/files/favicon-32x32.png?v=1671713345";
+  }
+
+  return `${target.origin}/favicon.ico`;
+}
+
+function sameSiteHost(left, right) {
+  const leftHost = rootHost(left);
+  const rightHost = rootHost(right);
+  return Boolean(leftHost && rightHost && leftHost === rightHost);
+}
+
+function rootHost(value) {
+  const host = cleanText(value).toLowerCase().replace(/^www\./, "");
+  const parts = host.split(".").filter(Boolean);
+  return parts.length > 2 ? parts.slice(-2).join(".") : host;
 }
 
 function cleanTitle(value, brand = "") {
