@@ -22,6 +22,7 @@ function panelStylesChunk4() {
     .wp-inline-search {
       position: relative;
       width: 100%;
+      height: 42px;
       min-height: 42px;
       display: grid;
       grid-template-columns: 22px minmax(0, 1fr) 28px;

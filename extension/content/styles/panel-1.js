@@ -201,6 +201,8 @@ function panelStylesChunk1() {
     .wp-topbar {
       position: relative;
       z-index: 8;
+      height: 42px;
+      min-height: 42px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -209,8 +211,7 @@ function panelStylesChunk1() {
     }
 
     .wp-topbar.is-searching {
-      display: block;
-      animation: wpSearchIn 180ms cubic-bezier(.16, 1, .3, 1) both;
+      display: flex;
     }
 
     .wp-settings h2 {

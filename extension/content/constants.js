@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-farfetch-card-item-url-v2";
+var CONTENT_VERSION = "2026-06-19-farfetch-card-item-url-layout-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
