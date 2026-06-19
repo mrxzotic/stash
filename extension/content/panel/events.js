@@ -12,6 +12,8 @@ function bindPanelEvents(root) {
     panelState.settingsOpen = !panelState.settingsOpen;
     if (panelState.settingsOpen) {
       panelState.searchOpen = false;
+      panelState.categoryComposerOpen = false;
+      panelState.deleteCategoryId = "";
     }
     renderStashPanel();
   });
@@ -40,6 +42,26 @@ function bindPanelEvents(root) {
     }
   });
   root.querySelector(".wp-filters")?.addEventListener("click", (event) => {
+    const addButton = event.target.closest("[data-add-category]");
+    if (addButton) {
+      event.preventDefault();
+      panelState.categoryComposerOpen = !panelState.categoryComposerOpen;
+      panelState.settingsOpen = false;
+      panelState.deleteCategoryId = "";
+      renderStashPanel();
+      return;
+    }
+
+    const removeButton = event.target.closest("[data-remove-category-prompt]");
+    if (removeButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      panelState.categoryComposerOpen = false;
+      panelState.deleteCategoryId = removeButton.dataset.removeCategoryPrompt;
+      renderStashPanel();
+      return;
+    }
+
     const button = event.target.closest("[data-category]");
     if (!button) {
       return;
@@ -47,6 +69,8 @@ function bindPanelEvents(root) {
     if (!panelState.searchQuery) {
       panelState.searchOpen = false;
     }
+    panelState.categoryComposerOpen = false;
+    panelState.deleteCategoryId = "";
     panelState.activeCategory = button.dataset.category;
     renderStashPanel();
   });
@@ -67,12 +91,20 @@ function bindPanelEvents(root) {
       return;
     }
     input.value = "";
+    panelState.categoryComposerOpen = false;
+    const category = { id: uniquePanelCategoryId(label), label };
+    panelState.activeCategory = category.id;
     safelyRunPanelAction(() =>
       savePanelCategories([
         ...panelState.categories,
-        { id: uniquePanelCategoryId(label), label }
+        category
       ])
     );
+  });
+  root.querySelector("[data-cancel-category]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    panelState.categoryComposerOpen = false;
+    renderStashPanel();
   });
   root.querySelector(".wp-category-list")?.addEventListener("change", (event) => {
     const input = event.target.closest("[data-category-label]");
@@ -105,9 +137,26 @@ function bindPanelEvents(root) {
   root.querySelector("[data-reset-categories]")?.addEventListener("click", () => {
     safelyRunPanelAction(() => savePanelCategories(DEFAULT_CATEGORIES));
   });
+  root.querySelector("[data-confirm-delete-category]")?.addEventListener("click", (event) => {
+    const id = event.currentTarget.dataset.confirmDeleteCategory;
+    panelState.deleteCategoryId = "";
+    safelyRunPanelAction(() => deletePanelCategory(id));
+  });
+  root.querySelectorAll("[data-cancel-delete-category]").forEach((button) => {
+    button.addEventListener("click", () => {
+      panelState.deleteCategoryId = "";
+      renderStashPanel();
+    });
+  });
   if (!root.__stashPanelKeydownBound) {
     root.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
+        if (panelState.deleteCategoryId || panelState.categoryComposerOpen) {
+          panelState.deleteCategoryId = "";
+          panelState.categoryComposerOpen = false;
+          renderStashPanel();
+          return;
+        }
         closeStashPanel();
       }
     });
@@ -118,6 +167,16 @@ function bindPanelEvents(root) {
     root.addEventListener("click", (event) => {
       const target = event.target;
       if (target.closest?.(".wp-inline-search") || target.closest?.("[data-panel-search]")) {
+        return;
+      }
+
+      if (target.closest?.(".wp-category-composer") || target.closest?.("[data-add-category]")) {
+        return;
+      }
+
+      if (panelState.categoryComposerOpen) {
+        panelState.categoryComposerOpen = false;
+        renderStashPanel();
         return;
       }
 
@@ -271,6 +330,19 @@ function focusPanelSearch(root) {
   }
 }
 
+function focusCategoryComposer(root) {
+  const input = root.querySelector("[data-category-input]");
+  if (input && panelState.categoryComposerOpen) {
+    window.requestAnimationFrame(() => {
+      try {
+        input.focus({ preventScroll: true });
+      } catch {
+        input.focus();
+      }
+    });
+  }
+}
+
 async function removePanelItem(id) {
   const previousSummary = panelSummaryTextForItems(panelState.items);
   const nextItems = panelState.items.filter((item) => normalizePanelItem(item).id !== id);
@@ -297,6 +369,8 @@ function safelyRunPanelAction(action) {
 
 async function savePanelCategories(nextCategories) {
   panelState.categories = normalizeCategories(nextCategories);
+  panelState.deleteCategoryId = "";
+  panelState.categoryComposerOpen = false;
   if (
     panelState.activeCategory !== "all" &&
     !hasCategory(panelState.categories, panelState.activeCategory)
@@ -305,6 +379,11 @@ async function savePanelCategories(nextCategories) {
   }
   await setLocalStorageValue(CATEGORY_STORAGE_KEY, panelState.categories);
   renderStashPanel();
+}
+
+async function deletePanelCategory(id) {
+  const nextCategories = panelState.categories.filter((category) => category.id !== id);
+  await savePanelCategories(nextCategories.length ? nextCategories : DEFAULT_CATEGORIES);
 }
 
 async function savePanelSettings(nextSettings, options = {}) {

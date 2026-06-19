@@ -113,6 +113,7 @@ function syncPanelSettingsControls() {
   }
 
   syncPanelCurrencyControl(root);
+  syncPanelBackgroundChoices(root);
 
   const backgroundLabel =
     backgroundThemeOptions().find((theme) => theme.id === panelState.backgroundTheme)?.label ||
@@ -238,6 +239,18 @@ function syncPanelCurrencyControl(root) {
   trigger?.setAttribute("aria-expanded", "false");
   menu?.setAttribute("hidden", "");
   trigger?.closest("[data-currency-root]")?.classList.remove("is-open");
+}
+
+function syncPanelBackgroundChoices(root) {
+  root.querySelectorAll("[data-background-theme]").forEach((button) => {
+    const isSelected = cleanText(button.dataset.backgroundTheme) === panelState.backgroundTheme;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-checked", String(isSelected));
+    const check = button.querySelector(".wp-background-check");
+    if (check) {
+      check.innerHTML = isSelected ? lucideCheckIcon("wp-background-check-icon") : "";
+    }
+  });
 }
 
 function syncPanelSelectControl(root, { selector, datasetKey, value, label, meta = "" }) {

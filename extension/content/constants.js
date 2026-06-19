@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-on-card-price-image-v1";
+var CONTENT_VERSION = "2026-06-19-on-card-pdp-image-menu-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -125,6 +125,8 @@ var panelState = {
   open: false,
   searchOpen: false,
   settingsOpen: false,
+  categoryComposerOpen: false,
+  deleteCategoryId: "",
   activeCategory: "all",
   searchQuery: "",
   items: [],

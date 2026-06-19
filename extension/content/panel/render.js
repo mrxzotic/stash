@@ -12,7 +12,6 @@ function renderStashPanel(options = {}) {
     { id: "all", label: "All" },
     ...panelState.categories
   ];
-  const backgroundThemes = backgroundThemeOptions();
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
@@ -24,48 +23,17 @@ function renderStashPanel(options = {}) {
           <h2>Settings</h2>
           ${renderSettingsPromo()}
         </div>
-        <section class="wp-settings-section" aria-label="General settings">
-          <div class="wp-settings-section-title">General</div>
-          ${renderSettingsSelect({
-            label: "Background",
-            ariaLabel: "Background theme",
-            value: panelState.backgroundTheme,
-            options: backgroundThemes.map((theme) => ({ value: theme.id, label: theme.label })),
-            dataAttribute: "data-background-theme"
-          })}
-        </section>
-
-        <section class="wp-settings-section" aria-label="Categories">
-          <div class="wp-settings-section-head">
-            <span>Categories</span>
-            <button class="wp-text-button" type="button" data-reset-categories>Reset</button>
-          </div>
-          <div class="wp-category-list">
-            ${panelState.categories.map(
-              (category) => `
-                <div class="wp-category-row">
-                  <input data-category-label="${escapeAttribute(category.id)}" value="${escapeAttribute(category.label)}" maxlength="28" aria-label="Category name">
-                  <button class="wp-icon-button wp-remove-category" type="button" aria-label="Remove ${escapeAttribute(category.label)}" data-remove-category="${escapeAttribute(category.id)}"></button>
-                </div>
-              `
-            ).join("")}
-          </div>
-          <form class="wp-category-form" data-category-form>
-            <input data-category-input type="text" placeholder="New category" maxlength="28" autocomplete="off">
-            <button type="submit">Add</button>
-          </form>
+        <section class="wp-settings-section" aria-label="Background settings">
+          <div class="wp-settings-section-title">Background</div>
+          ${renderSettingsBackgroundGrid()}
         </section>
       </section>
 
       <nav class="wp-filters" aria-label="Stash categories">
-        ${filterCategories.map(
-          (category) => `
-            <button class="wp-filter${category.id === panelState.activeCategory ? " is-active" : ""}" data-category="${escapeAttribute(category.id)}" type="button">
-              ${escapeHtml(category.label)}
-            </button>
-          `
-        ).join("")}
+        ${renderCategoryFilters(filterCategories)}
       </nav>
+      ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
+      ${panelState.deleteCategoryId ? renderDeleteCategoryDialog() : ""}
 
       <section class="wp-items" aria-live="polite">
         ${renderPanelItemsHtml(visibleItems)}
@@ -75,6 +43,7 @@ function renderStashPanel(options = {}) {
 
   bindPanelEvents(root);
   focusPanelSearch(root);
+  focusCategoryComposer(root);
   animatePanelSummaryAfterRender(root, displayItems, options.summaryAnimationFrom);
   refreshPanelSummaryRate();
   panelState.hasRenderedPanel = true;
@@ -100,6 +69,77 @@ function renderPanelTopbarHtml(displayItems) {
     <header class="wp-topbar${panelState.searchOpen ? " is-searching" : ""}">
       ${panelState.searchOpen ? renderPanelSearchHtml() : renderPanelSummaryHtml(displayItems)}
     </header>
+  `;
+}
+
+function renderSettingsBackgroundGrid() {
+  return `
+    <div class="wp-background-grid" role="radiogroup" aria-label="Background">
+      ${backgroundThemeOptions().map((theme) => {
+        const isSelected = theme.id === panelState.backgroundTheme;
+        return `
+          <button class="wp-background-choice${isSelected ? " is-selected" : ""}" type="button" role="radio" aria-checked="${isSelected}" data-background-theme="${escapeAttribute(theme.id)}">
+            <span class="wp-background-swatch wp-background-swatch-${escapeAttribute(theme.id)}" aria-hidden="true">
+              <span class="wp-background-check">${isSelected ? lucideCheckIcon("wp-background-check-icon") : ""}</span>
+            </span>
+            <span>${escapeHtml(theme.label)}</span>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function renderCategoryFilters(filterCategories) {
+  return `
+    ${filterCategories.map((category) => {
+      const isAll = category.id === "all";
+      const isActive = category.id === panelState.activeCategory;
+      return `
+        <span class="wp-filter-shell${isActive ? " is-active" : ""}${isAll ? " is-all" : ""}">
+          <button class="wp-filter${isActive ? " is-active" : ""}" data-category="${escapeAttribute(category.id)}" type="button">
+            ${escapeHtml(category.label)}
+          </button>
+          ${isAll ? "" : `
+            <button class="wp-filter-remove" type="button" aria-label="Remove ${escapeAttribute(category.label)}" data-remove-category-prompt="${escapeAttribute(category.id)}">
+              ${lucideXIcon("wp-filter-remove-icon")}
+            </button>
+          `}
+        </span>
+      `;
+    }).join("")}
+    <button class="wp-filter wp-filter-add${panelState.categoryComposerOpen ? " is-active" : ""}" type="button" aria-label="Add category" data-add-category>
+      ${lucidePlusIcon("wp-filter-add-icon")}
+    </button>
+  `;
+}
+
+function renderCategoryComposer() {
+  return `
+    <form class="wp-category-composer wp-popover" data-category-form>
+      <input data-category-input type="text" placeholder="New category" maxlength="28" autocomplete="off" aria-label="New category">
+      <button class="wp-category-submit" type="submit">Add</button>
+      <button class="wp-category-cancel" type="button" aria-label="Cancel category" data-cancel-category>${lucideXIcon("wp-category-cancel-icon")}</button>
+    </form>
+  `;
+}
+
+function renderDeleteCategoryDialog() {
+  const category = panelState.categories.find((item) => item.id === panelState.deleteCategoryId);
+  if (!category) {
+    return "";
+  }
+
+  return `
+    <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-category></div>
+    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-label="Delete category">
+      <h3>Delete ${escapeHtml(category.label)}?</h3>
+      <p>Items stay saved and move back to All.</p>
+      <div class="wp-confirm-actions">
+        <button class="wp-confirm-cancel" type="button" data-cancel-delete-category>Cancel</button>
+        <button class="wp-confirm-delete" type="button" data-confirm-delete-category="${escapeAttribute(category.id)}">Delete</button>
+      </div>
+    </section>
   `;
 }
 

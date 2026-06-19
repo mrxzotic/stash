@@ -44,6 +44,8 @@ function closeStashPanel() {
   }
   panelState.open = false;
   panelState.settingsOpen = false;
+  panelState.categoryComposerOpen = false;
+  panelState.deleteCategoryId = "";
   panelState.hasRenderedPanel = false;
   panelState.highlightedItemId = "";
   window.clearTimeout(panelState.highlightTimer);

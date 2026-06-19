@@ -157,6 +157,97 @@ function panelStylesChunk3() {
       stroke-linejoin: round;
     }
 
+    .wp-background-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .wp-background-choice {
+      min-width: 0;
+      min-height: 74px;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(60, 60, 67, 0.12);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--foreground);
+      text-align: left;
+      font-size: var(--text-control);
+      font-weight: 720;
+      transition:
+        border-color 140ms ease,
+        background 140ms ease,
+        transform 140ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .wp-background-choice:hover,
+    .wp-background-choice:focus-visible {
+      outline: 0;
+      border-color: rgba(8, 11, 16, 0.22);
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .wp-background-choice.is-selected {
+      border-color: rgba(8, 11, 16, 0.74);
+      background: #fff;
+    }
+
+    .wp-background-swatch {
+      position: relative;
+      min-height: 34px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(8, 11, 16, 0.08);
+    }
+
+    .wp-background-swatch-warm {
+      background:
+        radial-gradient(circle at 24% 22%, rgba(255, 255, 255, 0.95), transparent 40%),
+        linear-gradient(135deg, #fbfbf8, #efe7db 54%, #f6f1e8);
+    }
+
+    .wp-background-swatch-white {
+      background:
+        radial-gradient(circle at 28% 24%, #fff, transparent 38%),
+        linear-gradient(135deg, #fff, #f2f2f2);
+    }
+
+    .wp-background-swatch-ice {
+      background:
+        radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 0.95), transparent 38%),
+        linear-gradient(135deg, #f6fbff, #dfeeff);
+    }
+
+    .wp-background-check {
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      width: 18px;
+      height: 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(8, 11, 16, 0.92);
+      color: #fff;
+    }
+
+    .wp-background-check:empty {
+      display: none;
+    }
+
+    .wp-background-check-icon {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     .wp-category-list {
       max-height: 160px;
       display: grid;

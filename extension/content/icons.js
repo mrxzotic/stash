@@ -41,6 +41,15 @@ function lucideXIcon(className = "wp-lucide") {
   `;
 }
 
+function lucidePlusIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 5v14"/>
+      <path d="M5 12h14"/>
+    </svg>
+  `;
+}
+
 function lucideLinkIcon(className = "wp-lucide") {
   return `
     <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
