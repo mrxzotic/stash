@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Wishlisted",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Save products from any shop into a clean visual wishlist.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
@@ -30,7 +30,37 @@
   "content_scripts": [
     {
       "matches": ["http://*/*", "https://*/*"],
-      "js": ["content.js"],
+      "js": [
+        "content/constants.js",
+        "content/lifecycle.js",
+        "content/panel/render.js",
+        "content/panel/events.js",
+        "content/panel/items.js",
+        "content/icons.js",
+        "content/extractors/main.js",
+        "content/extractors/jsonld.js",
+        "content/extractors/dom.js",
+        "content/extractors/embedded.js",
+        "content/extractors/enrich.js",
+        "content/extractors/context.js",
+        "content/storage.js",
+        "content/overlays.js",
+        "content/styles/panel-1.js",
+        "content/styles/panel-2.js",
+        "content/styles/panel-3.js",
+        "content/styles/panel-4.js",
+        "content/styles/panel-5.js",
+        "content/styles/panel.js",
+        "content/styles/overlay.js",
+        "content/pricing/dom.js",
+        "content/storage-settings.js",
+        "content/pricing/parse.js",
+        "content/pricing/rates.js",
+        "content/media.js",
+        "content/text.js",
+        "content/utils.js",
+        "content/bootstrap.js"
+      ],
       "run_at": "document_idle"
     }
   ],

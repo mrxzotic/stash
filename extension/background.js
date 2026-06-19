@@ -1,6 +1,37 @@
 const MENU_ROOT_ID = "wishlisted-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
+const CONTENT_SCRIPT_FILES = [
+  "content/constants.js",
+  "content/lifecycle.js",
+  "content/panel/render.js",
+  "content/panel/events.js",
+  "content/panel/items.js",
+  "content/icons.js",
+  "content/extractors/main.js",
+  "content/extractors/jsonld.js",
+  "content/extractors/dom.js",
+  "content/extractors/embedded.js",
+  "content/extractors/enrich.js",
+  "content/extractors/context.js",
+  "content/storage.js",
+  "content/overlays.js",
+  "content/styles/panel-1.js",
+  "content/styles/panel-2.js",
+  "content/styles/panel-3.js",
+  "content/styles/panel-4.js",
+  "content/styles/panel-5.js",
+  "content/styles/panel.js",
+  "content/styles/overlay.js",
+  "content/pricing/dom.js",
+  "content/storage-settings.js",
+  "content/pricing/parse.js",
+  "content/pricing/rates.js",
+  "content/media.js",
+  "content/text.js",
+  "content/utils.js",
+  "content/bootstrap.js"
+];
 
 chrome.runtime.onInstalled.addListener(() => {
   void rebuildContextMenus();
@@ -115,7 +146,7 @@ async function ensureContentScript(tabId) {
     try {
       await chrome.scripting.executeScript({
         target: { tabId },
-        files: ["content.js"]
+        files: CONTENT_SCRIPT_FILES
       });
       return true;
     } catch (error) {
