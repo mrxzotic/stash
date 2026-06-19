@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-product-card-context-anchor-currency-roll-v1";
+var CONTENT_VERSION = "2026-06-19-rimowa-price-format-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

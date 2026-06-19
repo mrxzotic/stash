@@ -195,11 +195,17 @@ function parseLocalizedNumber(value) {
   }
 
   if (text.includes(",") && text.includes(".")) {
-    text = text.replace(/,/g, "");
+    const commaIndex = text.lastIndexOf(",");
+    const dotIndex = text.lastIndexOf(".");
+    text = commaIndex > dotIndex
+      ? text.replace(/\./g, "").replace(",", ".")
+      : text.replace(/,/g, "");
   } else if (text.includes(",") && !text.includes(".")) {
     const commaIndex = text.lastIndexOf(",");
     const decimals = text.length - commaIndex - 1;
     text = decimals === 2 ? text.replace(",", ".") : text.replace(/,/g, "");
+  } else if (text.includes(".") && /^\d{1,3}(?:\.\d{3})+$/.test(text)) {
+    text = text.replace(/\./g, "");
   }
 
   const amount = Number.parseFloat(text);
