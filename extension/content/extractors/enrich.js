@@ -5,9 +5,13 @@ async function enrichProduct(product) {
 
   const pageProduct = await fetchProductPageProduct(product);
   if (pageProduct.title || pageProduct.priceText || pageProduct.imageUrl) {
+    const preferFetchedImage = shouldPreferFetchedImage(product, pageProduct);
     product = shouldPreferFetchedProduct(product, pageProduct)
       ? mergeProducts([pageProduct, product])
       : mergeProducts([product, pageProduct]);
+    if (preferFetchedImage) {
+      product = compactObject({ ...product, imageUrl: pageProduct.imageUrl });
+    }
   }
 
   const shopifyProduct = await fetchShopifyProduct(product.url);
@@ -38,6 +42,15 @@ function shouldPreferFetchedProduct(product, pageProduct) {
     (!product?.priceText && !Number.isFinite(product?.priceAmount) && pageProduct?.priceText) ||
       looksLikeDescriptiveTitle(product?.title) ||
       !product?.title
+  );
+}
+
+function shouldPreferFetchedImage(product, pageProduct) {
+  return Boolean(
+    product?.fromContext &&
+      product?.imageUrl &&
+      pageProduct?.imageUrl &&
+      normalizeUrl(product.imageUrl) !== normalizeUrl(pageProduct.imageUrl)
   );
 }
 
@@ -80,9 +93,14 @@ function needsFetchedProductPage(product) {
       (!product.priceText ||
         !Number.isFinite(product.priceAmount) ||
         !product.imageUrl ||
+        needsFetchedProductImage(product) ||
         looksLikeDescriptiveTitle(product.title) ||
         !product.title)
   );
+}
+
+function needsFetchedProductImage(product) {
+  return Boolean(product?.fromContext && product?.url && product?.imageUrl);
 }
 
 function extractFromFetchedProductPage(doc, productUrl) {

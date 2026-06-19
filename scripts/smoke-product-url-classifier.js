@@ -26,7 +26,9 @@ vm.createContext(sandbox);
   "extension/content/pricing/rates.js",
   "extension/content/pricing/parse.js",
   "extension/content/extractors/main.js",
-  "extension/content/extractors/context.js"
+  "extension/content/extractors/context.js",
+  "extension/content/extractors/jsonld.js",
+  "extension/content/extractors/enrich.js"
 ].forEach((file) => {
   vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), sandbox, {
     filename: file
@@ -126,4 +128,46 @@ assert.equal(
   "Image clicks should prefer higher-resolution srcset candidates over context srcUrl"
 );
 
-console.log("product URL classifier and extraction smoke passed");
+const pdpImage =
+  "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
+sandbox.location = new URL("https://www.on.com/en-fi/shop/last-season");
+sandbox.document.title = "Last season";
+sandbox.fetch = async () => ({
+  ok: true,
+  text: async () => "<html></html>",
+  json: async () => ({})
+});
+sandbox.DOMParser = class {
+  parseFromString() {
+    return {
+      title: "Women's Cloudrunner 2 | On",
+      body: { textContent: "" },
+      querySelectorAll: () => [],
+      querySelector: (selector) => {
+        if (selector.includes("og:image")) {
+          return { content: pdpImage };
+        }
+        return null;
+      }
+    };
+  }
+};
+
+sandbox.enrichProduct({
+  fromContext: true,
+  title: "Cloudrunner 2",
+  brand: "On",
+  url: onProductUrl,
+  priceText: "125 €",
+  priceAmount: 125,
+  currency: "EUR",
+  imageUrl: lowResOnImage
+}).then((enriched) => {
+  assert.equal(enriched.imageUrl, pdpImage, "Context cards should enrich image from the PDP");
+  assert.equal(enriched.priceAmount, 125, "PDP image enrichment should preserve card price");
+  assert.equal(enriched.title, "Cloudrunner 2", "PDP image enrichment should preserve card title");
+  console.log("product URL classifier and extraction smoke passed");
+}).catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

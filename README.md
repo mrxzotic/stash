@@ -31,7 +31,7 @@ The extension requests broad `http://*/*` and `https://*/*` host access because 
 
 Current network behavior is limited to user-triggered save/open flows:
 
-- Product-page enrichment can fetch the same-origin product page when the clicked card is missing title, image, or price.
+- Product-page enrichment can fetch the same-origin product page when the clicked card is missing title, image, price, or a sharper product image.
 - Shopify enrichment can fetch a matching same-origin `/products/<handle>.js` endpoint.
 - Currency totals can fetch RUB exchange rates from `https://open.er-api.com/v6/latest/<currency>` and cache the numeric rate locally.
 
