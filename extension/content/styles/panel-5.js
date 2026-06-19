@@ -55,10 +55,11 @@ function panelStylesChunk5() {
     .wp-source-favicon {
       position: absolute;
       inset: 2px;
-      background-image: var(--wp-favicon-url);
-      background-position: center;
-      background-repeat: no-repeat;
-      background-size: contain;
+      width: calc(100% - 4px);
+      height: calc(100% - 4px);
+      display: block;
+      object-fit: contain;
+      object-position: center;
     }
 
     .wp-site-price,
