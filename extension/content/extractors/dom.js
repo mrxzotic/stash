@@ -70,6 +70,18 @@ function extractFromCommonSelectors() {
     ".product__vendor",
     ".product-vendor"
   ]);
+  const imageElement = firstElement([
+    '[data-testid*="product" i] img',
+    '[class*="product" i] img',
+    '[class*="gallery" i] img',
+    '[class*="media" i] img',
+    "main img"
+  ]);
+  const imageAltTitle = cleanText(
+    imageElement?.getAttribute("alt") ||
+      imageElement?.getAttribute("title")
+  );
+  const titleCandidate = isNoiseLine(title) ? imageAltTitle : title || imageAltTitle;
   const priceText = textFromFirst([
     '[data-testid*="price" i]',
     '[data-test*="price" i]',
@@ -81,20 +93,12 @@ function extractFromCommonSelectors() {
   const currency = currencyFromText(priceText) || findVisibleCurrencyCode(document.body);
   const price = normalizePrice({ text: priceText, currency });
   const image =
-    bestImageFromElement(
-      firstElement([
-        '[data-testid*="product" i] img',
-        '[class*="product" i] img',
-        '[class*="gallery" i] img',
-        '[class*="media" i] img',
-        "main img"
-      ])
-    ) ||
+    bestImageFromElement(imageElement) ||
     metaContent("og:image") ||
     metaContent("twitter:image");
 
   return compactObject({
-    title: cleanProductTitle(title, brand, location.href),
+    title: cleanProductTitle(titleCandidate, brand, location.href),
     brand: cleanBrandName(brand),
     url: normalizeUrl(
       document.querySelector('link[rel="canonical"]')?.href ||

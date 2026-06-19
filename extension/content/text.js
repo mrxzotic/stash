@@ -1,11 +1,12 @@
 function isNoiseLine(value) {
-  return /^(new|new in|new season|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|copy|copied|shipping|returns|free shipping)$/i.test(
-    cleanText(value)
+  const text = cleanText(value);
+  return /^(new|new in|new season|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|shipping|returns|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging)$/i.test(
+    text
   ) || /^\d+\s+available\s+colou?rs?$/i.test(
-    cleanText(value)
+    text
   ) || /^(favorite|share|copy link|copied link|telegram|vk|vkontakte|whatsapp|pinterest|поделиться|скопировать|скопировать ссылку|ссылка скопирована|вконтакте|избранное)$/i.test(
-    cleanText(value)
-  ) || /^image:/i.test(cleanText(value));
+    text
+  ) || /^image:/i.test(text);
 }
 
 function looksLikeMeasurementLine(value) {
@@ -18,7 +19,7 @@ function looksLikeMeasurementLine(value) {
 }
 
 function looksLikeProductName(value) {
-  return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|coats?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|totes?|backpacks?|luggage|suitcases?|check-?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
+  return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|coats?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|totes?|backpacks?|luggage|suitcases?|check[\s-]?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
     cleanText(value)
   );
 }
@@ -118,8 +119,13 @@ function faviconLinkScore(link) {
 
 function cleanTitle(value, brand = "") {
   const brandText = cleanBrandName(brand);
+  const titleText = stripTitleActionNoise(stripPriceFromText(value));
+  if (isNoiseLine(titleText)) {
+    return "";
+  }
+
   const cleaned = stripLeadingBrandFromTitle(
-    stripTitleActionNoise(stripPriceFromText(value))
+    titleText
       .replace(/\s*\|\s*FARFETCH.*$/i, "")
       .replace(/\s*-\s*FARFETCH.*$/i, "")
       .replace(/\s*\|\s*LOEWE.*$/i, "")
@@ -136,6 +142,10 @@ function cleanTitle(value, brand = "") {
       .replace(/\s+in\s+(black|white|blue|red|green|pink|grey|gray|brown|beige)$/i, " $1"),
     brandText
   );
+
+  if (isNoiseLine(cleaned)) {
+    return "";
+  }
 
   return titleCaseTitle(cleaned);
 }
@@ -215,6 +225,7 @@ function cleanUrlTitleSegment(value) {
     .replace(/\.(?:html?|aspx|php)$/i, "")
     .replace(/\bitem[-_\s]*\d+.*$/i, "")
     .replace(/[-_]+/g, " ")
+    .replace(/\bcheck\s+in\b/gi, "check-in")
     .replace(/\s+in\s+([a-z]+)$/i, " $1")
     .replace(/\b(?:men|women|mens|womens|unisex|kids)\b$/i, "")
     .replace(/\s+/g, " ")

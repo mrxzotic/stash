@@ -19,5 +19,6 @@ Work like a pragmatic product engineer.
 - Do not use remote favicon proxies or passive third-party asset lookups for saved items; those leak saved shop domains. Use local fallback glyphs unless the user explicitly accepts the privacy tradeoff.
 - Storage changes must be version-aware: keep stable keys, add explicit migrations for schema changes, and preserve previously saved stash items.
 - Card data quality is a hard constraint: never ship visible titles containing SKU/catalog/article IDs, raw SEO/material descriptions, availability copy, social/share text, or other parser noise. If the parser cannot produce a short commercial model name plus brand and visible site price when a price exists on the page, fix the parser before polishing UI.
+- Parser/extraction changes must include a targeted regression smoke for the failing shop/case plus at least one nearby existing parser case before commit; do not rely on screenshots alone.
 - Do not add visible containers, pills, cards, badges, or backgrounds around simple text or icons unless explicitly requested.
 - Keep final updates short and factual.

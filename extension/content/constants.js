@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-masonry-loewe-cta-price-glass-v1";
+var CONTENT_VERSION = "2026-06-19-loewe-cta-price-glass-parser-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

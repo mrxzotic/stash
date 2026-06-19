@@ -62,6 +62,9 @@ function extractProduct(context) {
       ];
   const detailSources = isProductPageContext ? pageProductSources : sources;
   const urlSources = isProductPageContext ? [contextualProduct, ...pageProductSources] : sources;
+  const priceSources = isProductPageContext
+    ? [pagePriceProduct, commonSelectorProduct, microdataProduct, jsonLdProduct, embeddedProduct, metaProduct]
+    : detailSources;
   const pageImageSources = [
     jsonLdProduct,
     metaProduct,
@@ -75,12 +78,14 @@ function extractProduct(context) {
       ? [contextualProduct]
       : sources;
   const url = isProductPageContext ? pageUrl : firstValue(urlSources, "url") || pageUrl;
+  const rawBrand = firstValue(detailSources, "brand") || contextualProduct.brand;
+  const rawTitle = firstProductTitle([...detailSources, contextualProduct], document.title, rawBrand);
   const price = normalizePrice({
-    amount: firstValue(detailSources, "priceAmount"),
-    currency: firstValue(detailSources, "currency"),
-    text: firstValue(detailSources, "priceText"),
-    compareAtAmount: firstValue(detailSources, "compareAtPriceAmount"),
-    compareAtText: firstValue(detailSources, "compareAtPriceText")
+    amount: firstValue(priceSources, "priceAmount"),
+    currency: firstValue(priceSources, "currency"),
+    text: firstValue(priceSources, "priceText"),
+    compareAtAmount: firstValue(priceSources, "compareAtPriceAmount"),
+    compareAtText: firstValue(priceSources, "compareAtPriceText")
   });
 
   return compactObject({
@@ -88,12 +93,8 @@ function extractProduct(context) {
     sourceDomain: sourceDomainFromUrl(url),
     faviconUrl: faviconUrlFromUrl(url),
     url,
-    title: cleanProductTitle(
-      firstValue(detailSources, "title") || contextualProduct.title || document.title,
-      firstValue(detailSources, "brand") || contextualProduct.brand,
-      url
-    ),
-    brand: cleanBrandName(firstValue(detailSources, "brand") || contextualProduct.brand) || sourceNameFromUrl(url),
+    title: cleanProductTitle(rawTitle, rawBrand, url),
+    brand: cleanBrandName(rawBrand) || sourceNameFromUrl(url),
     priceText: price.originalText,
     priceAmount: price.amount,
     currency: price.currency,
@@ -104,4 +105,14 @@ function extractProduct(context) {
     rawCategory: firstValue(detailSources, "rawCategory") || contextualProduct.rawCategory,
     fromProductPage: isProductPageContext
   });
+}
+
+function firstProductTitle(sources, fallbackTitle, brand) {
+  for (const source of sources) {
+    if (cleanTitle(source?.title, brand)) {
+      return source.title;
+    }
+  }
+
+  return fallbackTitle;
 }

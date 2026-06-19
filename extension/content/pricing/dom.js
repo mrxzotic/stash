@@ -3,15 +3,19 @@ function metaContent(property) {
 }
 
 function findVisiblePriceText(scope = document) {
-  const candidates = visiblePriceCandidates(scope);
+  const candidates = visiblePriceCandidateEntries(scope);
 
   if (candidates.length <= 1) {
-    return candidates[0];
+    return candidates[0]?.text;
   }
 
-  const firstPrice = parsePricesFromText(candidates[0])[0];
+  if (candidates[0].isCommerceAction) {
+    return candidates[0].text;
+  }
+
+  const firstPrice = parsePricesFromText(candidates[0].text)[0];
   const companion = candidates.slice(1, 6).find((candidate) => {
-    const price = parsePricesFromText(candidate)[0];
+    const price = parsePricesFromText(candidate.text)[0];
     return (
       price &&
       firstPrice &&
@@ -20,10 +24,14 @@ function findVisiblePriceText(scope = document) {
     );
   });
 
-  return companion ? `${candidates[0]} ${companion}` : candidates[0];
+  return companion ? `${candidates[0].text} ${companion.text}` : candidates[0].text;
 }
 
 function visiblePriceCandidates(scope = document) {
+  return visiblePriceCandidateEntries(scope).map((candidate) => candidate.text);
+}
+
+function visiblePriceCandidateEntries(scope = document) {
   const selectors = [
     '[itemprop*="price" i]',
     '[content*="$"], [content*="€"], [content*="£"], [content*="¥"], [content*="₽"], [content*="₴"]',
@@ -51,16 +59,23 @@ function visiblePriceCandidates(scope = document) {
       if (text.length <= 96 && looksLikePrice(text)) {
         candidates.push({
           text,
-          score: priceElementScore(node, text)
+          score: priceElementScore(node, text),
+          isCommerceAction: isCommerceActionPriceElement(node)
         });
       }
     });
   });
 
+  const seen = new Set();
   return candidates
     .sort((a, b) => b.score - a.score)
-    .map((candidate) => candidate.text)
-    .filter((text, index, list) => list.indexOf(text) === index)
+    .filter((candidate) => {
+      if (seen.has(candidate.text)) {
+        return false;
+      }
+      seen.add(candidate.text);
+      return true;
+    })
     .slice(0, 8);
 }
 
@@ -130,6 +145,7 @@ function priceElementScore(element, text) {
 
   if (/price|amount|cost/i.test(label)) score += 12;
   if (element.matches?.("meta, [itemprop*='price' i]")) score += 8;
+  if (isCommerceActionPriceElement(element)) score += 30;
   if (element.closest?.("main")) score += 3;
   if (element.closest?.("button, [role='button']")) score += 2;
   if (parsePricesFromText(text).length > 1) score += 3;
@@ -137,6 +153,21 @@ function priceElementScore(element, text) {
   if (/shipping|delivery|free|returns/i.test(text)) score -= 10;
 
   return score;
+}
+
+function isCommerceActionPriceElement(element) {
+  const host = element.closest?.("button, [role='button']") || element;
+  const text = cleanText([
+    host.getAttribute?.("aria-label"),
+    host.getAttribute?.("title"),
+    host.innerText,
+    host.textContent
+  ].filter(Boolean).join(" "));
+
+  return (
+    looksLikePrice(text) &&
+    /\b(?:add\s+to\s+(?:basket|bag|cart)|buy(?:\s+now)?|checkout)\b/i.test(text)
+  );
 }
 
 function findVisibleCurrencyCode(scope = document) {
