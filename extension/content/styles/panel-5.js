@@ -50,6 +50,11 @@ function panelStylesChunk5() {
       font-size: var(--text-micro);
       line-height: 1;
       font-weight: 700;
+      transition: opacity 160ms ease;
+    }
+
+    .wp-source-icon.has-favicon .wp-source-fallback {
+      opacity: 0;
     }
 
     .wp-source-favicon {
@@ -60,6 +65,7 @@ function panelStylesChunk5() {
       display: block;
       object-fit: contain;
       object-position: center;
+      z-index: 1;
     }
 
     .wp-site-price,

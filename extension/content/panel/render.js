@@ -317,9 +317,20 @@ function bindImageFallbacks(root) {
     if (image.__stashImageFallbackBound) {
       return;
     }
-    image.addEventListener("error", () => image.remove());
+    if (image.complete && image.naturalWidth > 0) {
+      markSourceFaviconLoaded(image);
+    }
+    image.addEventListener("load", () => markSourceFaviconLoaded(image));
+    image.addEventListener("error", () => {
+      image.closest(".wp-source-icon")?.classList.remove("has-favicon");
+      image.remove();
+    });
     image.__stashImageFallbackBound = true;
   });
+}
+
+function markSourceFaviconLoaded(image) {
+  image.closest(".wp-source-icon")?.classList.add("has-favicon");
 }
 
 function syncProductImageRatio(image) {

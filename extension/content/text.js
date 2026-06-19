@@ -98,6 +98,11 @@ function faviconUrlForSource(value, storedFaviconUrl = "") {
     return cleanText(storedFaviconUrl);
   }
 
+  const localIcon = localSourceIconUrl(target);
+  if (localIcon) {
+    return localIcon;
+  }
+
   const stored = cleanText(storedFaviconUrl);
   if (stored && !shouldReplaceStoredFavicon(target, stored)) {
     return stored;
@@ -149,6 +154,11 @@ function faviconLinkSize(link) {
 }
 
 function fallbackFaviconUrl(target) {
+  const localIcon = localSourceIconUrl(target);
+  if (localIcon) {
+    return localIcon;
+  }
+
   const host = target.hostname.toLowerCase();
   if (host === "eu.aimeleondore.com") {
     return "https://eu.aimeleondore.com/cdn/shop/files/32x32_110654c9-b299-44a8-b950-40e12e132f45.png?v=1679431768";
@@ -159,6 +169,27 @@ function fallbackFaviconUrl(target) {
   }
 
   return `${target.origin}/favicon.ico`;
+}
+
+function localSourceIconUrl(target) {
+  const host = target.hostname.toLowerCase();
+  if (sameSiteHost(host, "www.aimeleondore.com")) {
+    return extensionAssetUrl("assets/source-aimeleondore.png");
+  }
+
+  if (sameSiteHost(host, "www.farfetch.com")) {
+    return extensionAssetUrl("assets/source-farfetch.svg");
+  }
+
+  return "";
+}
+
+function extensionAssetUrl(path) {
+  if (typeof chrome === "undefined" || !chrome.runtime?.getURL) {
+    return "";
+  }
+
+  return chrome.runtime.getURL(path);
 }
 
 function shouldReplaceStoredFavicon(target, storedFaviconUrl) {
