@@ -128,6 +128,52 @@ assert.equal(
   "Image clicks should prefer higher-resolution srcset candidates over context srcUrl"
 );
 
+const cloudmonsterUrl =
+  "https://www.on.com/en-fi/products/cloudmonster-2-m-3me1012/mens/white-frost-shoes-3ME10120664";
+const cloudmonsterThumbnail =
+  "https://upload.on-running.com/spree/products/5287/product/cef0fe2d4195560075ae527a9da433e9540c9714.png?1773367570";
+const cloudmonsterGalleryImage =
+  "https://images.ctfassets.net/hnk2vsx53n6l/5Djt5G367gJwPXINVW9duZ/a28cf7f734243e0fb1ed6897f7f1724d/cef0fe2d4195560075ae527a9da433e9540c9714.png?w=4000&h=4000&fm=webp&f=center&fit=fill&q=80";
+sandbox.location = new URL(cloudmonsterUrl);
+sandbox.document.title = "Men's Cloudmonster 2 | White | On Finland";
+sandbox.findJsonLdProduct = () => ({
+  title: "Men's Cloudmonster 2 White | Frost",
+  brand: "On",
+  url: cloudmonsterUrl,
+  priceText: "130 €",
+  priceAmount: 130,
+  currency: "EUR",
+  compareAtPriceText: "190 €",
+  compareAtPriceAmount: 190,
+  imageUrl: cloudmonsterThumbnail
+});
+sandbox.extractFromCommonSelectors = () => ({
+  title: "Cloudmonster 2",
+  brand: "On",
+  url: cloudmonsterUrl,
+  priceText: "130 €",
+  priceAmount: 130,
+  currency: "EUR",
+  compareAtPriceText: "190 €",
+  compareAtPriceAmount: 190,
+  imageUrl: cloudmonsterGalleryImage
+});
+sandbox.extractFromMeta = () => ({});
+sandbox.extractFromPagePrice = () => ({});
+sandbox.extractFromContext = () => ({
+  fromContext: true,
+  url: cloudmonsterUrl,
+  imageUrl: cloudmonsterThumbnail
+});
+
+const cloudmonsterProduct = sandbox.extractProduct({ srcUrl: cloudmonsterThumbnail });
+assert.equal(
+  cloudmonsterProduct.imageUrl,
+  cloudmonsterGalleryImage,
+  "On PDP saves should prefer CTF gallery images over 200px upload thumbnails"
+);
+assert.equal(cloudmonsterProduct.priceAmount, 130, "On PDP image ranking should preserve price");
+
 const pdpImage =
   "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
 sandbox.location = new URL("https://www.on.com/en-fi/shop/last-season");

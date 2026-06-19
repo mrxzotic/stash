@@ -101,7 +101,7 @@ function extractProduct(context) {
     compareAtPriceText: price.compareAtText,
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
-    imageUrl: firstValue(imageSources, "imageUrl"),
+    imageUrl: bestProductImageFromSources(imageSources, url),
     rawCategory: firstValue(detailSources, "rawCategory") || contextualProduct.rawCategory,
     fromProductPage: isProductPageContext
   });

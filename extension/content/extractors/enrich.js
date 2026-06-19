@@ -326,7 +326,7 @@ function mergeProducts(products) {
     compareAtPriceText: price.compareAtText,
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
-    imageUrl: firstValue(sources, "imageUrl"),
+    imageUrl: bestProductImageFromSources(sources, url),
     rawCategory: firstValue(sources, "rawCategory")
   });
 }

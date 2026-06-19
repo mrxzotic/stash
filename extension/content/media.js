@@ -34,6 +34,65 @@ function bestProductImageUrl(context, image, scope) {
   );
 }
 
+function bestProductImageFromSources(sources, productUrl) {
+  const first = firstValue(sources, "imageUrl");
+  if (!shouldRankProductImageSources(productUrl)) {
+    return first || "";
+  }
+
+  const candidates = sources
+    .map((source, index) => ({
+      url: source?.imageUrl,
+      score: productImageUrlScore(source?.imageUrl, index)
+    }))
+    .filter((candidate) => isUsableProductImageUrl(candidate.url));
+
+  return toAbsoluteUrl(candidates.sort((a, b) => b.score - a.score)[0]?.url || first || "");
+}
+
+function shouldRankProductImageSources(productUrl) {
+  try {
+    const url = new URL(productUrl || location.href, location.href);
+    return /(^|\.)on\.com$/i.test(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function productImageUrlScore(value, index) {
+  try {
+    const url = new URL(value || "", location.href);
+    let score = Math.max(0, 1000 - index * 10) + productImageDimensionScore(url);
+
+    if (/^images\.ctfassets\.net$/i.test(url.hostname)) {
+      score += 6000;
+    }
+
+    if (
+      /^upload\.on-running\.com$/i.test(url.hostname) &&
+      /\/spree\/products\/\d+\/product\//i.test(url.pathname)
+    ) {
+      score -= 5000;
+    }
+
+    if (/^(?:avif|webp)$/i.test(url.searchParams.get("fm") || "")) {
+      score += 200;
+    }
+
+    return score;
+  } catch {
+    return 0;
+  }
+}
+
+function productImageDimensionScore(url) {
+  return Math.max(
+    ...["w", "width", "h", "height"].map((key) =>
+      Number.parseInt(url.searchParams.get(key), 10) || 0
+    )
+  );
+}
+
 function imageCandidatesFromElement(image, baseScore = 0) {
   if (!image) {
     return [];
