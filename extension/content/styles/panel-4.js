@@ -178,7 +178,7 @@ function panelStylesChunk4() {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-content: start;
-      gap: 24px 16px;
+      column-gap: 16px;
       padding: 168px 24px 56px;
       margin-top: 0;
       overflow-y: auto;
@@ -187,6 +187,13 @@ function panelStylesChunk4() {
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       contain: layout style;
+    }
+
+    .wp-item-column {
+      min-width: 0;
+      display: grid;
+      align-content: start;
+      gap: 24px;
     }
 
     .wp-item {

@@ -230,7 +230,18 @@ function renderPanelItemsOnly(root) {
 }
 
 function renderPanelItemsHtml(items) {
-  return items.length ? items.map(renderPanelItem).join("") : renderPanelEmpty();
+  if (!items.length) {
+    return renderPanelEmpty();
+  }
+
+  const columns = [[], []];
+  items.forEach((item, index) => {
+    columns[index % columns.length].push(renderPanelItem(item));
+  });
+
+  return columns.map(
+    (columnItems) => `<div class="wp-item-column">${columnItems.join("")}</div>`
+  ).join("");
 }
 
 function bindImageFallbacks(root) {
