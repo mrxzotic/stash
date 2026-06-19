@@ -13,6 +13,7 @@ async function upsertItem(item) {
 }
 
 async function setLocalStorageValue(key, value) {
+  assertKnownStorageKeys(key);
   const sanitized = sanitizeStorageValue(value);
   try {
     await chrome.storage.local.set({ [key]: sanitized });
@@ -22,6 +23,7 @@ async function setLocalStorageValue(key, value) {
 }
 
 async function getLocalStorageValue(keys) {
+  assertKnownStorageKeys(keys);
   try {
     return await chrome.storage.local.get(keys);
   } catch (error) {
@@ -37,7 +39,23 @@ function normalizeExtensionError(error) {
   return error;
 }
 
-function sanitizeStorageValue(value) {
+function assertKnownStorageKeys(keys) {
+  const keyList = Array.isArray(keys)
+    ? keys
+    : typeof keys === "string"
+      ? [keys]
+      : keys && typeof keys === "object"
+        ? Object.keys(keys)
+        : [];
+
+  for (const key of keyList) {
+    if (!ALLOWED_STORAGE_KEYS.has(key)) {
+      throw new Error("Unexpected Stash storage key.");
+    }
+  }
+}
+
+function sanitizeStorageValue(value, seen = new WeakSet(), depth = 0) {
   if (value === undefined || typeof value === "function" || typeof value === "symbol") {
     return undefined;
   }
@@ -46,21 +64,40 @@ function sanitizeStorageValue(value) {
     return Number.isFinite(value) ? value : undefined;
   }
 
+  if (typeof value === "string") {
+    return value.slice(0, STORAGE_MAX_STRING_LENGTH);
+  }
+
   if (value === null || typeof value !== "object") {
     return value;
   }
 
+  if (depth >= STORAGE_MAX_DEPTH || seen.has(value)) {
+    return undefined;
+  }
+  seen.add(value);
+
   if (Array.isArray(value)) {
     return value
-      .map(sanitizeStorageValue)
+      .slice(0, STORAGE_MAX_ARRAY_LENGTH)
+      .map((entry) => sanitizeStorageValue(entry, seen, depth + 1))
       .filter((entry) => entry !== undefined);
   }
 
   return Object.fromEntries(
     Object.entries(value)
-      .map(([entryKey, entryValue]) => [entryKey, sanitizeStorageValue(entryValue)])
-      .filter(([, entryValue]) => entryValue !== undefined)
+      .slice(0, STORAGE_MAX_OBJECT_KEYS)
+      .map(([entryKey, entryValue]) => [
+        sanitizeStorageObjectKey(entryKey),
+        sanitizeStorageValue(entryValue, seen, depth + 1)
+      ])
+      .filter(([entryKey, entryValue]) => entryKey && entryValue !== undefined)
   );
+}
+
+function sanitizeStorageObjectKey(key) {
+  const text = String(key || "").trim().slice(0, 80);
+  return /^[A-Za-z0-9_.:-]+$/.test(text) ? text : "";
 }
 
 async function normalizeItem(product, category, categories) {

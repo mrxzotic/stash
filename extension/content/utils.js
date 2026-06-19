@@ -49,6 +49,9 @@ function compactObject(object) {
 function normalizeUrl(value) {
   try {
     const url = new URL(value || location.href, location.href);
+    if (!/^https?:$/i.test(url.protocol)) {
+      return location.href;
+    }
     url.hash = "";
     for (const key of Array.from(url.searchParams.keys())) {
       if (/^(utm_|fbclid|gclid|gbraid|wbraid)/i.test(key)) {
@@ -90,7 +93,8 @@ function toAbsoluteUrl(value) {
     return "";
   }
   try {
-    return new URL(value, location.href).toString();
+    const url = new URL(value, location.href);
+    return /^https?:$/i.test(url.protocol) ? url.toString() : "";
   } catch {
     return "";
   }
@@ -102,7 +106,8 @@ function toAbsoluteUrlFor(value, baseUrl) {
   }
 
   try {
-    return new URL(value, baseUrl || location.href).toString();
+    const url = new URL(value, baseUrl || location.href);
+    return /^https?:$/i.test(url.protocol) ? url.toString() : "";
   } catch {
     return "";
   }

@@ -77,8 +77,7 @@ function sourceNameFromUrl(value) {
 }
 
 function faviconUrlFromUrl(value) {
-  const domain = sourceDomainFromUrl(value);
-  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
+  return "";
 }
 
 function cleanTitle(value, brand = "") {

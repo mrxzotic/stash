@@ -93,12 +93,17 @@ function imageCandidatesFromElement(image, baseScore = 0) {
 
 function isUsableProductImageUrl(value) {
   const text = cleanText(value);
-  if (!text || /^blob:/i.test(text)) {
+  if (!text || /^(?:blob|data|javascript|file):/i.test(text)) {
     return false;
   }
 
-  if (/^data:/i.test(text)) {
-    return text.length > 1000 && !/^data:image\/(?:gif|svg\+xml)/i.test(text);
+  try {
+    const url = new URL(text, location.href);
+    if (!/^https?:$/i.test(url.protocol)) {
+      return false;
+    }
+  } catch {
+    return false;
   }
 
   return !/(?:blank|placeholder|transparent|spacer|sprite|pixel|loader|loading|logo|favicon|icon)\.(?:gif|png|svg|webp|jpg|jpeg)(?:[?#]|$)/i.test(text);

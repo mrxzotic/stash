@@ -1,0 +1,18 @@
+.DS_Store
+
+# Local secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+
+# Local tooling artifacts
+.playwright-cli/
+node_modules/
+npm-debug.log*
+
+# Build/package outputs
+dist/
+build/
+*.zip

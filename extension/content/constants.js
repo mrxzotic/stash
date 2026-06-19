@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-stash-brand-v1";
+var CONTENT_VERSION = "2026-06-19-storage-privacy-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -7,6 +7,17 @@ var CATEGORY_STORAGE_KEY = "stash.categories.v1";
 var CATEGORY_SCHEMA_STORAGE_KEY = "stash.categories.schema.v1";
 var CATEGORY_SCHEMA_VERSION = 2;
 var SETTINGS_STORAGE_KEY = "stash.settings.v1";
+var ALLOWED_STORAGE_KEYS = new Set([
+  STORAGE_KEY,
+  RATE_STORAGE_KEY,
+  CATEGORY_STORAGE_KEY,
+  CATEGORY_SCHEMA_STORAGE_KEY,
+  SETTINGS_STORAGE_KEY
+]);
+var STORAGE_MAX_DEPTH = 8;
+var STORAGE_MAX_ARRAY_LENGTH = 500;
+var STORAGE_MAX_OBJECT_KEYS = 80;
+var STORAGE_MAX_STRING_LENGTH = 8192;
 var DEFAULT_SETTINGS = {
   summaryCurrency: "USD",
   backgroundTheme: "warm"

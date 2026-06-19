@@ -29,6 +29,14 @@ Stash has no backend, accounts, telemetry, or hidden collection. Saved items sta
 
 The extension requests broad `http://*/*` and `https://*/*` host access because it is designed to save products from arbitrary shops. New network requests must be documented and must never execute remote code.
 
+Current network behavior is limited to user-triggered save/open flows:
+
+- Product-page enrichment can fetch the same-origin product page when the clicked card is missing title, image, or price.
+- Shopify enrichment can fetch a matching same-origin `/products/<handle>.js` endpoint.
+- Currency totals can fetch RUB exchange rates from `https://open.er-api.com/v6/latest/<currency>` and cache the numeric rate locally.
+
+Stash does not call a remote favicon proxy. Source icons fall back to local text glyphs.
+
 ## Project structure
 
 ```text
@@ -58,6 +66,7 @@ This repo intentionally has no build step.
 - Keep `extension/content/constants.js` first and `extension/content/bootstrap.js` last in the content-script order.
 - When changing content-script behavior, bump `CONTENT_VERSION` in `extension/content/constants.js`.
 - When changing extension behavior or assets, bump the patch version in `extension/manifest.json`.
+- Keep storage keys namespaced under `stash.*`; schema changes need explicit versioning or migration.
 - Run the cheapest relevant check after edits, usually `node --check` for changed JS files.
 
 Useful checks:

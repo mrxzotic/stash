@@ -148,6 +148,12 @@ function renderSettingsSelect({ label, ariaLabel, value, options, dataAttribute 
 function renderPanelItem(item) {
   const brand = formatBrandName(item.brand || item.source || sourceNameFromUrl(item.url));
   const priceHtml = renderSitePriceHtml(item, "wp");
+  const faviconStyle = item.faviconUrl
+    ? ` style="--wp-favicon-url: url('${escapeAttribute(cssUrl(item.faviconUrl))}')"`
+    : "";
+  const faviconNode = item.faviconUrl
+    ? `<span class="wp-source-favicon" aria-hidden="true"></span>`
+    : "";
 
   return `
     <article class="wp-item${item.id === panelState.highlightedItemId ? " is-new" : ""}">
@@ -158,9 +164,9 @@ function renderPanelItem(item) {
       <div class="wp-item-copy">
         <div class="wp-brand-row">
           <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
-          <a class="wp-source-icon" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" title="${escapeAttribute(item.sourceDomain)}" style="--wp-favicon-url: url('${escapeAttribute(cssUrl(item.faviconUrl))}')">
+          <a class="wp-source-icon" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" title="${escapeAttribute(item.sourceDomain)}"${faviconStyle}>
             <span class="wp-source-fallback">${escapeHtml(item.sourceDomain.charAt(0).toUpperCase())}</span>
-            <span class="wp-source-favicon" aria-hidden="true"></span>
+            ${faviconNode}
           </a>
         </div>
         <div class="wp-title-row">
