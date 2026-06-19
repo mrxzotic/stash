@@ -32,6 +32,15 @@ function lucideCheckIcon(className = "wp-lucide") {
   `;
 }
 
+function lucideXIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M18 6 6 18"/>
+      <path d="m6 6 12 12"/>
+    </svg>
+  `;
+}
+
 function lucideLinkIcon(className = "wp-lucide") {
   return `
     <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">

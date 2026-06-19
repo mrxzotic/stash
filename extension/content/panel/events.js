@@ -5,26 +5,14 @@ function bindPanelEvents(root) {
   }
 
   bindImageFallbacks(root);
+  bindPanelSearchEvents(root);
 
-  root.querySelector("[data-panel-search]")?.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    panelState.searchOpen = true;
-    if (panelState.searchOpen) {
-      panelState.settingsOpen = false;
-    }
-    renderStashPanel();
-  });
   root.querySelector("[data-panel-settings]")?.addEventListener("click", () => {
     panelState.settingsOpen = !panelState.settingsOpen;
     if (panelState.settingsOpen) {
       panelState.searchOpen = false;
     }
     renderStashPanel();
-  });
-  root.querySelector("[data-search]")?.addEventListener("input", (event) => {
-    panelState.searchQuery = event.target.value;
-    renderPanelItemsOnly(root);
   });
   root.querySelector(".wp-settings")?.addEventListener("click", (event) => {
     const trigger = event.target.closest("[data-select-trigger]");
@@ -67,7 +55,9 @@ function bindPanelEvents(root) {
     if (!button) {
       return;
     }
-    panelState.searchOpen = false;
+    if (!panelState.searchQuery) {
+      panelState.searchOpen = false;
+    }
     panelState.activeCategory = button.dataset.category;
     renderStashPanel();
   });
@@ -142,7 +132,7 @@ function bindPanelEvents(root) {
         return;
       }
 
-      if (panelState.searchOpen) {
+      if (panelState.searchOpen && !panelState.searchQuery) {
         panelState.searchOpen = false;
         renderStashPanel();
         return;
@@ -159,6 +149,41 @@ function bindPanelEvents(root) {
     });
     root.__stashPanelClickawayBound = true;
   }
+}
+
+function bindPanelSearchEvents(root) {
+  root.querySelector("[data-panel-search]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    panelState.searchOpen = true;
+    panelState.settingsOpen = false;
+    renderStashPanel();
+  });
+
+  root.querySelector("[data-search]")?.addEventListener("input", (event) => {
+    panelState.searchQuery = event.target.value;
+    syncSearchClearButton(root);
+    renderPanelItemsOnly(root);
+  });
+
+  root.querySelector("[data-clear-search]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    panelState.searchQuery = "";
+    panelState.searchOpen = false;
+    renderStashPanel();
+  });
+}
+
+function syncSearchClearButton(root) {
+  const clearButton = root.querySelector("[data-clear-search]");
+  if (!clearButton) {
+    return;
+  }
+
+  const hasQuery = Boolean(panelState.searchQuery);
+  clearButton.disabled = !hasQuery;
+  clearButton.classList.toggle("is-visible", hasQuery);
 }
 
 function toggleSettingsSelect(trigger) {

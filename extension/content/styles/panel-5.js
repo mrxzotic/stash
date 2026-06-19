@@ -153,5 +153,17 @@ function panelStylesChunk5() {
         transform: translateY(0);
       }
     }
+
+    @keyframes wpSearchIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px) scale(.985);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
   `;
 }

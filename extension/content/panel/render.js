@@ -18,28 +18,7 @@ function renderStashPanel() {
   root.innerHTML = `
     <style>${panelStyles()}</style>
     <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stash">
-      <header class="wp-topbar${panelState.searchOpen ? " is-searching" : ""}">
-        ${panelState.searchOpen ? `
-          <label class="wp-inline-search">
-            ${lucideSearchIcon("wp-inline-search-icon")}
-            <span>Search</span>
-            <input data-search type="text" inputmode="search" placeholder="Search saved" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
-          </label>
-        ` : `
-          <span class="wp-summary">
-            <span class="wp-count">${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}</span>
-          </span>
-          <div class="wp-actions">
-            <span class="wp-total" aria-label="Stash total">${escapeHtml(formatPanelSummaryTotal(displayItems, panelState.summaryCurrency))}</span>
-            <button class="wp-icon-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
-              ${lucideSearchIcon()}
-            </button>
-            <button class="wp-icon-button wp-settings-button${panelState.settingsOpen ? " is-active" : ""}" type="button" aria-label="Settings" aria-expanded="${panelState.settingsOpen}" data-panel-settings>
-              ${lucideSettingsIcon()}
-            </button>
-          </div>
-        `}
-      </header>
+      ${renderPanelTopbarHtml(displayItems)}
 
       <section class="wp-settings wp-popover" ${panelState.settingsOpen ? "" : "hidden"}>
         <div class="wp-settings-head">
@@ -109,6 +88,46 @@ function renderStashPanel() {
   focusPanelSearch(root);
   refreshPanelSummaryRate();
   panelState.hasRenderedPanel = true;
+}
+
+function renderPanelTopbarHtml(displayItems) {
+  return `
+    <header class="wp-topbar${panelState.searchOpen ? " is-searching" : ""}">
+      ${panelState.searchOpen ? renderPanelSearchHtml() : renderPanelSummaryHtml(displayItems)}
+    </header>
+  `;
+}
+
+function renderPanelSearchHtml() {
+  const hasQuery = Boolean(panelState.searchQuery);
+
+  return `
+    <div class="wp-inline-search" role="search">
+      ${lucideSearchIcon("wp-inline-search-icon")}
+      <label class="wp-inline-search-label" for="wp-panel-search-input">Search</label>
+      <input id="wp-panel-search-input" data-search type="text" inputmode="search" placeholder="Search saved" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
+      <button class="wp-clear-search${hasQuery ? " is-visible" : ""}" type="button" aria-label="Clear search" data-clear-search ${hasQuery ? "" : "disabled"}>
+        ${lucideXIcon("wp-clear-search-icon")}
+      </button>
+    </div>
+  `;
+}
+
+function renderPanelSummaryHtml(displayItems) {
+  return `
+    <span class="wp-summary">
+      <span class="wp-count">${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}</span>
+    </span>
+    <div class="wp-actions">
+      <span class="wp-total" aria-label="Stash total">${escapeHtml(formatPanelSummaryTotal(displayItems, panelState.summaryCurrency))}</span>
+      <button class="wp-icon-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
+        ${lucideSearchIcon()}
+      </button>
+      <button class="wp-icon-button wp-settings-button${panelState.settingsOpen ? " is-active" : ""}" type="button" aria-label="Settings" aria-expanded="${panelState.settingsOpen}" data-panel-settings>
+        ${lucideSettingsIcon()}
+      </button>
+    </div>
+  `;
 }
 
 function renderSettingsSelect({ label, ariaLabel, value, options, dataAttribute }) {

@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-storage-privacy-v1";
+var CONTENT_VERSION = "2026-06-19-search-field-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

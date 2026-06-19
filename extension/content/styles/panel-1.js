@@ -210,6 +210,7 @@ function panelStylesChunk1() {
 
     .wp-topbar.is-searching {
       display: block;
+      animation: wpSearchIn 180ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-settings h2 {
