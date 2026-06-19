@@ -1,7 +1,7 @@
 function extractProduct(context) {
   const jsonLdProduct = findJsonLdProduct();
   const microdataProduct = extractFromMicrodata();
-  const embeddedProduct = extractFromEmbeddedJson();
+  const embeddedProduct = extractFromEmbeddedJson(context);
   const commonSelectorProduct = extractFromCommonSelectors();
   const contextualProduct = extractFromContext(context);
   const metaProduct = extractFromMeta(context);
@@ -50,8 +50,13 @@ function extractProduct(context) {
     (!clickedDifferentProduct &&
       !linkedDifferentProduct &&
       (isProductLikeUrl(pageUrl) || hasPageProductDetails));
+  const clickedProductSources = clickedDifferentProductSources(
+    contextualProduct,
+    embeddedProduct,
+    contextUrl || contextLinkUrl
+  );
   const sources = hasClickedProduct && !isProductPageContext
-    ? [contextualProduct]
+    ? clickedProductSources
     : [
         jsonLdProduct,
         microdataProduct,
@@ -74,9 +79,7 @@ function extractProduct(context) {
   ];
   const imageSources = isProductPageContext
     ? [...pageImageSources, contextualProduct]
-    : hasClickedProduct
-      ? [contextualProduct]
-      : sources;
+    : sources;
   const url = isProductPageContext ? pageUrl : firstValue(urlSources, "url") || pageUrl;
   const rawBrand = firstValue(detailSources, "brand") || contextualProduct.brand;
   const rawTitle = firstProductTitle([...detailSources, contextualProduct], document.title, rawBrand);
@@ -115,4 +118,15 @@ function firstProductTitle(sources, fallbackTitle, brand) {
   }
 
   return fallbackTitle;
+}
+
+function clickedDifferentProductSources(contextualProduct, embeddedProduct, targetUrl) {
+  if (productSourceMatchesUrl(embeddedProduct, targetUrl)) {
+    return [embeddedProduct];
+  }
+  return [contextualProduct];
+}
+
+function productSourceMatchesUrl(product, targetUrl) {
+  return Boolean(product?.url && targetUrl && sameProductPageUrl(product.url, targetUrl));
 }

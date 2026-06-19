@@ -1,4 +1,9 @@
-function extractFromEmbeddedJson() {
+function extractFromEmbeddedJson(context = {}) {
+  const pyeProduct = extractPyeVueProduct(context);
+  if (pyeProduct.title || pyeProduct.priceText || pyeProduct.imageUrl) {
+    return pyeProduct;
+  }
+
   const scripts = Array.from(
     document.querySelectorAll(
       'script[type="application/json"], script[type="application/ld+json"], script[id*="__NEXT_DATA__"], script[id*="__NUXT_DATA__"]'
@@ -25,6 +30,58 @@ function extractFromEmbeddedJson() {
     .sort((a, b) => productScore(b) - productScore(a))[0];
 
   return candidate || {};
+}
+
+function extractPyeVueProduct(context = {}) {
+  if (!/(^|\.)pyeoptics\.com$/i.test(location.hostname)) {
+    return {};
+  }
+
+  const targetUrl = normalizeUrl(context.linkUrl || location.href);
+  const products = Array.from(document.querySelectorAll("[v-bind\\:given-items]"))
+    .flatMap((element) => parsePyeProductsAttribute(element.getAttribute("v-bind:given-items")));
+  const product = products.find((candidate) =>
+    sameProductPageUrl(toAbsoluteUrl(candidate?.url), targetUrl)
+  );
+
+  return product ? pyeVueProductToItem(product) : {};
+}
+
+function parsePyeProductsAttribute(value) {
+  const raw = decodeHtmlJsonAttribute(value);
+  if (!raw || raw.length > 2_000_000) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function decodeHtmlJsonAttribute(value) {
+  return String(value || "")
+    .replace(/&quot;|&#34;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+function pyeVueProductToItem(product) {
+  const url = normalizeUrl(toAbsoluteUrl(product.url));
+  const price = normalizePrice({ amount: numericPrice(product.price), currency: "RUB" });
+
+  return compactObject({
+    title: cleanProductTitle(product.title, "PYE", url),
+    brand: "PYE",
+    url,
+    priceText: price.originalText,
+    priceAmount: price.amount,
+    currency: price.currency,
+    imageUrl: toAbsoluteUrl(imageFromProductLike(product.images)),
+    rawCategory: cleanText(product.lenses_type)
+  });
 }
 
 function collectProductLikeObjects(node, candidates, depth) {
@@ -287,6 +344,10 @@ function imageFromProductLike(value) {
   return (
     value.src ||
     value.url ||
+    value.extra_large ||
+    value.large ||
+    value.medium ||
+    value.small ||
     value.originalSrc ||
     value.preview_image?.src ||
     value.image?.src ||

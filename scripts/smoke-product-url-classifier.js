@@ -10,18 +10,11 @@ const backgroundSource = fs.readFileSync(path.join(root, "extension/background.j
 const contentVersion = constantsSource.match(/CONTENT_VERSION\s*=\s*"([^"]+)"/)?.[1];
 
 assert.ok(contentVersion, "Content version should be declared");
-assert.ok(
-  backgroundSource.includes(`CONTENT_SCRIPT_VERSION = "${contentVersion}"`),
-  "Background should require the current content script version"
-);
+assert.ok(backgroundSource.includes(`CONTENT_SCRIPT_VERSION = "${contentVersion}"`), "Background should require the current content script version");
 assert.match(backgroundSource, /STASH_PING_V2/, "Background should ping versioned content scripts");
 assert.match(backgroundSource, /STASH_SAVE_V2/, "Background should send versioned save messages");
 assert.match(bootstrapSource, /STASH_SAVE_V2/, "Content script should handle versioned saves");
-assert.match(
-  bootstrapSource,
-  /version:\s*CONTENT_VERSION/,
-  "Content script ping should report the active content version"
-);
+assert.match(bootstrapSource, /version:\s*CONTENT_VERSION/, "Content script ping should report the active content version");
 
 const sandbox = {
   URL,
@@ -45,6 +38,7 @@ vm.createContext(sandbox);
   "extension/content/pricing/dom.js",
   "extension/content/pricing/rates.js",
   "extension/content/pricing/parse.js",
+  "extension/content/extractors/embedded.js",
   "extension/content/extractors/main.js",
   "extension/content/extractors/context.js",
   "extension/content/extractors/jsonld.js",
@@ -54,6 +48,8 @@ vm.createContext(sandbox);
     filename: file
   });
 });
+
+const realExtractFromEmbeddedJson = sandbox.extractFromEmbeddedJson;
 
 assert.equal(
   sandbox.isProductLikeUrl(
@@ -275,12 +271,44 @@ async function runAsyncSmoke() {
   assert.equal(pyeExtracted.imageUrl, pyeImage, "PYE saves should use the PDP image");
 
   sandbox.location = new URL("https://pyeoptics.com/opravy-ochki-dlya-zreniya/vse-ochki-opravy/");
-  sandbox.document.title = "Очки для зрения";
-  sandbox.fetch = async () => ({
-    ok: true,
-    text: async () => "<html></html>",
-    json: async () => ({})
+  sandbox.document = {
+    title: "Очки для зрения",
+    body: { textContent: "" },
+    querySelector: () => null,
+    querySelectorAll: (selector) =>
+      selector.includes("given-items")
+        ? [{ getAttribute: (name) => name === "v-bind:given-items" ? JSON.stringify([{ url: "/shop/catalogue/theo-m_8773/", title: "Theo M", price: 12300, lenses_type: "Оптика", images: [{ extra_large: pyeImage }] }]).replace(/"/g, "&quot;") : "" }]
+        : []
+  };
+  sandbox.findJsonLdProduct = () => ({});
+  sandbox.extractFromMicrodata = () => ({});
+  sandbox.extractFromEmbeddedJson = realExtractFromEmbeddedJson;
+  sandbox.extractFromCommonSelectors = () => ({});
+  sandbox.extractFromMeta = () => ({});
+  sandbox.extractFromPagePrice = () => ({});
+  sandbox.extractFromContext = () => ({
+    fromContext: true,
+    title: "Очки Для Зрения",
+    brand: "pyeoptics.com",
+    url: pyeUrl,
+    priceText: "12 300 ₽",
+    priceAmount: 12300,
+    currency: "RUB",
+    compareAtPriceText: "13 000 ₽",
+    compareAtPriceAmount: 13000
   });
+  const pyeClicked = sandbox.extractProduct({ linkUrl: pyeUrl });
+  assert.equal(pyeClicked.title, "Theo M", "PYE listing click should use embedded title");
+  assert.equal(pyeClicked.brand, "PYE", "PYE listing click should use embedded brand");
+  assert.equal(pyeClicked.priceAmount, 12300, "PYE listing click should use embedded price");
+  assert.equal(pyeClicked.compareAtPriceAmount, undefined, "PYE listing click should drop DOM compare-at");
+  assert.equal(pyeClicked.imageUrl, pyeImage, "PYE listing click should use embedded image");
+
+  sandbox.location = new URL("https://pyeoptics.com/opravy-ochki-dlya-zreniya/vse-ochki-opravy/");
+  sandbox.document.title = "Очки для зрения";
+  sandbox.fetch = async (url) => String(url).endsWith(".js")
+    ? { ok: false, text: async () => "", json: async () => ({}) }
+    : { ok: true, text: async () => "<html></html>", json: async () => ({}) };
   sandbox.DOMParser = class {
     parseFromString() {
       return pyeDoc;
@@ -312,11 +340,9 @@ async function runAsyncSmoke() {
     "https://images.ctfassets.net/hnk2vsx53n6l/on-cloudrunner-2.png?w=1200&h=630&fit=pad";
   sandbox.location = new URL("https://www.on.com/en-fi/shop/last-season");
   sandbox.document.title = "Last season";
-  sandbox.fetch = async () => ({
-    ok: true,
-    text: async () => "<html></html>",
-    json: async () => ({})
-  });
+  sandbox.fetch = async (url) => String(url).endsWith(".js")
+    ? { ok: false, text: async () => "", json: async () => ({}) }
+    : { ok: true, text: async () => "<html></html>", json: async () => ({}) };
   sandbox.DOMParser = class {
     parseFromString() {
       return {
