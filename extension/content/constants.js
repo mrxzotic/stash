@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-rimowa-price-format-v1";
+var CONTENT_VERSION = "2026-06-19-rimowa-price-format-panel-composite-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

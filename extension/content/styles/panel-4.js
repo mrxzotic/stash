@@ -186,9 +186,7 @@ function panelStylesChunk4() {
       overscroll-behavior: contain;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
-      transform: translateZ(0);
-      backface-visibility: hidden;
-      contain: layout paint style;
+      contain: layout style;
     }
 
     .wp-item {
