@@ -2,6 +2,10 @@ function findBestPrice(...groups) {
   const values = groups.flat().filter(Boolean).map(cleanText);
 
   for (const value of values) {
+    if (isInstallmentPriceText(value)) {
+      continue;
+    }
+
     const prices = parsePricesFromText(value);
     const price = prices.length
       ? priceWithCompareAt(currentPriceCandidate(prices), prices)
@@ -16,7 +20,7 @@ function findBestPrice(...groups) {
 
 function parsePricesFromText(value) {
   const text = cleanText(value);
-  if (!text) {
+  if (!text || isInstallmentPriceText(text)) {
     return [];
   }
 
@@ -60,8 +64,8 @@ function normalizePrice({ amount, currency, text, compareAtAmount, compareAtText
   const priceAmount = numericPrice(amount) ?? parsed.amount;
   const priceCurrency = cleanText(currency || parsed.currency).toUpperCase();
   const originalText =
-    parsed.originalText ||
     formatOriginalPrice(priceAmount, priceCurrency) ||
+    parsed.originalText ||
     cleanText(text);
   const compareAt = normalizeCompareAtPrice(
     {
@@ -84,7 +88,7 @@ function normalizePrice({ amount, currency, text, compareAtAmount, compareAtText
 
 function parsePriceFromText(value, fallbackCurrency) {
   const text = cleanText(value);
-  if (!text) {
+  if (!text || isInstallmentPriceText(text)) {
     return {};
   }
 
@@ -145,8 +149,8 @@ function priceWithCompareAt(price, candidates = []) {
   const currentAmount = numericPrice(price.amount);
   const currentCurrency = cleanText(price.currency).toUpperCase();
   const originalText =
-    price.originalText ||
-    formatOriginalPrice(currentAmount, currentCurrency);
+    formatOriginalPrice(currentAmount, currentCurrency) ||
+    price.originalText;
   const compareAt = candidates
     .filter((candidate) => cleanText(candidate.currency).toUpperCase() === currentCurrency)
     .filter((candidate) => Number.isFinite(candidate.amount))
@@ -186,8 +190,8 @@ function normalizeCompareAtPrice(compareAt, current) {
     amount,
     currency,
     originalText:
-      parsed.originalText ||
       formatOriginalPrice(amount, currency) ||
+      parsed.originalText ||
       cleanText(compareAt.text)
   };
 }
@@ -201,7 +205,7 @@ function parsedPrice(rawAmount, currency, originalText) {
   return {
     amount,
     currency: cleanText(currency).toUpperCase(),
-    originalText: cleanText(originalText)
+    originalText: formatOriginalPrice(amount, currency) || cleanText(originalText)
   };
 }
 
@@ -227,4 +231,9 @@ function parseLocalizedNumber(value) {
 
   const amount = Number.parseFloat(text);
   return Number.isFinite(amount) ? amount : undefined;
+}
+
+function isInstallmentPriceText(value) {
+  const text = cleanText(value);
+  return /\b(?:klarna|afterpay|clearpay|affirm|installments?|instalments?|monthly|pay\s+in\s+\d|split\s+payments?)\b|(?:\/|\bper\s+)(?:month|mo|mth)\b/i.test(text);
 }

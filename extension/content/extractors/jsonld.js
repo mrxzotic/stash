@@ -17,7 +17,7 @@ function findJsonLdProduct() {
     }
   }
 
-  const product = products[0];
+  const product = selectJsonLdProduct(products, location.href);
   if (!product) {
     return {};
   }
@@ -27,10 +27,7 @@ function findJsonLdProduct() {
     : [product.offers].filter(Boolean);
   const offer = offers.find((candidate) => offerMatchesCurrentUrl(candidate)) || offers[0] || {};
   const image = Array.isArray(product.image) ? product.image[0] : product.image;
-  const brand =
-    typeof product.brand === "string"
-      ? product.brand
-      : product.brand?.name || product.manufacturer?.name;
+  const brand = jsonLdProductBrand(product);
 
   return compactObject({
     title: cleanText(product.name),
@@ -62,7 +59,7 @@ function findJsonLdProductInDocument(doc, productUrl) {
     }
   });
 
-  const product = products.find((candidate) => productMatchesUrl(candidate, productUrl)) || products[0];
+  const product = selectJsonLdProduct(products, productUrl);
   if (!product) {
     return {};
   }
@@ -72,10 +69,7 @@ function findJsonLdProductInDocument(doc, productUrl) {
     : [product.offers].filter(Boolean);
   const offer = offers.find((candidate) => offerMatchesUrl(candidate, productUrl)) || offers[0] || {};
   const image = Array.isArray(product.image) ? product.image[0] : product.image;
-  const brand =
-    typeof product.brand === "string"
-      ? product.brand
-      : product.brand?.name || product.manufacturer?.name;
+  const brand = jsonLdProductBrand(product);
 
   return compactObject({
     title: cleanProductTitle(product.name, brand, productUrl),
@@ -93,6 +87,24 @@ function findJsonLdProductInDocument(doc, productUrl) {
 
 function productMatchesUrl(product, productUrl) {
   return product?.url && sameProductPageUrl(toAbsoluteUrlFor(product.url, productUrl), productUrl);
+}
+
+function selectJsonLdProduct(products, targetUrl) {
+  return (
+    products.find((candidate) => productMatchesUrl(candidate, targetUrl)) ||
+    products.find(hasUsableJsonLdName) ||
+    products[0]
+  );
+}
+
+function hasUsableJsonLdName(product) {
+  return Boolean(cleanTitle(product?.name, jsonLdProductBrand(product)));
+}
+
+function jsonLdProductBrand(product) {
+  return typeof product?.brand === "string"
+    ? product.brand
+    : product?.brand?.name || product?.manufacturer?.name;
 }
 
 function extractMetaProductFromDocument(doc, productUrl) {

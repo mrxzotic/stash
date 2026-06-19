@@ -14,6 +14,7 @@ Primary surface: a compact in-page stash widget for saving products from any sho
 - Header figures sit on the left as `X items, Y currency`.
 - Summary currency is selected in the settings dropdown and is the only currency shown.
 - The summary total pill can use an iridescent translucent fill, but no shadow.
+- Prices never display cents or kopecks. Round upward to the nearest whole currency unit before rendering.
 - Use Inter for the widget UI and IBM Plex Mono for numeric figures/prices.
 - Typography uses fixed project tokens, not ad hoc pixel sizes:
   - `--text-micro: 10px` only for tiny fallback glyphs inside source icons.

@@ -85,9 +85,12 @@ function formatOriginalPrice(value, currency) {
     return "";
   }
 
-  const formattedAmount = Number.isInteger(amount)
-    ? String(amount)
-    : String(amount.toFixed(2)).replace(/\.?0+$/, "");
+  const roundedAmount = Math.ceil(Math.max(0, amount));
+  const locale = code === "RUB" || code === "UAH" ? "ru-RU" : "en-US";
+  const formattedAmount = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0
+  }).format(roundedAmount);
   const symbol = CURRENCY_SYMBOLS[code] || code;
 
   if (["USD", "GBP", "JPY", "CNY"].includes(code)) {
@@ -98,8 +101,15 @@ function formatOriginalPrice(value, currency) {
 }
 
 function renderSitePriceHtml(item, namespace) {
-  const currentText = item.price?.originalText || item.priceText;
-  const compareAtText = item.price?.compareAtText || item.compareAtPriceText;
+  const currency = item.price?.currency || item.currency;
+  const currentText = formatOriginalPrice(
+    item.price?.amount ?? item.priceAmount,
+    currency
+  ) || item.price?.originalText || item.priceText;
+  const compareAtText = formatOriginalPrice(
+    item.price?.compareAtAmount ?? item.compareAtPriceAmount,
+    currency
+  ) || item.price?.compareAtText || item.compareAtPriceText;
   const isSale =
     item.price?.isSale &&
     currentText &&
