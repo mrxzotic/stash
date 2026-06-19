@@ -26,6 +26,9 @@ function panelStylesChunk1() {
       --shell-edge-mesh-a: rgba(255, 255, 255, 0.54);
       --shell-edge-mesh-b: rgba(232, 226, 214, 0.22);
       --shell-shadow: rgba(0, 0, 0, 0.2);
+      --panel-top: 44px;
+      --panel-right: 24px;
+      --panel-vertical-space: 68px;
       --primary: #050505;
       --primary-foreground: #ffffff;
       --radius: 8px;
@@ -42,11 +45,11 @@ function panelStylesChunk1() {
 
     .wp-shell {
       position: fixed;
-      top: 24px;
-      right: 24px;
-      width: min(420px, calc(100vw - 32px), calc((100vh - 48px) * 9 / 16));
-      height: min(746px, calc(100vh - 48px));
-      max-height: calc(100vh - 48px);
+      top: var(--panel-top);
+      right: var(--panel-right);
+      width: min(420px, calc(100vw - 32px), calc((100vh - var(--panel-vertical-space)) * 9 / 16));
+      height: min(746px, calc(100vh - var(--panel-vertical-space)));
+      max-height: calc(100vh - var(--panel-vertical-space));
       display: flex;
       flex-direction: column;
       padding: 20px;
@@ -66,6 +69,54 @@ function panelStylesChunk1() {
       backface-visibility: hidden;
       scrollbar-width: none;
       animation: wpPanelIn 260ms cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .wp-panel-close {
+      position: fixed;
+      top: 8px;
+      right: var(--panel-right);
+      z-index: 20;
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid rgba(10, 10, 10, 0.08);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.96);
+      color: rgba(8, 11, 16, 0.58);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.82),
+        0 12px 32px rgba(0, 0, 0, 0.14);
+      pointer-events: auto;
+      transform: translateZ(0);
+      transition:
+        color 160ms ease,
+        transform 180ms cubic-bezier(.16, 1, .3, 1),
+        border-color 160ms ease,
+        background 160ms ease;
+      animation: wpPanelCloseIn 220ms cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .wp-panel-close:hover {
+      color: rgba(8, 11, 16, 0.92);
+      border-color: rgba(10, 10, 10, 0.13);
+      background: #ffffff;
+      transform: translateY(-1px) scale(1.04) translateZ(0);
+    }
+
+    .wp-panel-close:active {
+      transform: scale(0.94) translateZ(0);
+    }
+
+    .wp-panel-close.is-static {
+      animation: none;
+    }
+
+    .wp-panel-close-icon {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2.25;
     }
 
     .wp-theme-white {

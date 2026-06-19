@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-19-versioned-content-messages-v1";
+var CONTENT_VERSION = "2026-06-19-panel-external-close-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

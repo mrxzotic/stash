@@ -15,6 +15,9 @@ function renderStashPanel(options = {}) {
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
+    <button class="wp-panel-close${panelState.hasRenderedPanel ? " is-static" : ""}" type="button" aria-label="Close Stash" title="Close Stash" data-panel-close>
+      ${lucideXIcon("wp-lucide wp-panel-close-icon")}
+    </button>
     <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stash">
       ${renderPanelTopbarHtml(displayItems)}
 

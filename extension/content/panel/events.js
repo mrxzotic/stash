@@ -8,6 +8,12 @@ function bindPanelEvents(root) {
   bindPanelSearchEvents(root);
   bindPanelCurrencyEvents(root);
 
+  root.querySelector("[data-panel-close]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeStashPanel();
+  });
+
   root.querySelector("[data-panel-settings]")?.addEventListener("click", () => {
     panelState.settingsOpen = !panelState.settingsOpen;
     if (panelState.settingsOpen) {

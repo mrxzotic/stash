@@ -124,13 +124,19 @@ function panelStylesChunk5() {
     }
 
     @media (max-width: 560px) {
+      :host {
+        --panel-top: 48px;
+        --panel-right: 12px;
+        --panel-vertical-space: 60px;
+      }
+
       .wp-shell {
-        top: 12px;
-        right: 12px;
-        left: 12px;
+        top: var(--panel-top);
+        right: var(--panel-right);
+        left: var(--panel-right);
         width: auto;
-        height: calc(100vh - 24px);
-        max-height: calc(100vh - 24px);
+        height: calc(100vh - var(--panel-vertical-space));
+        max-height: calc(100vh - var(--panel-vertical-space));
         border-radius: var(--radius);
       }
     }
@@ -146,6 +152,18 @@ function panelStylesChunk5() {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
+      }
+    }
+
+    @keyframes wpPanelCloseIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px) scale(.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
       }
     }
 
