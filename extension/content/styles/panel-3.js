@@ -9,6 +9,29 @@ function panelStylesChunk3() {
       font-weight: 720;
     }
 
+    .wp-checkbox-row {
+      cursor: pointer;
+    }
+
+    .wp-checkbox-row > span {
+      display: grid;
+      gap: 4px;
+    }
+
+    .wp-checkbox-row small {
+      color: var(--muted);
+      font-size: var(--text-caption);
+      line-height: 1.25;
+      font-weight: 560;
+    }
+
+    .wp-checkbox-row input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: var(--foreground);
+    }
+
     .wp-select {
       position: relative;
       width: 128px;
@@ -230,7 +253,7 @@ function panelStylesChunk3() {
       height: 18px;
       display: grid;
       place-items: center;
-      border-radius: 999px;
+      border-radius: var(--radius);
       background: rgba(8, 11, 16, 0.92);
       color: #fff;
     }

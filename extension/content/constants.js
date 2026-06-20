@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-20-product-image-role-score-v1";
+var CONTENT_VERSION = "2026-06-20-clear-mode-toggle-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -20,7 +20,8 @@ var STORAGE_MAX_OBJECT_KEYS = 80;
 var STORAGE_MAX_STRING_LENGTH = 8192;
 var DEFAULT_SETTINGS = {
   summaryCurrency: "USD",
-  backgroundTheme: "warm"
+  backgroundTheme: "warm",
+  compactView: false
 };
 var DEFAULT_CATEGORIES = [
   { id: "tops", label: "Tops" },
@@ -111,12 +112,20 @@ var BRAND_ALIASES = new Map([
   ["tom ford fashion", "Tom Ford"],
   ["tomford", "Tom Ford"],
   ["loewe", "Loewe"],
+  ["p448", "P448"],
   ["rimowa", "RIMOWA"],
+  ["limestore", "LIME"],
+  ["lime", "LIME"],
   ["on", "On"],
   ["suitsupply", "Suitsupply"],
   ["about blank", "about:blank"],
   ["about:blank", "about:blank"],
-  ["marcelo miracles", "Marcelo Miracles"]
+  ["marcelo miracles", "Marcelo Miracles"],
+  ["p p s", "P.P.S."],
+  ["postpostscriptum", "P.P.S."],
+  ["post post scriptum", "P.P.S."],
+  ["sorelleera", "Sorelle Era"],
+  ["sorelle era", "Sorelle Era"]
 ]);
 
 var lastContextTarget = null;
@@ -127,6 +136,10 @@ var panelState = {
   settingsOpen: false,
   categoryComposerOpen: false,
   deleteCategoryId: "",
+  deleteItemId: "",
+  brandCloudOpen: false,
+  brandFilterKey: "",
+  brandFilterLabel: "",
   activeCategory: "all",
   searchQuery: "",
   items: [],
@@ -140,6 +153,7 @@ var panelState = {
   },
   summaryRateLoading: "",
   backgroundTheme: DEFAULT_SETTINGS.backgroundTheme,
+  compactView: DEFAULT_SETTINGS.compactView,
   hasRenderedPanel: false,
   highlightedItemId: "",
   highlightTimer: 0

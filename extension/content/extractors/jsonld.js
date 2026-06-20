@@ -150,13 +150,14 @@ function extractMetaProductFromDocument(doc, productUrl) {
 }
 
 function extractPriceFromFetchedDocument(doc) {
-  const lines = cleanText(doc.body?.textContent || "")
+  const text = cleanText(doc.body?.textContent || "");
+  const lines = text
     .split(/(?<=[^\d])\s+(?=[^\d])|\n+/)
     .map(cleanText)
     .filter((line) => line.length <= 96)
     .filter((line) => looksLikePrice(line) && !/shipping|delivery|returns|free/i.test(line))
     .slice(0, 40);
-  const price = findBestPrice(lines);
+  const price = findBestPrice(hasSalePriceEvidence(text) ? [text, ...lines] : lines);
 
   return compactObject({
     priceText: price.originalText,

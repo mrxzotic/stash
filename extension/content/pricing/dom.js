@@ -133,7 +133,7 @@ function priceTextsFromElement(element) {
     .map(cleanText)
     .filter(Boolean)
     .flatMap((text) => {
-      if (isInstallmentPriceText(text)) {
+      if (isInstallmentPriceText(text) || isOnlyNonProductPriceText(text)) {
         return [];
       }
 

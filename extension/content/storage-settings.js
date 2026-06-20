@@ -84,7 +84,8 @@ function normalizePanelSettings(value) {
       : DEFAULT_SETTINGS.summaryCurrency,
     backgroundTheme: isBackgroundTheme(backgroundTheme)
       ? backgroundTheme
-      : DEFAULT_SETTINGS.backgroundTheme
+      : DEFAULT_SETTINGS.backgroundTheme,
+    compactView: Boolean(value?.compactView)
   };
 }
 

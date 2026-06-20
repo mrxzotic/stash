@@ -1,13 +1,14 @@
 const MENU_ROOT_ID = "stash-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
-const CONTENT_SCRIPT_VERSION = "2026-06-20-product-image-role-score-v1";
+const CONTENT_SCRIPT_VERSION = "2026-06-20-clear-mode-toggle-v1";
 const MESSAGE_PING = "STASH_PING_V2";
 const MESSAGE_SAVE = "STASH_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
 const CONTENT_SCRIPT_FILES = [
   "content/constants.js",
   "content/lifecycle.js",
+  "content/panel/compact-view.js",
   "content/panel/render.js",
   "content/panel/settings-promo.js",
   "content/panel/events.js",
@@ -17,21 +18,28 @@ const CONTENT_SCRIPT_FILES = [
   "content/extractors/jsonld.js",
   "content/extractors/dom.js",
   "content/extractors/embedded.js",
+  "content/extractors/rendezvous.js",
+  "content/extractors/verify.js",
+  "content/extractors/quality.js",
   "content/extractors/enrich.js",
   "content/extractors/anchors.js",
   "content/extractors/context.js",
   "content/storage.js",
+  "content/overlay-fields.js",
   "content/overlays.js",
   "content/styles/panel-1.js",
   "content/styles/panel-2.js",
   "content/styles/panel-3.js",
   "content/styles/panel-4.js",
+  "content/styles/panel-content.js",
   "content/styles/panel-5.js",
   "content/styles/panel-currency.js",
   "content/styles/panel.js",
+  "content/styles/overlay-fields.js",
   "content/styles/overlay.js",
   "content/pricing/dom.js",
   "content/storage-settings.js",
+  "content/pricing/noise.js",
   "content/pricing/parse.js",
   "content/pricing/rates.js",
   "content/media.js",

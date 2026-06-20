@@ -4,6 +4,7 @@ async function saveCurrentProduct(message) {
   panelState.summaryCurrency = settings.summaryCurrency;
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
+  panelState.compactView = settings.compactView;
   const category =
     message.category && message.category !== "auto" && hasCategory(categories, message.category)
       ? message.category
@@ -46,6 +47,10 @@ function closeStashPanel() {
   panelState.settingsOpen = false;
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
+  panelState.deleteItemId = "";
+  panelState.brandCloudOpen = false;
+  panelState.brandFilterKey = "";
+  panelState.brandFilterLabel = "";
   panelState.hasRenderedPanel = false;
   panelState.highlightedItemId = "";
   window.clearTimeout(panelState.highlightTimer);
@@ -80,7 +85,11 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
 function clearSavedOverlay() {
   const host = document.getElementById("stash-extension-root");
   if (host?.shadowRoot) {
-    window.clearTimeout(host.shadowRoot.__stashTimer);
+    if (typeof clearOverlayTimers === "function") {
+      clearOverlayTimers(host.shadowRoot);
+    } else {
+      window.clearTimeout(host.shadowRoot.__stashTimer);
+    }
     host.shadowRoot.innerHTML = "";
   }
 }
@@ -102,4 +111,5 @@ async function loadPanelData() {
   panelState.summaryCurrency = settings.summaryCurrency;
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
+  panelState.compactView = settings.compactView;
 }

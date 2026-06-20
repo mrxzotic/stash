@@ -144,6 +144,10 @@ function expandProductScopeToDetails(scope, target) {
       break;
     }
 
+    if (hasMultipleProductPageUrls(node)) {
+      break;
+    }
+
     const score = productDetailScore(node);
     if (score > bestScore) {
       best = node;
@@ -168,6 +172,7 @@ function productDetailScore(element) {
   if (findBestPrice(lines).amount) score += 10;
   if (lines.some(looksLikeProductName)) score += 4;
   if (lines.some(isBrandLikeLine)) score += 2;
+  if (hasMultipleProductPageUrls(element)) score -= 14;
   if (looksLikeDescriptiveTitle(text)) score -= 6;
   if (text.length > 700) score -= 8;
 
@@ -180,11 +185,10 @@ function productScopeScore(element) {
   }
 
   const text = getTextLines(element).join(" ");
+  const productUrls = productPageUrlsInScope(element);
   const linkCount = element.querySelectorAll("a[href]").length;
   const imageCount = element.querySelectorAll("img, picture, source").length;
-  const hasProductLink = Array.from(element.querySelectorAll("a[href]")).some((link) =>
-    isProductLikeUrl(link.href)
-  );
+  const hasProductLink = productUrls.length > 0;
   const className = String(element.className || "");
   let score = 0;
 
@@ -194,6 +198,7 @@ function productScopeScore(element) {
   if (imageCount > 0) score += 2;
   if (looksLikePrice(text)) score += 2;
   if (text.length >= 8 && text.length <= 420) score += 1;
+  if (productUrls.length > 1) score -= 8;
   if (linkCount > 3) score -= 3;
   if (imageCount > 4) score -= 3;
   if (text.length > 1000) score -= 4;
@@ -305,9 +310,12 @@ function isProductLikeUrl(value) {
     const url = new URL(value, location.href);
     const isFarfetchProduct =
       /^(?:.+\.)?farfetch\.com$/i.test(url.hostname) && /-item-\d+\.aspx$/i.test(url.pathname);
+    const isPyeProduct =
+      typeof isPyeProductUrl === "function" && isPyeProductUrl(url.href);
     return (
       /\/(product|products|item|items|p)\//i.test(url.pathname) ||
       isFarfetchProduct ||
+      isPyeProduct ||
       looksLikeSkuProductPath(url)
     );
   } catch {
@@ -325,7 +333,7 @@ function looksLikeSkuProductPath(url) {
 
   const sku = skuSegment.replace(/\.html?$/i, "");
   return (
-    /^[a-z]{1,6}\d{2,}(?:[-_][a-z0-9]+)*$/i.test(sku) &&
+    /^(?=[a-z0-9_-]*[a-z])(?=[a-z0-9_-]*\d)[a-z0-9]{4,24}(?:[-_][a-z0-9]{2,})*$/i.test(sku) &&
     looksLikeProductName(cleanUrlTitleSegment(titleSegment))
   );
 }
@@ -369,6 +377,7 @@ function findLikelyTitle(textLines, imageAlt, linkText, brand) {
 }
 
 function findLikelyBrand(textLines, imageAlt, linkText) {
+  if (/(^|\.)post-post-scriptum\.com$/i.test(location.hostname)) return "P.P.S.";
   const candidates = productTextCandidates(textLines, imageAlt, linkText);
   return candidates.find(isBrandLikeLine) || sourceNameFromUrl(location.href);
 }

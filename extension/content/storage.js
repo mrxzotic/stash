@@ -147,9 +147,18 @@ async function normalizeItem(product, category, categories) {
     rubPriceText: rubPrice.text,
     rubPriceAmount: rubPrice.amount,
     imageUrl: toAbsoluteUrl(product.imageUrl),
+    extraction: normalizeExtractionQuality(product.extraction),
     category: inferredCategory,
     createdAt: new Date().toISOString()
   };
+}
+
+function normalizeExtractionQuality(value) {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  return sanitizeStorageValue(value);
 }
 
 function inferCategory(product, categories = DEFAULT_CATEGORIES) {
@@ -180,7 +189,7 @@ function inferCategoryIntent(value) {
     ["shoes", /\b(boot|boots|shoe|shoes|sneaker|sneakers|loafer|loafers|sandal|sandals|heel|heels|pump|pumps)\b/],
     ["bags", /\b(rimowa|bag|bags|tote|clutch|backpack|crossbody|shoulder bag|luggage|suitcase|suitcases|carry-?on|trolley|duffel|duffle|weekender|check-?in|check in)\b/],
     ["accessories", /\b(accessory|accessories|belt|belts|cap|caps|hat|hats|beanie|scarf|scarves|sunglasses|glasses|wallet|wallets|pouch|pouches|jewelry|jewellery|necklace|bracelet|ring|watch|watches|socks|tie|ties)\b/],
-    ["outerwear", /\b(jacket|coat|parka|blazer|trench|bomber|overcoat|vest|gilet)\b/],
+    ["outerwear", /\b(jacket|coat|windbreaker|parka|blazer|trench|bomber|overcoat|vest|gilet)\b/],
     ["bottoms", /\b(trouser|trousers|jeans|pants|shorts|skirt|leggings|cargo)\b/],
     ["tops", /\b(t-shirt|tee|shirt|top|sweater|hoodie|sweatshirt|sweat|knit|cardigan|polo|zip hoodie)\b/]
   ];

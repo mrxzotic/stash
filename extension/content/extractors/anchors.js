@@ -20,3 +20,27 @@ function findContextImageByUrl(value, scope = document) {
         .some((candidate) => normalizeUrl(toAbsoluteUrl(candidate.url)) === imageUrl)
     ) || null;
 }
+
+function productPageUrlsInScope(scope) {
+  const urls = [];
+  const links = [
+    ...(scope?.matches?.("a[href]") ? [scope] : []),
+    ...Array.from(scope?.querySelectorAll?.("a[href]") || [])
+  ];
+
+  links.forEach((link) => {
+    if (!link.href || !isProductLikeUrl(link.href)) {
+      return;
+    }
+
+    if (!urls.some((url) => sameProductPageUrl(url, link.href))) {
+      urls.push(normalizeUrl(link.href));
+    }
+  });
+
+  return urls;
+}
+
+function hasMultipleProductPageUrls(scope) {
+  return productPageUrlsInScope(scope).length > 1;
+}

@@ -22,32 +22,34 @@ function panelStylesChunk4() {
     .wp-inline-search {
       position: relative;
       width: 100%;
-      height: 42px;
-      min-height: 42px;
+      height: 40px;
+      min-height: 40px;
       display: grid;
-      grid-template-columns: 22px minmax(0, 1fr) 28px;
+      grid-template-columns: 22px minmax(0, 1fr) 26px;
       align-items: center;
       gap: 8px;
       padding: 0 6px 0 12px;
-      border: 1px solid rgba(10, 10, 10, 0.1);
+      border: 1px solid rgba(10, 10, 10, 0.08);
       border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(255, 255, 255, 0.62);
       color: var(--foreground);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.78),
-        0 8px 24px rgba(15, 23, 42, 0.06);
+        inset 0 1px 0 rgba(255, 255, 255, 0.66),
+        0 6px 18px rgba(15, 23, 42, 0.04);
       transition:
         border-color 160ms ease,
         background 160ms ease,
         box-shadow 160ms ease;
+      transform-origin: right center;
+      animation: wpSearchIn 220ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-inline-search:focus-within {
-      border-color: rgba(8, 11, 16, 0.28);
-      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(8, 11, 16, 0.18);
+      background: rgba(255, 255, 255, 0.78);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.84),
-        0 10px 28px rgba(15, 23, 42, 0.08);
+        inset 0 1px 0 rgba(255, 255, 255, 0.78),
+        0 8px 22px rgba(15, 23, 42, 0.06);
     }
 
     .wp-inline-search-label {
@@ -80,19 +82,20 @@ function panelStylesChunk4() {
     .wp-inline-search input {
       width: 100%;
       min-width: 0;
-      height: 40px;
+      height: 38px;
       padding: 0;
       border: 0;
       outline: 0;
       background: transparent;
       color: var(--foreground);
       font-size: var(--text-ui);
-      font-weight: 680;
+      font-weight: 620;
       line-height: 1;
     }
 
     .wp-inline-search input::placeholder {
       color: var(--muted-foreground);
+      font-weight: 620;
       transition: color 160ms ease;
     }
 
@@ -148,52 +151,60 @@ function panelStylesChunk4() {
       z-index: 3;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 10px;
     }
 
     .wp-filter {
       flex: 0 0 auto;
-      height: 32px;
-      padding: 0 16px;
+      height: 28px;
+      padding: 0 12px;
       border: 1px solid var(--border);
       border-radius: 999px;
       color: var(--foreground);
-      background: var(--card);
-      font-size: var(--text-body);
-      font-weight: 720;
+      background: rgba(255, 255, 255, 0.5);
+      font-size: var(--text-control);
+      font-weight: 660;
       transition:
         background 140ms ease,
         color 140ms ease,
         border-color 140ms ease,
-        padding 180ms cubic-bezier(.16, 1, .3, 1);
+        opacity 140ms ease,
+        padding 180ms cubic-bezier(.16, 1, .3, 1),
+        transform 180ms cubic-bezier(.16, 1, .3, 1),
+        width 180ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-filter-shell {
       position: relative;
       flex: 0 0 auto;
       display: inline-flex;
+      max-width: 168px;
+      min-width: 0;
+      transition: transform 220ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-filter-shell:not(.is-all) .wp-filter {
-      padding-right: 16px;
+      padding-right: 12px;
     }
 
     .wp-filter-shell:not(.is-all):hover .wp-filter,
     .wp-filter-shell:not(.is-all):focus-within .wp-filter {
-      padding-right: 32px;
+      padding-right: 28px;
     }
 
     .wp-filter.is-active {
       color: var(--primary-foreground);
-      background: var(--primary);
-      border-color: var(--primary);
+      background: rgba(8, 11, 16, 0.86);
+      border-color: rgba(8, 11, 16, 0.86);
+      font-weight: 720;
     }
 
     .wp-filter-remove {
       position: absolute;
       top: 50%;
-      right: 9px;
+      right: 7px;
       width: 16px;
       height: 16px;
       display: grid;
@@ -244,12 +255,38 @@ function panelStylesChunk4() {
     }
 
     .wp-filter-add {
-      width: 28px;
+      width: 0;
       height: 28px;
       align-self: center;
       padding: 0;
+      border-color: transparent;
+      background: transparent;
+      opacity: 0;
       display: grid;
       place-items: center;
+      overflow: hidden;
+      pointer-events: none;
+      transform: scale(0.84);
+    }
+
+    .wp-filters:hover .wp-filter-add,
+    .wp-filters:focus-within .wp-filter-add,
+    .wp-filter-add:hover,
+    .wp-filter-add:focus-visible,
+    .wp-filter-add.is-active {
+      width: 28px;
+      max-width: 28px;
+      background: transparent;
+      border-color: transparent;
+      opacity: 0.62;
+      pointer-events: auto;
+      transform: scale(1);
+    }
+
+    .wp-filter-add:hover,
+    .wp-filter-add:focus-visible,
+    .wp-filter-add.is-active {
+      opacity: 0.82;
     }
 
     .wp-filter-add-icon {
@@ -328,239 +365,5 @@ function panelStylesChunk4() {
       stroke-linejoin: round;
     }
 
-    .wp-dialog-backdrop {
-      position: absolute;
-      inset: 0;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.46);
-    }
-
-    .wp-confirm-dialog {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      z-index: 11;
-      width: min(300px, calc(100% - 64px));
-      display: grid;
-      gap: 8px;
-      padding: 18px;
-      border: 1px solid rgba(60, 60, 67, 0.14);
-      border-radius: var(--radius);
-      background: #fff;
-      color: var(--foreground);
-      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.18);
-      transform: translate(-50%, -50%);
-      animation: wpPanelIn 140ms cubic-bezier(.16, 1, .3, 1) both;
-    }
-
-    .wp-confirm-dialog h3,
-    .wp-confirm-dialog p {
-      margin: 0;
-    }
-
-    .wp-confirm-dialog h3 {
-      font-size: var(--text-heading);
-      line-height: 1.15;
-      font-weight: 780;
-    }
-
-    .wp-confirm-dialog p {
-      color: var(--muted);
-      font-size: var(--text-body);
-      line-height: 1.3;
-      font-weight: 620;
-    }
-
-    .wp-confirm-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding-top: 8px;
-    }
-
-    .wp-confirm-cancel,
-    .wp-confirm-delete {
-      height: 36px;
-      border: 0;
-      border-radius: var(--radius);
-      font-size: var(--text-body);
-      font-weight: 760;
-    }
-
-    .wp-confirm-cancel {
-      background: rgba(8, 11, 16, 0.06);
-      color: var(--foreground);
-    }
-
-    .wp-confirm-delete {
-      background: #d92d20;
-      color: #fff;
-    }
-
-    .wp-items {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      min-height: 100%;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      align-content: start;
-      column-gap: 16px;
-      padding: 168px 24px 56px;
-      margin-top: 0;
-      overflow-y: auto;
-      scroll-behavior: smooth;
-      overscroll-behavior: contain;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      contain: layout style;
-    }
-
-    .wp-item-column {
-      min-width: 0;
-      display: grid;
-      align-content: start;
-      gap: 24px;
-    }
-
-    .wp-item {
-      position: relative;
-      z-index: 0;
-      min-width: 0;
-      isolation: isolate;
-      transform: translateY(0);
-      transition: transform 180ms cubic-bezier(.16, 1, .3, 1);
-      animation: wpItemIn 240ms cubic-bezier(.16, 1, .3, 1) both;
-    }
-
-    .wp-item::before {
-      content: "";
-      position: absolute;
-      inset: -4px;
-      z-index: -1;
-      border-radius: calc(var(--radius) + 8px);
-      background:
-        radial-gradient(circle at 18% 20%, rgba(115, 196, 255, 0.7), transparent 34%),
-        radial-gradient(circle at 82% 18%, rgba(255, 144, 221, 0.62), transparent 36%),
-        radial-gradient(circle at 54% 92%, rgba(174, 255, 196, 0.56), transparent 40%),
-        conic-gradient(from 130deg at 50% 50%, rgba(255, 255, 255, 0), rgba(174, 209, 255, 0.8), rgba(255, 190, 235, 0.72), rgba(210, 255, 226, 0.66), rgba(255, 255, 255, 0));
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 120ms ease;
-    }
-
-    .wp-item:hover,
-    .wp-item:focus-within {
-      transform: translateY(-3px);
-    }
-
-    .wp-item:hover::before,
-    .wp-item:focus-within::before {
-      opacity: 0.15;
-    }
-
-    .wp-item:active {
-      transform: translateY(-1px);
-      transition-duration: 80ms;
-    }
-
-    .wp-item.is-new .wp-media {
-      box-shadow: none;
-    }
-
-    .wp-item.is-new .wp-item-title {
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 3px;
-    }
-
-    .wp-media {
-      position: relative;
-      display: grid;
-      place-items: center;
-      aspect-ratio: var(--wp-media-ratio, 4 / 5);
-      margin-bottom: 8px;
-      border: 0;
-      border-radius: var(--radius);
-      background: transparent;
-      overflow: hidden;
-    }
-
-    .wp-media img {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border-radius: inherit;
-      object-fit: contain;
-      object-position: center;
-    }
-
-    .wp-image-placeholder {
-      width: 42px;
-      height: 42px;
-      color: rgba(16, 16, 16, 0.2);
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .wp-item:hover .wp-media img {
-      transform: none;
-    }
-
-    .wp-remove {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      border: 0;
-      border-radius: 0;
-      color: rgba(16, 16, 16, 0.72);
-      background: transparent;
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transform: none;
-      transition: opacity 140ms ease, color 140ms ease;
-    }
-
-    .wp-remove::before,
-    .wp-remove::after {
-      width: 18px;
-      height: 2px;
-    }
-
-    .wp-item:hover .wp-remove,
-    .wp-remove:focus-visible {
-      opacity: 1;
-      pointer-events: auto;
-      transform: none;
-      color: rgba(16, 16, 16, 0.92);
-    }
-
-    .wp-item-copy {
-      display: grid;
-      gap: 4px;
-    }
-
-    .wp-brand-row,
-    .wp-title-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-      min-width: 0;
-    }
-
-    .wp-price-row {
-      min-width: 0;
-      display: inline-flex;
-      align-items: baseline;
-      justify-content: flex-start;
-      gap: 6px;
-      max-width: 100%;`;
+`;
 }

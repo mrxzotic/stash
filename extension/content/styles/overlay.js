@@ -35,9 +35,9 @@ function overlayStyles() {
       position: fixed;
       top: 24px;
       right: 24px;
-      width: min(286px, calc(100vw - 32px));
+      width: min(306px, calc(100vw - 32px));
       display: grid;
-      gap: 12px;
+      gap: 13px;
       padding: 16px;
       color: #101010;
       background: rgba(251, 251, 248, 0.88);
@@ -53,13 +53,120 @@ function overlayStyles() {
       pointer-events: auto;
     }
 
+    .wl-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      overflow: hidden;
+      background: rgba(8, 11, 16, 0.08);
+    }
+
+    .wl-progress span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 11, 16, 0.46);
+      transform-origin: left center;
+      animation: wlProgress var(--wl-dismiss-duration, 8000ms) linear forwards;
+    }
+
+    .wl-panel.is-timer-paused .wl-progress span {
+      animation-play-state: paused;
+    }
+
+    .wl-close {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      color: rgba(8, 11, 16, 0.58);
+      background: transparent;
+    }
+
+    .wl-close:hover {
+      color: #101010;
+      background: rgba(8, 11, 16, 0.06);
+    }
+
+    .wl-close-icon {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .wl-header {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+      padding: 1px 30px 0;
+      text-align: center;
+    }
+
     .wl-kicker {
       margin: 0;
       color: #101010;
-      font-size: var(--text-ui);
-      line-height: 1;
+      font-size: var(--text-heading);
+      line-height: 1.05;
       font-weight: 760;
-      text-align: center;
+      letter-spacing: 0;
+    }
+
+    .wl-countdown {
+      margin: 0;
+      color: rgba(8, 11, 16, 0.46);
+      font-family: var(--figure-font);
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 620;
+    }
+
+    .wl-timer-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .wl-timer-button {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: 1px solid rgba(8, 11, 16, 0.12);
+      border-radius: 6px;
+      color: rgba(8, 11, 16, 0.76);
+      background: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 1px 1px rgba(8, 11, 16, 0.04);
+      line-height: 1;
+    }
+
+    .wl-timer-button:hover {
+      color: #101010;
+      background: rgba(255, 255, 255, 0.8);
+      border-color: rgba(8, 11, 16, 0.2);
+    }
+
+    .wl-timer-icon {
+      width: 13px;
+      height: 13px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .wl-item {
@@ -70,17 +177,25 @@ function overlayStyles() {
       aspect-ratio: 4 / 5;
       display: grid;
       place-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       background: transparent;
       border: 0;
-      border-radius: 0;
-      overflow: visible;
+      border-radius: 8px;
+      overflow: hidden;
+      -webkit-clip-path: inset(0 round 8px);
+      clip-path: inset(0 round 8px);
+      contain: paint;
     }
 
     .wl-image img {
-      width: 100%;
-      height: 100%;
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
       border-radius: 8px;
+      -webkit-clip-path: inset(0 round 8px);
+      clip-path: inset(0 round 8px);
       object-fit: contain;
       object-position: center;
     }
@@ -95,71 +210,7 @@ function overlayStyles() {
       stroke-linejoin: round;
     }
 
-    .wl-item p {
-      display: block;
-      margin: 0 0 4px;
-      color: rgba(16, 16, 16, 0.5);
-      font-size: var(--text-body);
-      line-height: 1.25;
-      font-weight: 400;
-    }
-
-    .wl-item h2 {
-      margin: 0;
-      color: #101010;
-      font-size: var(--text-ui);
-      line-height: 1.16;
-      font-weight: 720;
-      letter-spacing: 0;
-    }
-
-    .wl-site-price,
-    .wl-compare-price {
-      display: inline-block;
-      margin-top: 5px;
-      color: rgba(8, 11, 16, 0.5);
-      font-family: var(--figure-font);
-      font-variant-numeric: tabular-nums;
-      font-size: var(--text-body);
-      line-height: 1.2;
-      font-weight: 680;
-    }
-
-    .wl-site-price.is-sale {
-      color: #d92d20;
-    }
-
-    .wl-compare-price {
-      margin-top: 4px;
-      margin-left: 6px;
-    }
-
-    .wl-open-button {
-      justify-self: center;
-      height: 32px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 0 12px;
-      margin-top: 2px;
-      border: 0;
-      border-radius: 999px;
-      color: #fff;
-      background: #050505;
-      font-size: var(--text-control);
-      line-height: 1;
-      font-weight: 760;
-    }
-
-    .wl-button-icon {
-      width: 14px;
-      height: 14px;
-      stroke: currentColor;
-      stroke-width: 2.2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+    ${overlayFieldStyles()}
 
     .wl-error {
       position: fixed;
@@ -199,6 +250,15 @@ function overlayStyles() {
       }
     }
 
+    @keyframes wlProgress {
+      0% {
+        transform: scaleX(1);
+      }
+      100% {
+        transform: scaleX(0);
+      }
+    }
+
     @media (max-width: 560px) {
       .wl-panel {
         top: 12px;
@@ -207,6 +267,11 @@ function overlayStyles() {
         width: auto;
         padding: 16px;
         border-radius: 8px;
+      }
+
+      .wl-header {
+        padding-right: 32px;
+        padding-left: 32px;
       }
     }
   `;
