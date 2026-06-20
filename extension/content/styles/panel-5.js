@@ -39,73 +39,6 @@ function panelStylesChunk5() {
       -webkit-line-clamp: 2;
     }
 
-    .wp-source-icon {
-      position: absolute;
-      top: 0;
-      left: 6px;
-      width: 32px;
-      height: 32px;
-      display: grid;
-      align-items: start;
-      justify-items: center;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      color: rgba(16, 16, 16, 0.48);
-      text-decoration: none;
-      overflow: visible;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 140ms ease, color 140ms ease;
-      z-index: 2;
-    }
-
-    .wp-item:hover .wp-source-icon,
-    .wp-item:focus-within .wp-source-icon {
-      opacity: 1;
-      color: rgba(16, 16, 16, 0.92);
-    }
-
-    .wp-source-fallback {
-      font-family: var(--figure-font);
-      font-size: 14px;
-      line-height: 1;
-      font-weight: 760;
-      transition: opacity 160ms ease;
-    }
-
-    .wp-source-icon.has-favicon .wp-source-fallback {
-      opacity: 0;
-    }
-
-    .wp-source-icon .wp-source-favicon {
-      position: static;
-      width: 14px;
-      height: 14px;
-      min-width: 14px;
-      max-width: 14px;
-      min-height: 14px;
-      max-height: 14px;
-      display: block;
-      border-radius: 0;
-      object-fit: contain;
-      object-position: center;
-      filter: grayscale(1) contrast(1.18);
-      mix-blend-mode: multiply;
-      opacity: 0.92;
-      z-index: 1;
-    }
-
-    .wp-compact-index {
-      align-self: start;
-      color: rgba(8, 11, 16, 0.5);
-      font-family: var(--figure-font);
-      font-size: var(--text-caption);
-      line-height: 1.1;
-      font-weight: 650;
-      font-variant-numeric: tabular-nums;
-    }
-
     .wp-summary-brand-filter {
       display: inline-flex;
       align-items: center;
@@ -118,10 +51,10 @@ function panelStylesChunk5() {
       min-width: 0;
       max-width: min(190px, 42vw);
       display: inline-grid;
-      grid-template-columns: minmax(0, auto) 16px;
+      grid-template-columns: minmax(0, 1fr) 18px;
       align-items: center;
-      gap: 4px;
-      padding: 0 7px 0 12px;
+      gap: 6px;
+      padding: 0 6px 0 12px;
       border: 1px solid rgba(8, 11, 16, 0.84);
       border-radius: 999px;
       background: rgba(8, 11, 16, 0.84);
@@ -139,8 +72,8 @@ function panelStylesChunk5() {
     }
 
     .wp-summary-brand-clear {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       display: grid;
       place-items: center;
       padding: 0;
@@ -148,7 +81,8 @@ function panelStylesChunk5() {
       border-radius: 0;
       background: transparent;
       color: currentColor;
-      opacity: 0.58;
+      opacity: 0.74;
+      cursor: pointer;
     }
 
     .wp-summary-brand-clear:hover,

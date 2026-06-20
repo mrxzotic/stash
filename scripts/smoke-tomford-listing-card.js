@@ -2,10 +2,10 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { contentScriptFiles } = require("./content-script-files");
 
 const root = path.resolve(__dirname, "..");
-const manifest = JSON.parse(fs.readFileSync(path.join(root, "extension/manifest.json"), "utf8"));
-const scripts = manifest.content_scripts[0].js.filter((file) => file !== "content/bootstrap.js");
+const scripts = contentScriptFiles(root).filter((file) => file !== "content/bootstrap.js");
 const listingUrl = "https://www.tomfordfashion.co.uk/en-gb/sale-men/";
 const bomberUrl =
   "https://www.tomfordfashion.co.uk/en-gb/silk-satin-bomber%C2%A0/OBB010-FMS072.html";

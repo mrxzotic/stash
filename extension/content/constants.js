@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-20-clear-mode-toggle-v1";
+var CONTENT_VERSION = "2026-06-20-founder-opaque-screen-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -23,6 +23,7 @@ var DEFAULT_SETTINGS = {
   backgroundTheme: "warm",
   compactView: false
 };
+var GRAPHITE_BACKGROUND_THEME = "graphite";
 var DEFAULT_CATEGORIES = [
   { id: "tops", label: "Tops" },
   { id: "bottoms", label: "Bottoms" },
@@ -103,6 +104,10 @@ var CURRENCY_CODE_PATTERN =
   "USD|EUR|GBP|JPY|AUD|CAD|CHF|CNY|KRW|RUB|UAH|AED|SAR|QAR|KWD|BHD|OMR|TRY|KZT|GEL|AMD|PLN|SEK|NOK|DKK|HKD|SGD";
 var SUMMARY_CURRENCY_PICKER_OPTIONS = ["USD", "EUR", "GBP", "CHF", "RUB", "UAH"];
 var RATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+var PANEL_SORT_FIELD_RECENT = "recent";
+var PANEL_SORT_FIELD_NAME = "name";
+var PANEL_SORT_ASC = "asc";
+var PANEL_SORT_DESC = "desc";
 var BRAND_ALIASES = new Map([
   ["aime leon dore eu", "Aimé Leon Dore"],
   ["aime leon dore", "Aimé Leon Dore"],
@@ -137,11 +142,16 @@ var panelState = {
   categoryComposerOpen: false,
   deleteCategoryId: "",
   deleteItemId: "",
+  editItemId: "",
+  archivedOpen: false,
   brandCloudOpen: false,
   brandFilterKey: "",
   brandFilterLabel: "",
   activeCategory: "all",
   searchQuery: "",
+  sortField: PANEL_SORT_FIELD_RECENT,
+  sortDirection: PANEL_SORT_DESC,
+  founderPromoOpen: false,
   items: [],
   categories: DEFAULT_CATEGORIES,
   summaryCurrency: DEFAULT_SETTINGS.summaryCurrency,

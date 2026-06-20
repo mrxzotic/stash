@@ -4,7 +4,9 @@ function panelContentStyles() {
       position: absolute;
       inset: 0;
       z-index: 10;
-      background: rgba(255, 255, 255, 0.46);
+      background: rgba(8, 11, 16, 0.16);
+      -webkit-backdrop-filter: blur(12px) saturate(1.08);
+      backdrop-filter: blur(12px) saturate(1.08);
     }
 
     .wp-confirm-dialog {
@@ -90,7 +92,7 @@ function panelContentStyles() {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-content: start;
       column-gap: 16px;
-      padding: 148px 24px 48px;
+      padding: var(--wp-items-padding-top, 148px) 24px 48px;
       margin-top: 0;
       overflow-y: auto;
       scroll-behavior: smooth;
@@ -107,16 +109,10 @@ function panelContentStyles() {
       gap: 20px;
     }
 
-    .wp-items.is-compact {
-      grid-template-columns: 1fr;
-      row-gap: 0;
-      padding-top: 142px;
-    }
-
     .wp-items.is-brand-cloud {
       grid-template-columns: 1fr;
       align-content: center;
-      padding-top: 126px;
+      padding-top: var(--wp-items-padding-top, 126px);
     }
 
     .wp-brand-cloud {
@@ -154,12 +150,6 @@ function panelContentStyles() {
       font-weight: 650;
     }
 
-    .wp-compact-list {
-      display: grid;
-      gap: 4px;
-      min-width: 0;
-    }
-
     .wp-item {
       position: relative;
       z-index: 0;
@@ -168,15 +158,6 @@ function panelContentStyles() {
       transform: translateY(0);
       transition: transform 180ms cubic-bezier(.16, 1, .3, 1);
       animation: wpItemIn 240ms cubic-bezier(.16, 1, .3, 1) both;
-    }
-
-    .wp-compact-item {
-      min-height: 64px;
-      display: grid;
-      grid-template-columns: 28px 54px minmax(0, 1fr) auto 28px;
-      gap: 10px;
-      align-items: start;
-      padding: 5px 0;
     }
 
     .wp-item::before {
@@ -242,20 +223,6 @@ function panelContentStyles() {
       contain: paint;
     }
 
-    .wp-compact-thumb {
-      position: relative;
-      width: 54px;
-      height: 62px;
-      display: grid;
-      place-items: center;
-      border-radius: 8px;
-      overflow: hidden;
-      -webkit-clip-path: inset(0 round 8px);
-      clip-path: inset(0 round 8px);
-      -webkit-mask-image: -webkit-radial-gradient(white, black);
-      contain: paint;
-    }
-
     .wp-image-frame {
       display: grid;
       place-items: center;
@@ -289,11 +256,6 @@ function panelContentStyles() {
       object-position: center;
     }
 
-    .wp-compact-thumb .wp-image-frame {
-      max-width: 100%;
-      max-height: 100%;
-    }
-
     .wp-image-placeholder {
       width: 42px;
       height: 42px;
@@ -308,6 +270,7 @@ function panelContentStyles() {
       transform: none;
     }
 
+    .wp-archive,
     .wp-remove {
       position: absolute;
       top: 8px;
@@ -327,23 +290,14 @@ function panelContentStyles() {
       transition: opacity 140ms ease, color 140ms ease;
     }
 
-    .wp-remove::before,
-    .wp-remove::after {
-      width: 18px;
-      height: 2px;
+    .wp-item.is-archived .wp-remove,
+    .wp-item.is-archived .wp-archive {
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    .wp-compact-item .wp-remove {
-      position: relative;
-      top: auto;
-      right: auto;
-      width: 28px;
-      height: 28px;
-      justify-self: end;
-      align-self: start;
-      transform: none;
-    }
-
+    .wp-item:hover .wp-archive,
+    .wp-archive:focus-visible,
     .wp-item:hover .wp-remove,
     .wp-remove:focus-visible {
       opacity: 1;
@@ -355,13 +309,6 @@ function panelContentStyles() {
     .wp-item-copy {
       display: grid;
       gap: 4px;
-    }
-
-    .wp-compact-copy {
-      display: grid;
-      gap: 3px;
-      min-width: 0;
-      align-self: start;
     }
 
     .wp-brand-row,
@@ -382,12 +329,5 @@ function panelContentStyles() {
       max-width: 100%;
     }
 
-    .wp-compact-price {
-      align-self: start;
-      justify-self: end;
-      justify-content: flex-end;
-      text-align: right;
-      white-space: nowrap;
-    }
   `;
 }

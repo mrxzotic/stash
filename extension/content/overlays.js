@@ -22,10 +22,14 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
         </div>
       </header>
       <article class="wl-item">
-        <div class="wl-image">${item.imageUrl ? `<img src="${escapeAttribute(item.imageUrl)}" alt="">` : lucideImageIcon("wl-image-placeholder")}</div>
+        <div class="wl-image">${item.imageUrl ? `<img src="${escapeAttribute(item.imageUrl)}" alt="" referrerpolicy="no-referrer">` : lucideImageIcon("wl-image-placeholder")}</div>
         <dl class="wl-fields">${renderSavedOverlayFields(item)}</dl>
       </article>
       <div class="wl-actions">
+        <button class="wl-edit-button" type="button" data-edit-saved-item>
+          ${lucidePencilIcon("wl-button-icon")}
+          <span>Edit</span>
+        </button>
         <button class="wl-open-button" type="button" data-open-stash>
           ${lucideLinkIcon("wl-button-icon")}
           <span>Open Stash</span>
@@ -45,6 +49,9 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
     dismissSavedOverlay(root);
     safelyRunPanelAction(() => openStashPanel());
   });
+  root.querySelector("[data-edit-saved-item]")?.addEventListener("click", () => {
+    safelyRunPanelAction(() => openSavedOverlayEditor(root, item));
+  });
   root.querySelector("[data-cancel-addition]")?.addEventListener("click", () => {
     safelyRunPanelAction(() => cancelSavedOverlayAddition(root, item));
   });
@@ -60,6 +67,35 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
   });
   bindImageFallbacks(root);
   startSavedOverlayCountdown(root, SAVED_OVERLAY_DURATION_MS);
+}
+
+async function openSavedOverlayEditor(root, item) {
+  const itemId = item.id || productId(item.url);
+  dismissSavedOverlay(root);
+  await openStashPanel();
+  const savedItem = panelState.items
+    .map(normalizePanelItem)
+    .find((panelItem) => panelItem.id === itemId);
+
+  if (!savedItem) {
+    return;
+  }
+
+  panelState.editItemId = savedItem.id;
+  panelState.highlightedItemId = savedItem.id;
+  panelState.archivedOpen = false;
+  panelState.brandCloudOpen = false;
+  panelState.brandFilterKey = "";
+  panelState.brandFilterLabel = "";
+  panelState.searchOpen = false;
+  panelState.searchQuery = "";
+  panelState.categoryComposerOpen = false;
+  panelState.deleteCategoryId = "";
+  panelState.deleteItemId = "";
+  if (panelState.activeCategory !== "all" && panelState.activeCategory !== savedItem.category) {
+    panelState.activeCategory = savedItem.category;
+  }
+  renderStashPanel();
 }
 
 function showErrorOverlay(error) {

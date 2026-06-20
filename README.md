@@ -1,16 +1,18 @@
 # Stash
 
-Stash is a plain Manifest V3 Chrome/Arc extension for saving products from any shop into a compact local stash.
+Stash is a plain Manifest V3 Chrome/Arc extension for saving products from any shop into a private local stash.
 
-![Stash in-page panel](docs/stash-panel.png)
+The v0.1 promise is intentionally narrow: save products cleanly from arbitrary shops, keep the library local, and make saved data easy to correct or back up.
 
 ## What it does
 
 - Saves products from right-clicked product cards, images, links, and product pages.
 - Extracts product data from schema.org JSON-LD, embedded app JSON, Shopify product JSON, OpenGraph, microdata, and DOM context.
 - Stores the stash locally in `chrome.storage.local`.
-- Opens as a compact in-page panel with category filters, search, settings, and source favicons.
+- Opens as a compact in-page panel with category filters, search, and view/theme toggles.
 - Keeps visible product cards clean: short commercial model name, brand, image, source URL, and original site price.
+- Lets users edit saved brand, name, price, image URL, and category.
+- Exports a local JSON backup.
 - Supports sale display with current price and compare-at price.
 - Converts totals with cached RUB fallback rates while preserving the original site currency on cards.
 
@@ -27,15 +29,16 @@ Stash is a plain Manifest V3 Chrome/Arc extension for saving products from any s
 
 Stash has no backend, accounts, telemetry, or hidden collection. Saved items stay in local browser storage.
 
-The extension requests broad `http://*/*` and `https://*/*` host access because it is designed to save products from arbitrary shops. New network requests must be documented and must never execute remote code.
+Stash uses `activeTab`, `contextMenus`, `scripting`, and `storage`. It does not request persistent all-site host access. Content scripts are injected only after the user clicks the extension action or chooses **Save to Stash** from the context menu on an HTTP/HTTPS page.
 
 Current network behavior is limited to user-triggered save/open flows:
 
 - Product-page enrichment can fetch the same-origin product page when the clicked card is missing title, image, price, or a sharper product image.
 - Shopify enrichment can fetch a matching same-origin `/products/<handle>.js` endpoint.
 - Currency totals can fetch RUB exchange rates from `https://open.er-api.com/v6/latest/<currency>` and cache the numeric rate locally.
+- Saved product images can load from the original shop when the panel is open, with `referrerpolicy="no-referrer"` on rendered image elements.
 
-Stash does not call a remote favicon proxy. Source icons fall back to local text glyphs.
+Stash does not call a remote favicon proxy or render passive third-party favicon lookups.
 
 ## Project structure
 
@@ -55,7 +58,7 @@ extension/
     utils.js
 ```
 
-Content scripts are ordered classic MV3 scripts. If a content file is added, removed, renamed, or reordered, update both `extension/manifest.json` and `CONTENT_SCRIPT_FILES` in `extension/background.js`.
+Content scripts are ordered classic MV3 files and dynamically injected from `CONTENT_SCRIPT_FILES` in `extension/background.js`. If a content file is added, removed, renamed, or reordered, update that list and keep `extension/content/constants.js` first and `extension/content/bootstrap.js` last. `extension/manifest.json` intentionally does not declare always-on `content_scripts`.
 
 ## Development
 
@@ -74,11 +77,12 @@ Useful checks:
 ```bash
 find extension/content -type f -name '*.js' -print | sort | xargs node --check
 node --check extension/background.js
+find scripts -maxdepth 1 -name 'smoke-*.js' -print | sort | xargs -n1 node
 ```
 
 ## Status
 
-Stash is early MVP software. It currently focuses on local saving, generic extraction, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or Chrome Web Store packaging automation yet.
+Stash is approaching a v0.1 public release. It currently focuses on local saving, generic extraction, manual correction, JSON backup export, and a polished in-page panel. It does not include sync, accounts, price tracking, import/restore, store-specific adapters, or Chrome Web Store packaging automation yet.
 
 ## License
 
