@@ -1,18 +1,23 @@
 const MENU_ROOT_ID = "stash-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
-const CONTENT_SCRIPT_VERSION = "2026-06-20-clear-mode-toggle-v1";
+const CONTENT_SCRIPT_VERSION = "2026-06-20-founder-opaque-screen-v1";
 const MESSAGE_PING = "STASH_PING_V2";
 const MESSAGE_SAVE = "STASH_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
 const CONTENT_SCRIPT_FILES = [
   "content/constants.js",
   "content/lifecycle.js",
+  "content/panel/archive.js",
+  "content/panel/sort.js",
+  "content/panel/promo.js",
   "content/panel/compact-view.js",
+  "content/panel/focus.js",
   "content/panel/render.js",
-  "content/panel/settings-promo.js",
   "content/panel/events.js",
   "content/panel/items.js",
+  "content/panel/edit.js",
+  "content/panel/export.js",
   "content/icons.js",
   "content/extractors/main.js",
   "content/extractors/jsonld.js",
@@ -32,8 +37,12 @@ const CONTENT_SCRIPT_FILES = [
   "content/styles/panel-3.js",
   "content/styles/panel-4.js",
   "content/styles/panel-content.js",
+  "content/styles/panel-compact.js",
   "content/styles/panel-5.js",
   "content/styles/panel-currency.js",
+  "content/styles/panel-sort.js",
+  "content/styles/panel-promo.js",
+  "content/styles/panel-release.js",
   "content/styles/panel.js",
   "content/styles/overlay-fields.js",
   "content/styles/overlay.js",
@@ -50,12 +59,10 @@ const CONTENT_SCRIPT_FILES = [
 
 chrome.runtime.onInstalled.addListener(() => {
   void rebuildContextMenus();
-  void cleanupOpenTabs();
 });
 
 chrome.runtime.onStartup.addListener(() => {
   void rebuildContextMenus();
-  void cleanupOpenTabs();
 });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -182,29 +189,4 @@ async function pingContentScript(tabId) {
   } catch {
     return null;
   }
-}
-
-async function cleanupOpenTabs() {
-  try {
-    const tabs = await chrome.tabs.query({ url: PAGE_PATTERNS });
-    await Promise.allSettled(
-      tabs
-        .filter((tab) => tab.id)
-        .map((tab) =>
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            func: cleanupStashDom
-          })
-        )
-    );
-  } catch (error) {
-    console.warn("Stash could not clean open tabs", error);
-  }
-}
-
-function cleanupStashDom() {
-  document.getElementById("stash-panel-root")?.remove();
-  document.getElementById("stash-extension-root")?.remove();
-  delete window.__stashContentVersion;
-  delete window.__stashContentLoaded;
 }

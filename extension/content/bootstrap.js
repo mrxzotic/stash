@@ -67,6 +67,7 @@ function initializeStashContent() {
         requiresFullRender = true;
       }
       panelState.items = nextItems;
+      syncPanelArchiveAvailability();
     }
   
     if (changes[CATEGORY_STORAGE_KEY]) {

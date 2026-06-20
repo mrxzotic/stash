@@ -111,7 +111,8 @@ function backgroundThemeOptions() {
   return [
     { id: "warm", label: "Warm" },
     { id: "white", label: "White" },
-    { id: "ice", label: "Ice" }
+    { id: "ice", label: "Ice" },
+    { id: GRAPHITE_BACKGROUND_THEME, label: "Graphite" }
   ];
 }
 

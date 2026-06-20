@@ -2,12 +2,18 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const { contentScriptFiles } = require("./content-script-files");
 
 const root = path.resolve(__dirname, "..");
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "extension/manifest.json"), "utf8"));
-const scripts = manifest.content_scripts[0].js.filter((file) => file !== "content/bootstrap.js");
+const scripts = contentScriptFiles(root).filter((file) => file !== "content/bootstrap.js");
 const productUrl =
   "https://www.loewe.com/eur/en/women/bags/bucket-bags/medium-bilbao-bucket-in-smooth-calfskin/AWRAWPRX01-5984.html";
+
+assert.equal(manifest.host_permissions, undefined);
+assert.equal(manifest.content_scripts, undefined);
+assert.equal(manifest.permissions.includes("activeTab"), true);
+assert.equal(scripts[0], "content/constants.js");
 
 const sandbox = {
   URL,

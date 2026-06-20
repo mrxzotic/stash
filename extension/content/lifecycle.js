@@ -48,6 +48,9 @@ function closeStashPanel() {
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
+  panelState.editItemId = "";
+  panelState.founderPromoOpen = false;
+  panelState.archivedOpen = false;
   panelState.brandCloudOpen = false;
   panelState.brandFilterKey = "";
   panelState.brandFilterLabel = "";
@@ -61,6 +64,7 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
   panelState.items = items;
   panelState.categories = categories;
   panelState.highlightedItemId = item.id;
+  panelState.archivedOpen = false;
 
   if (panelState.activeCategory !== "all" && panelState.activeCategory !== item.category) {
     panelState.activeCategory = item.category;

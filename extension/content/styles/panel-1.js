@@ -147,6 +147,27 @@ function panelStylesChunk1() {
       --shell-shadow: rgba(20, 34, 52, 0.2);
     }
 
+    .wp-theme-graphite {
+      color-scheme: dark;
+      --background: #151619;
+      --foreground: #f4f4f0;
+      --muted: #a4a7ad;
+      --muted-foreground: #7f858b;
+      --border: rgba(255, 255, 255, 0.12);
+      --input: rgba(255, 255, 255, 0.12);
+      --card: rgba(255, 255, 255, 0.06);
+      --hover: rgba(255, 255, 255, 0.08);
+      --shell-bg: rgba(18, 19, 22, 0.86);
+      --shell-edge-strong: rgba(18, 19, 22, 0.84);
+      --shell-edge-mid: rgba(18, 19, 22, 0.5);
+      --shell-edge-clear: rgba(18, 19, 22, 0);
+      --shell-edge-mesh-a: rgba(255, 255, 255, 0.12);
+      --shell-edge-mesh-b: rgba(134, 148, 166, 0.16);
+      --shell-shadow: rgba(0, 0, 0, 0.44);
+      --primary: #f4f4f0;
+      --primary-foreground: #080b10;
+    }
+
     .wp-shell::before,
     .wp-shell::after {
       content: "";

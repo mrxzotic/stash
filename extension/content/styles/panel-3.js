@@ -245,6 +245,12 @@ function panelStylesChunk3() {
         linear-gradient(135deg, #f6fbff, #dfeeff);
     }
 
+    .wp-background-swatch-graphite {
+      background:
+        radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 0.16), transparent 38%),
+        linear-gradient(135deg, #151619, #2a2d33);
+    }
+
     .wp-background-check {
       position: absolute;
       right: 6px;

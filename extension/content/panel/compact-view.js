@@ -1,20 +1,9 @@
-function renderSettingsViewOptions() {
-  return `
-    <label class="wp-settings-row wp-checkbox-row">
-      <span>
-        <span>Compact view</span>
-        <small>Dense rows for scanning brand, name, and price.</small>
-      </span>
-      <input type="checkbox" data-compact-view ${panelState.compactView ? "checked" : ""}>
-    </label>
-  `;
-}
-
 function syncPanelViewMode(root = document.getElementById("stash-panel-root")?.shadowRoot) {
   if (!root) {
     return;
   }
 
+  syncPanelTopbarPreferenceControls(root);
   root.querySelector(".wp-shell")?.classList.toggle("is-compact-view", panelState.compactView);
   const items = root.querySelector(".wp-items");
   if (!items) {
@@ -22,8 +11,8 @@ function syncPanelViewMode(root = document.getElementById("stash-panel-root")?.s
   }
 
   items.classList.toggle("is-compact", panelState.compactView);
-  items.classList.toggle("is-brand-cloud", panelState.brandCloudOpen && !panelState.brandFilterKey);
-  if (panelState.brandCloudOpen && !panelState.brandFilterKey) {
+  items.classList.toggle("is-brand-cloud", panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen);
+  if (panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen) {
     return;
   }
 
@@ -33,30 +22,67 @@ function syncPanelViewMode(root = document.getElementById("stash-panel-root")?.s
 function renderPanelCompactItem(item, index = 0) {
   const brand = formatBrandName(item.brand || item.source || sourceNameFromUrl(item.url));
   const priceHtml = renderSitePriceHtml(item, "wp");
+  const isArchived = isPanelItemArchived(item);
 
   return `
-    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}">
-      <span class="wp-compact-index" aria-hidden="true">${index + 1}</span>
+    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}">
+      <span class="wp-compact-index" aria-label="Item ${index + 1}">#${index + 1}</span>
       <a class="wp-compact-thumb" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">
-        ${item.imageUrl ? `<span class="wp-image-frame is-wide"><img src="${escapeAttribute(item.imageUrl)}" alt=""></span>` : lucideImageIcon("wp-image-placeholder")}
+        ${item.imageUrl ? `<span class="wp-image-frame is-wide"><img src="${escapeAttribute(item.imageUrl)}" alt="" referrerpolicy="no-referrer"></span>` : lucideImageIcon("wp-image-placeholder")}
       </a>
       <div class="wp-compact-copy">
         <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
         <a class="wp-item-title" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a>
       </div>
       ${priceHtml ? `<div class="wp-price-row wp-compact-price">${priceHtml}</div>` : ""}
-      <button class="wp-remove" type="button" title="Remove" aria-label="Remove" data-remove-id="${escapeAttribute(item.id)}"></button>
+      <div class="wp-compact-actions">
+        ${isArchived
+          ? `<button class="wp-restore" type="button" title="Restore" aria-label="Restore" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
+             <button class="wp-remove" type="button" title="Delete" aria-label="Delete" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
+          : `<button class="wp-edit" type="button" title="Edit" aria-label="Edit" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
+             <button class="wp-archive" type="button" title="Archive" aria-label="Archive" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
+      </div>
     </article>
   `;
 }
 
+function toggledGraphiteThemeId() {
+  return panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME
+    ? DEFAULT_SETTINGS.backgroundTheme
+    : GRAPHITE_BACKGROUND_THEME;
+}
+
+function syncPanelTopbarPreferenceControls(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+  if (!root) {
+    return;
+  }
+
+  const compactButton = root.querySelector("[data-panel-compact-toggle]");
+  if (compactButton) {
+    compactButton.classList.toggle("is-toggle-active", panelState.compactView);
+    compactButton.setAttribute("aria-pressed", String(panelState.compactView));
+    compactButton.setAttribute("aria-label", panelState.compactView ? "Compact view on. Switch to cards" : "Card view on. Switch to compact");
+    compactButton.setAttribute("title", panelState.compactView ? "Card view" : "Compact view");
+    compactButton.innerHTML = panelState.compactView ? lucideGridIcon() : lucideListIcon();
+  }
+
+  const themeButton = root.querySelector("[data-panel-theme-toggle]");
+  if (themeButton) {
+    const isGraphite = panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME;
+    themeButton.classList.toggle("is-toggle-active", isGraphite);
+    themeButton.setAttribute("aria-pressed", String(isGraphite));
+    themeButton.setAttribute("aria-label", isGraphite ? "Graphite mode on. Switch to light" : "Graphite mode off. Switch to graphite");
+    themeButton.setAttribute("title", isGraphite ? "Light mode" : "Graphite mode");
+    themeButton.innerHTML = isGraphite ? lucideSunIcon() : lucideMoonIcon();
+  }
+}
+
 function renderPanelSummaryLead() {
   if (!panelState.brandFilterKey) {
-    const itemCount = `${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}`;
-    const label = panelState.brandCloudOpen ? "Brands" : itemCount;
+    const itemCount = panelActiveItems(panelState.items).length;
     return `
-      <button class="wp-count${panelState.brandCloudOpen ? " is-active" : ""}" type="button" aria-pressed="${panelState.brandCloudOpen}" aria-label="${panelState.brandCloudOpen ? "Brands view on. Show items" : `${itemCount} view on. Show brands`}" title="${panelState.brandCloudOpen ? "Show items" : "Show brands"}" data-brand-cloud-toggle>
-        <span class="wp-count-label">${escapeHtml(label)}</span>
+      <button class="wp-count${panelState.brandCloudOpen ? " is-active" : ""}" type="button" aria-pressed="${panelState.brandCloudOpen}" aria-label="${panelCountAriaLabel(itemCount)}" title="${panelState.brandCloudOpen ? "Close brands" : "Show brands"}" data-brand-cloud-toggle>
+        ${renderPanelCountContents(itemCount)}
       </button>
     `;
   }
@@ -74,6 +100,38 @@ function renderPanelSummaryLead() {
   `;
 }
 
+function renderPanelCountContents(itemCount) {
+  const label = panelState.brandCloudOpen ? "Brands" : panelItemCountLabel(itemCount);
+  return `
+    <span class="wp-count-label">${escapeHtml(label)}</span>
+    ${panelState.brandCloudOpen ? lucideXIcon("wp-count-clear-icon") : ""}
+  `;
+}
+
+function syncPanelBrandCountControl(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+  const count = root?.querySelector(".wp-count");
+  if (!count) {
+    return;
+  }
+
+  const itemCount = panelActiveItems(panelState.items).length;
+  count.innerHTML = renderPanelCountContents(itemCount);
+  count.classList.toggle("is-active", panelState.brandCloudOpen);
+  count.setAttribute("aria-pressed", String(panelState.brandCloudOpen));
+  count.setAttribute("aria-label", panelCountAriaLabel(itemCount));
+  count.setAttribute("title", panelState.brandCloudOpen ? "Close brands" : "Show brands");
+}
+
+function panelCountAriaLabel(itemCount) {
+  return panelState.brandCloudOpen
+    ? "Brands view open. Close brands"
+    : `${panelItemCountLabel(itemCount)} view. Show brands`;
+}
+
+function panelItemCountLabel(itemCount) {
+  return `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
+}
+
 function renderPanelBrandCloud(items) {
   const brandNodes = panelBrandCloudItems(items).map((brand) => `
     <button class="wp-brand-cloud-item" type="button" style="--wp-brand-cloud-scale: ${brand.scale.toFixed(3)}" data-brand-filter-key="${escapeAttribute(brand.key)}" data-brand-filter-label="${escapeAttribute(brand.label)}">
@@ -85,10 +143,12 @@ function renderPanelBrandCloud(items) {
 }
 
 function bindPanelBrandCloudEvents(root) {
+  bindPanelPreferenceEvents(root);
   root.querySelector("[data-brand-cloud-toggle]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
     panelState.brandCloudOpen = !panelState.brandCloudOpen;
+    panelState.archivedOpen = false;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
@@ -100,7 +160,7 @@ function bindPanelBrandCloudEvents(root) {
     event.stopPropagation();
     panelState.brandFilterKey = "";
     panelState.brandFilterLabel = "";
-    panelState.brandCloudOpen = true;
+    panelState.brandCloudOpen = false;
     panelState.searchOpen = false;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
@@ -117,12 +177,38 @@ function bindPanelBrandCloudEvents(root) {
     panelState.brandFilterKey = button.dataset.brandFilterKey || "";
     panelState.brandFilterLabel = button.dataset.brandFilterLabel || "";
     panelState.brandCloudOpen = false;
+    panelState.archivedOpen = false;
     panelState.searchOpen = false;
     panelState.settingsOpen = false;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
     renderStashPanel();
+  });
+}
+
+function bindPanelPreferenceEvents(root) {
+  root.querySelector("[data-panel-compact-toggle]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    panelState.settingsOpen = false;
+    safelyRunPanelAction(async () => {
+      await savePanelSettings(
+        { compactView: !panelState.compactView },
+        { rerender: false, syncViewMode: true }
+      );
+      syncPanelTopbarPreferenceControls(root);
+    });
+  });
+
+  root.querySelector("[data-panel-theme-toggle]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    panelState.settingsOpen = false;
+    safelyRunPanelAction(async () => {
+      await savePanelSettings({ backgroundTheme: toggledGraphiteThemeId() }, { rerender: false });
+      syncPanelTopbarPreferenceControls(root);
+    });
   });
 }
 

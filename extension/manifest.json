@@ -1,10 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Stash",
-  "version": "0.1.128",
+  "version": "0.1.154",
   "description": "Save products from any shop into a compact local stash.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
-  "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -27,54 +26,6 @@
     "48": "icons/stash-cart-48.png",
     "128": "icons/stash-cart-128.png"
   },
-  "content_scripts": [
-    {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": [
-        "content/constants.js",
-        "content/lifecycle.js",
-        "content/panel/compact-view.js",
-        "content/panel/render.js",
-        "content/panel/settings-promo.js",
-        "content/panel/events.js",
-        "content/panel/items.js",
-        "content/icons.js",
-        "content/extractors/main.js",
-        "content/extractors/jsonld.js",
-        "content/extractors/dom.js",
-        "content/extractors/embedded.js",
-        "content/extractors/rendezvous.js",
-        "content/extractors/verify.js",
-        "content/extractors/quality.js",
-        "content/extractors/enrich.js",
-        "content/extractors/anchors.js",
-        "content/extractors/context.js",
-        "content/storage.js",
-        "content/overlay-fields.js",
-        "content/overlays.js",
-        "content/styles/panel-1.js",
-        "content/styles/panel-2.js",
-        "content/styles/panel-3.js",
-        "content/styles/panel-4.js",
-        "content/styles/panel-content.js",
-        "content/styles/panel-5.js",
-        "content/styles/panel-currency.js",
-        "content/styles/panel.js",
-        "content/styles/overlay-fields.js",
-        "content/styles/overlay.js",
-        "content/pricing/dom.js",
-        "content/storage-settings.js",
-        "content/pricing/noise.js",
-        "content/pricing/parse.js",
-        "content/pricing/rates.js",
-        "content/media.js",
-        "content/text.js",
-        "content/utils.js",
-        "content/bootstrap.js"
-      ],
-      "run_at": "document_idle"
-    }
-  ],
   "web_accessible_resources": [
     {
       "resources": [

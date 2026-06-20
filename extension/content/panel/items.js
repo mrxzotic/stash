@@ -64,7 +64,7 @@ function convertToRubSync(amount, currency) {
 
 function panelSummaryTextForItems(items) {
   return formatPanelSummaryTotal(
-    (Array.isArray(items) ? items : []).map(normalizePanelItem),
+    panelActiveItems(items),
     panelState.summaryCurrency
   );
 }
@@ -75,6 +75,7 @@ function panelItemsTotalSignature(items) {
     const price = normalized.price || {};
     return [
       normalized.id,
+      isPanelItemArchived(normalized) ? "archived" : "active",
       price.rubAmount,
       price.amount,
       price.currency
@@ -88,18 +89,9 @@ function renderPanelSummaryOnly(options = {}) {
   const count = root?.querySelector(".wp-count");
   if (!total) return;
 
-  const displayItems = panelState.items.map(normalizePanelItem);
-  if (count) {
-    count.textContent = `${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}`;
-    count.classList.toggle("is-active", panelState.brandCloudOpen);
-    count.setAttribute("aria-pressed", String(panelState.brandCloudOpen));
-    count.setAttribute("title", panelState.brandCloudOpen ? "Show items" : "Show brands");
-  }
-  setPanelTotalText(
-    total,
-    formatPanelSummaryTotal(displayItems, panelState.summaryCurrency),
-    options
-  );
+  const displayItems = panelActiveItems(panelState.items);
+  if (count) syncPanelBrandCountControl(root);
+  setPanelTotalText(total, formatPanelSummaryTotal(displayItems, panelState.summaryCurrency), options);
 }
 
 function syncPanelSettingsControls() {
@@ -118,7 +110,7 @@ function syncPanelSettingsControls() {
   syncPanelCurrencyControl(root);
   syncPanelBackgroundChoices(root);
   syncPanelCompactViewControl(root);
-
+  syncPanelTopbarPreferenceControls(root);
   const backgroundLabel =
     backgroundThemeOptions().find((theme) => theme.id === panelState.backgroundTheme)?.label ||
     panelState.backgroundTheme;

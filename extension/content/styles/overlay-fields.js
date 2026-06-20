@@ -123,10 +123,12 @@ function overlayFieldStyles() {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 8px;
       min-width: 0;
     }
 
+    .wl-edit-button,
     .wl-open-button,
     .wl-cancel-button {
       height: 34px;
@@ -140,7 +142,7 @@ function overlayFieldStyles() {
       letter-spacing: 0;
     }
 
-    .wl-open-button {
+    .wl-edit-button {
       justify-self: center;
       gap: 7px;
       padding: 0 12px;
@@ -148,6 +150,16 @@ function overlayFieldStyles() {
       border: 0;
       color: #fff;
       background: #050505;
+    }
+
+    .wl-open-button {
+      justify-self: center;
+      gap: 7px;
+      padding: 0 12px;
+      margin-top: 2px;
+      border: 1px solid rgba(8, 11, 16, 0.1);
+      color: rgba(8, 11, 16, 0.76);
+      background: transparent;
     }
 
     .wl-cancel-button {
@@ -158,6 +170,7 @@ function overlayFieldStyles() {
       background: transparent;
     }
 
+    .wl-open-button:hover,
     .wl-cancel-button:hover {
       color: #101010;
       background: rgba(8, 11, 16, 0.05);
