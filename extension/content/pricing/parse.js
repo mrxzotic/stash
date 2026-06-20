@@ -1,21 +1,92 @@
 function findBestPrice(...groups) {
   const values = groups.flat().filter(Boolean).map(cleanText);
+  const candidates = [];
+  let hasStartedPriceBlock = false;
 
   for (const value of values) {
     if (isInstallmentPriceText(value)) {
       continue;
     }
 
-    const prices = parsePricesFromText(value);
-    const price = prices.length
-      ? priceWithCompareAt(currentPriceCandidate(prices), prices)
-      : normalizePrice({ text: value });
-    if (Number.isFinite(price.amount) && price.currency) {
-      return price;
+    const prices = priceCandidatesFromText(value);
+    if (!prices.length) {
+      if (hasStartedPriceBlock) {
+        break;
+      }
+      continue;
     }
+
+    hasStartedPriceBlock = true;
+    candidates.push(...prices);
   }
 
-  return {};
+  return bestPriceFromCandidates(candidates);
+}
+
+function priceCandidatesFromText(value) {
+  const prices = parsePricesFromText(value);
+  if (prices.length) {
+    return prices;
+  }
+
+  if (isOnlyNonProductPriceText(value)) {
+    return [];
+  }
+
+  const price = normalizePrice({ text: value });
+  return Number.isFinite(price.amount) && price.currency ? [price] : [];
+}
+
+function bestPriceFromCandidates(candidates) {
+  const firstCurrency = cleanText(candidates[0]?.currency).toUpperCase();
+  if (!firstCurrency) {
+    return {};
+  }
+
+  const sameCurrencyCandidates = candidates.filter(
+    (candidate) => cleanText(candidate.currency).toUpperCase() === firstCurrency
+  );
+  return priceWithCompareAt(
+    currentPriceCandidate(sameCurrencyCandidates),
+    sameCurrencyCandidates
+  );
+}
+
+function bestPriceFromSources(sources) {
+  return sources
+    .map((source, index) => {
+      const price = normalizePrice({
+        amount: source?.priceAmount,
+        currency: source?.currency,
+        text: source?.priceText,
+        compareAtAmount: source?.compareAtPriceAmount,
+        compareAtText: source?.compareAtPriceText
+      });
+      return {
+        price,
+        score: priceSourceScore(source, price, index)
+      };
+    })
+    .filter((candidate) =>
+      Number.isFinite(candidate.price.amount) && candidate.price.currency
+    )
+    .sort((a, b) => b.score - a.score)[0]?.price || {};
+}
+
+function priceSourceScore(source, price, index) {
+  let score = Math.max(0, 24 - index * 2);
+  const hasPositiveAmount = Number.isFinite(price.amount) && price.amount > 0;
+
+  if (hasPositiveAmount) score += 20;
+  else if (Number.isFinite(price.amount)) score -= 30;
+  if (price.currency) score += 8;
+  if (price.originalText) score += 4;
+  if (hasPositiveAmount && Number.isFinite(price.compareAtAmount)) score += 24;
+  if (hasPositiveAmount && source?.isSale) score += 8;
+  if (parsePricesFromText(source?.priceText).length > 1) score += 5;
+  if (!source?.priceText && source?.priceAmount) score -= 3;
+
+  return score;
 }
 
 function parsePricesFromText(value) {
@@ -44,12 +115,25 @@ function parsePricesFromText(value) {
           : first.match(/^[A-Z]{3}$/i)
             ? first
             : second;
-      const amountText = first.length === 1 || first.match(/^[A-Z]{3}$/i)
+      const rawAmountText = first.length === 1 || first.match(/^[A-Z]{3}$/i)
         ? second
         : first;
-      const price = parsedPrice(amountText, currency, match[0]);
+      const { amountText, originalText } = trimPercentDiscountSuffix(
+        rawAmountText,
+        match[0],
+        text.slice(pattern.lastIndex)
+      );
+      if (isNonProductPriceMatch(text, match.index)) {
+        continue;
+      }
+      const price = parsedPrice(amountText, currency, originalText);
       if (Number.isFinite(price.amount) && price.currency) {
-        matches.push({ ...price, index: match.index });
+        matches.push({
+          ...price,
+          index: match.index,
+          sourceText: text,
+          saleEvidence: hasSalePriceEvidence(text)
+        });
       }
     }
   }
@@ -59,9 +143,28 @@ function parsePricesFromText(value) {
     .map(({ index, ...price }) => price);
 }
 
+function trimPercentDiscountSuffix(amountText, originalText, remainingText) {
+  if (!/^\s*%/.test(remainingText)) {
+    return { amountText, originalText };
+  }
+
+  const trimmedAmount = String(amountText || "").replace(/\s+\d{1,2}$/, "");
+  if (trimmedAmount === amountText) {
+    return { amountText, originalText };
+  }
+
+  return {
+    amountText: trimmedAmount,
+    originalText: String(originalText || "").replace(/\s+\d{1,2}$/, "")
+  };
+}
+
 function normalizePrice({ amount, currency, text, compareAtAmount, compareAtText } = {}) {
   const parsed = parsePriceFromText(text, currency);
-  const priceAmount = numericPrice(amount) ?? parsed.amount;
+  const explicitAmount = numericPrice(amount);
+  const priceAmount = explicitAmount === 0 && Number.isFinite(parsed.amount) && parsed.amount > 0
+    ? parsed.amount
+    : explicitAmount ?? parsed.amount;
   const priceCurrency = cleanText(currency || parsed.currency).toUpperCase();
   const originalText =
     formatOriginalPrice(priceAmount, priceCurrency) ||
@@ -76,14 +179,14 @@ function normalizePrice({ amount, currency, text, compareAtAmount, compareAtText
     { amount: priceAmount, currency: priceCurrency }
   );
 
-  return compactObject({
+  return normalizeSuspiciousLowCompareAtPrice(compactObject({
     amount: priceAmount,
     currency: priceCurrency,
     originalText,
     compareAtAmount: compareAt.amount,
     compareAtText: compareAt.originalText,
     isSale: Boolean(compareAt.amount)
-  });
+  }));
 }
 
 function parsePriceFromText(value, fallbackCurrency) {
@@ -95,6 +198,10 @@ function parsePriceFromText(value, fallbackCurrency) {
   const prices = parsePricesFromText(text);
   if (prices.length) {
     return priceWithCompareAt(currentPriceCandidate(prices), prices);
+  }
+
+  if (isOnlyNonProductPriceText(text)) {
+    return {};
   }
 
   const symbolBefore = text.match(/([$€£¥₽₴])\s*([\d][\d\s.,]*)/);
@@ -142,7 +249,9 @@ function currentPriceCandidate(prices) {
   }
 
   const priced = prices.filter((price) => Number.isFinite(price.amount));
-  return priced.sort((a, b) => a.amount - b.amount)[0] || prices[prices.length - 1];
+  const positive = priced.filter((price) => price.amount > 0);
+  const usable = withoutSuspiciousTinyCurrentPrices(positive.length ? positive : priced);
+  return usable.sort((a, b) => a.amount - b.amount)[0] || prices[prices.length - 1];
 }
 
 function priceWithCompareAt(price, candidates = []) {
@@ -151,13 +260,15 @@ function priceWithCompareAt(price, candidates = []) {
   const originalText =
     formatOriginalPrice(currentAmount, currentCurrency) ||
     price.originalText;
-  const compareAt = candidates
-    .filter((candidate) => cleanText(candidate.currency).toUpperCase() === currentCurrency)
-    .filter((candidate) => Number.isFinite(candidate.amount))
-    .filter((candidate) => candidate.amount > currentAmount)
-    .sort((a, b) => b.amount - a.amount)[0];
+  const compareAt = hasCompareAtEvidence(price, candidates)
+    ? candidates
+        .filter((candidate) => cleanText(candidate.currency).toUpperCase() === currentCurrency)
+        .filter((candidate) => Number.isFinite(candidate.amount))
+        .filter((candidate) => candidate.amount > currentAmount)
+        .sort((a, b) => b.amount - a.amount)[0]
+    : null;
 
-  return compactObject({
+  return normalizeSuspiciousLowCompareAtPrice(compactObject({
     amount: currentAmount,
     currency: currentCurrency,
     originalText,
@@ -166,7 +277,51 @@ function priceWithCompareAt(price, candidates = []) {
       compareAt?.originalText ||
       formatOriginalPrice(compareAt?.amount, compareAt?.currency),
     isSale: Boolean(compareAt)
+  }));
+}
+
+function withoutSuspiciousTinyCurrentPrices(prices) {
+  const highest = prices
+    .filter((price) => Number.isFinite(price.amount))
+    .sort((a, b) => b.amount - a.amount)[0]?.amount;
+  if (!Number.isFinite(highest)) {
+    return prices;
+  }
+
+  const filtered = prices.filter((price) =>
+    !isSuspiciousTinyCurrentPrice(price.amount, highest)
+  );
+  return filtered.length ? filtered : prices;
+}
+
+function normalizeSuspiciousLowCompareAtPrice(price) {
+  if (!isSuspiciousTinyCurrentPrice(price.amount, price.compareAtAmount)) {
+    return price;
+  }
+
+  const amount = numericPrice(price.compareAtAmount);
+  const currency = cleanText(price.currency).toUpperCase();
+  return compactObject({
+    amount,
+    currency,
+    originalText:
+      price.compareAtText ||
+      formatOriginalPrice(amount, currency) ||
+      price.originalText
   });
+}
+
+function isSuspiciousTinyCurrentPrice(amount, referenceAmount) {
+  const current = numericPrice(amount);
+  const reference = numericPrice(referenceAmount);
+  return (
+    Number.isFinite(current) &&
+    Number.isFinite(reference) &&
+    current >= 0 &&
+    current <= 10 &&
+    reference >= 100 &&
+    reference / Math.max(current, 1) >= 8
+  );
 }
 
 function normalizeCompareAtPrice(compareAt, current) {

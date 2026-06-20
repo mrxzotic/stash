@@ -55,6 +55,7 @@ function initializeStashContent() {
   
     let requiresFullRender = false;
     let settingsChanged = false;
+    let viewModeChanged = false;
     let summaryAnimationFrom = "";
   
     if (changes[STORAGE_KEY]) {
@@ -81,9 +82,11 @@ function initializeStashContent() {
   
     if (changes[SETTINGS_STORAGE_KEY]) {
       const settings = normalizePanelSettings(changes[SETTINGS_STORAGE_KEY].newValue);
+      viewModeChanged = panelState.compactView !== settings.compactView;
       panelState.summaryCurrency = settings.summaryCurrency;
       panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
       panelState.backgroundTheme = settings.backgroundTheme;
+      panelState.compactView = settings.compactView;
       settingsChanged = true;
     }
 
@@ -93,6 +96,9 @@ function initializeStashContent() {
   
     if (settingsChanged && !requiresFullRender) {
       syncPanelSettingsControls();
+      if (viewModeChanged) {
+        syncPanelViewMode();
+      }
       renderPanelSummaryOnly();
       refreshPanelSummaryRate();
       return;

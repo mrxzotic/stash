@@ -1,12 +1,15 @@
 function isNoiseLine(value) {
   const text = cleanText(value);
-  return /^(new|new in|new season|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|shipping|returns|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging)$/i.test(
+  return /^(new|new in|new season|exclusive|runway|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|shipping|returns|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging|slide\s+\d+|carousel\s+slide\s+\d+|image\s+\d+)$/i.test(
     text
   ) || /^\d+\s+available\s+colou?rs?$/i.test(
     text
+  ) || /^(?:\+\s*)?(?:colou?r|\d+\s+colou?rs?)$/i.test(
+    text
   ) || /^(favorite|share|copy link|copied link|telegram|vk|vkontakte|whatsapp|pinterest|поделиться|скопировать|скопировать ссылку|ссылка скопирована|вконтакте|избранное)$/i.test(
     text
-  ) || /^image:/i.test(text);
+  ) || /^image:/i.test(text) ||
+    /\bimage\s+number\s+\d+\b/i.test(text);
 }
 
 function looksLikeMeasurementLine(value) {
@@ -14,13 +17,91 @@ function looksLikeMeasurementLine(value) {
   return (
     /^\d+(?:[.,]\d+)?\s*x\s*\d+(?:[.,]\d+)?(?:\s*x\s*\d+(?:[.,]\d+)?)?(?:\s*(?:cm|mm|in|inch|inches))?$/i.test(text) ||
     /\b\d+(?:[.,]\d+)?\s*(?:cm|mm|in|inch|inches|kg|g)\b/i.test(text) ||
-    /^(?:xxs|xs|s|m|l|xl|xxl|xxxl|one size|os)$/i.test(text)
+    /^(?:(?:xxs|xs|s|m|l|xl|xxl|xxxl)(?:\s*(?:-|\/|to)\s*(?:xxs|xs|s|m|l|xl|xxl|xxxl))?|one size|os)$/i.test(text)
   );
 }
 
 function looksLikeProductName(value) {
-  return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|coats?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|totes?|backpacks?|luggage|suitcases?|check[\s-]?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
+  return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|bombers?|blousons?|windbreakers?|coats?|joggers?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|buckets?|totes?|backpacks?|luggage|suitcases?|cabins?|check[\s-]?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|scar(?:f|ves)|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
     cleanText(value)
+  );
+}
+
+function looksLikeVariantDescriptor(value) {
+  const words = normalizeComparableText(value).split(/\s+/).filter(Boolean);
+  if (words.length < 2 || words.length > 5 || looksLikeProductName(value)) {
+    return false;
+  }
+  if (looksLikeModelColorwayDescriptorTitle(value)) {
+    return false;
+  }
+
+  const colorWords = words.filter(isVariantColorWord);
+  const distinctColorCount = new Set(colorWords).size;
+  const descriptorCount = words.filter(isVariantDescriptorWord).length;
+
+  return distinctColorCount >= 2 || (colorWords.length >= 1 && descriptorCount === words.length);
+}
+
+function looksLikeModelColorwayDescriptorTitle(value) {
+  const text = cleanText(value);
+  const words = normalizeComparableText(text).split(/\s+/).filter(Boolean);
+  if (
+    words.length < 2 ||
+    words.length > 5 ||
+    looksLikeProductName(text) ||
+    looksLikeGenericCategoryTitle(text) ||
+    isNoiseLine(text) ||
+    looksLikePrice(text)
+  ) {
+    return false;
+  }
+
+  const [model, ...colorway] = words;
+  return (
+    model.length >= 2 &&
+    !isVariantDescriptorWord(model) &&
+    colorway.length > 0 &&
+    colorway.every(isVariantDescriptorWord)
+  );
+}
+
+function looksLikeModelColorwayTitle(value) {
+  const text = cleanText(value);
+  const words = normalizeComparableText(text).split(/\s+/).filter(Boolean);
+  if (
+    words.length < 2 ||
+    words.length > 4 ||
+    looksLikeProductName(text) ||
+    looksLikeGenericCategoryTitle(text) ||
+    isNoiseLine(text) ||
+    looksLikePrice(text)
+  ) {
+    return false;
+  }
+
+  if (looksLikeModelColorwayDescriptorTitle(text)) {
+    return true;
+  }
+
+  if (looksLikeVariantDescriptor(text)) {
+    return false;
+  }
+
+  return words.every((word, index) =>
+    word.length >= 2 || (index > 0 && index < words.length - 1 && /^[a-z]$/i.test(word))
+  );
+}
+
+function isVariantColorWord(word) {
+  return /^(black|white|grey|gray|blue|navy|nightfall|red|green|yellow|pink|purple|orange|brown|beige|tan|sand|camel|ivory|cream|ecru|silver|gold|golden|bronze|burgundy|bordeaux|wine|khaki|olive|taupe|charcoal|anthracite|natural|clear|multi)$/i.test(
+    word
+  );
+}
+
+function isVariantDescriptorWord(word) {
+  return isVariantColorWord(word) || /^(light|dark|pale|deep|soft|warm|cool|off|melange|mélange|marled|washed|faded|heather|heathered|metallic)$/i.test(
+    word
   );
 }
 
@@ -31,7 +112,9 @@ function cleanBrandName(value) {
     looksLikePrice(text) ||
     isNoiseLine(text) ||
     looksLikeMeasurementLine(text) ||
-    looksLikeProductName(text)
+    looksLikeProductName(text) ||
+    looksLikeVariantDescriptor(text) ||
+    looksLikeModelColorwayDescriptorTitle(text)
   ) {
     return "";
   }
@@ -45,6 +128,7 @@ function formatBrandName(value) {
 
 function canonicalBrandName(value) {
   const text = cleanText(value)
+    .replace(/[®™]/g, "")
     .replace(/[._-]+/g, " ")
     .replace(/\b(?:us|usa|uk|eu|intl|international|official|store|shop|fashion)\b$/i, "")
     .replace(/\s+/g, " ")
@@ -76,7 +160,7 @@ function sourceNameFromUrl(value) {
   const domain = sourceDomainFromUrl(value);
   const label = domain.split(".")[0] || "Source";
   const brand = cleanBrandName(label);
-  return brand || label.charAt(0).toUpperCase() + label.slice(1);
+  return brand && brand !== label ? brand : label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function faviconUrlFromUrl(value) {
@@ -177,10 +261,6 @@ function localSourceIconUrl(target) {
     return extensionAssetUrl("assets/source-aimeleondore.png");
   }
 
-  if (sameSiteHost(host, "www.farfetch.com")) {
-    return extensionAssetUrl("assets/source-farfetch.svg");
-  }
-
   return "";
 }
 
@@ -221,7 +301,7 @@ function rootHost(value) {
 function cleanTitle(value, brand = "") {
   const brandText = cleanBrandName(brand);
   const titleText = stripTitleActionNoise(stripPriceFromText(value));
-  if (isNoiseLine(titleText)) {
+  if (isNoiseLine(titleText) || looksLikeMeasurementLine(titleText)) {
     return "";
   }
 
@@ -290,7 +370,24 @@ function shouldPreferUrlTitle(title, urlTitle) {
 
   const titleWords = title.split(/\s+/).filter(Boolean).length;
   const urlWords = urlTitle.split(/\s+/).filter(Boolean).length;
+  if (looksLikeVariantDescriptor(title) && looksLikeProductName(urlTitle)) {
+    return true;
+  }
+
+  if (urlWords >= titleWords + 2 && looksLikeGenericCategoryTitle(title)) {
+    return true;
+  }
+
   return title.length > 64 && urlTitle.length < title.length && urlWords >= 2 && urlWords <= titleWords;
+}
+
+function looksLikeGenericCategoryTitle(value) {
+  const text = normalizeComparableText(value);
+  if (!text || text.split(/\s+/).length > 4) {
+    return false;
+  }
+
+  return /^(?:(?:bucket|shoulder|crossbody|tote|mini|small|medium|large|oversized|leather|designer|men|mens|women|womens)\s+)*(?:bags?|shoes?|sneakers?|boots?|sandals?|loafers?|jackets?|coats?|trousers?|pants|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|dresses?|skirts?|blazers?|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|scarves?)$/i.test(text);
 }
 
 function looksLikeOnModelTitle(value) {
@@ -377,6 +474,10 @@ function isUsableUrlTitleSegment(value) {
   }
 
   if (/^[a-z]{0,4}[-_\s]?\d{3,}[a-z0-9\s-]*$/i.test(text)) {
+    return false;
+  }
+
+  if (!looksLikeProductName(text) && /^[a-z0-9]+(?:\s+[a-z0-9]+){0,2}$/i.test(text) && /[a-z]/i.test(text) && /\d/.test(text)) {
     return false;
   }
 

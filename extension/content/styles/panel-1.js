@@ -250,9 +250,10 @@ function panelStylesChunk1() {
       min-height: 42px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 16px;
       margin-bottom: 16px;
+      font-size: var(--text-ui);
     }
 
     .wp-topbar.is-searching {
@@ -265,5 +266,9 @@ function panelStylesChunk1() {
 
     .wp-actions {
       display: flex;
-      align-items: center;`;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+      margin-left: auto;
+    }`;
 }

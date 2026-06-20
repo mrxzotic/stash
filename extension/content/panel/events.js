@@ -7,6 +7,7 @@ function bindPanelEvents(root) {
   bindImageFallbacks(root);
   bindPanelSearchEvents(root);
   bindPanelCurrencyEvents(root);
+  bindPanelBrandCloudEvents(root);
 
   root.querySelector("[data-panel-close]")?.addEventListener("click", (event) => {
     event.preventDefault();
@@ -20,6 +21,7 @@ function bindPanelEvents(root) {
       panelState.searchOpen = false;
       panelState.categoryComposerOpen = false;
       panelState.deleteCategoryId = "";
+      panelState.deleteItemId = "";
     }
     renderStashPanel();
   });
@@ -43,6 +45,17 @@ function bindPanelEvents(root) {
       return;
     }
 
+    const compactViewToggle = event.target.closest("[data-compact-view]");
+    if (compactViewToggle) {
+      safelyRunPanelAction(() =>
+        savePanelSettings(
+          { compactView: Boolean(compactViewToggle.checked) },
+          { rerender: false, syncViewMode: true }
+        )
+      );
+      return;
+    }
+
     if (!event.target.closest("[data-select-root]")) {
       closeSettingsSelects(event.currentTarget);
     }
@@ -54,6 +67,7 @@ function bindPanelEvents(root) {
       panelState.categoryComposerOpen = !panelState.categoryComposerOpen;
       panelState.settingsOpen = false;
       panelState.deleteCategoryId = "";
+      panelState.deleteItemId = "";
       renderStashPanel();
       return;
     }
@@ -64,6 +78,7 @@ function bindPanelEvents(root) {
       event.stopPropagation();
       panelState.categoryComposerOpen = false;
       panelState.deleteCategoryId = removeButton.dataset.removeCategoryPrompt;
+      panelState.deleteItemId = "";
       renderStashPanel();
       return;
     }
@@ -77,6 +92,7 @@ function bindPanelEvents(root) {
     }
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
+    panelState.deleteItemId = "";
     panelState.activeCategory = button.dataset.category;
     renderStashPanel();
   });
@@ -87,7 +103,10 @@ function bindPanelEvents(root) {
     }
     event.preventDefault();
     event.stopPropagation();
-    safelyRunPanelAction(() => removePanelItem(button.dataset.removeId));
+    panelState.categoryComposerOpen = false;
+    panelState.deleteCategoryId = "";
+    panelState.deleteItemId = button.dataset.removeId;
+    renderStashPanel();
   });
   root.querySelector("[data-category-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -148,17 +167,29 @@ function bindPanelEvents(root) {
     panelState.deleteCategoryId = "";
     safelyRunPanelAction(() => deletePanelCategory(id));
   });
+  root.querySelector("[data-confirm-delete-item]")?.addEventListener("click", (event) => {
+    const id = event.currentTarget.dataset.confirmDeleteItem;
+    panelState.deleteItemId = "";
+    safelyRunPanelAction(() => removePanelItem(id));
+  });
   root.querySelectorAll("[data-cancel-delete-category]").forEach((button) => {
     button.addEventListener("click", () => {
       panelState.deleteCategoryId = "";
       renderStashPanel();
     });
   });
+  root.querySelectorAll("[data-cancel-delete-item]").forEach((button) => {
+    button.addEventListener("click", () => {
+      panelState.deleteItemId = "";
+      renderStashPanel();
+    });
+  });
   if (!root.__stashPanelKeydownBound) {
     root.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        if (panelState.deleteCategoryId || panelState.categoryComposerOpen) {
+        if (panelState.deleteCategoryId || panelState.deleteItemId || panelState.categoryComposerOpen) {
           panelState.deleteCategoryId = "";
+          panelState.deleteItemId = "";
           panelState.categoryComposerOpen = false;
           renderStashPanel();
           return;
@@ -357,6 +388,7 @@ async function removePanelItem(id) {
   }
 
   panelState.items = nextItems;
+  panelState.deleteItemId = "";
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
   renderStashPanel({ summaryAnimationFrom: previousSummary });
 }
@@ -376,6 +408,7 @@ function safelyRunPanelAction(action) {
 async function savePanelCategories(nextCategories) {
   panelState.categories = normalizeCategories(nextCategories);
   panelState.deleteCategoryId = "";
+  panelState.deleteItemId = "";
   panelState.categoryComposerOpen = false;
   if (
     panelState.activeCategory !== "all" &&
@@ -397,15 +430,20 @@ async function savePanelSettings(nextSettings, options = {}) {
   const settings = normalizePanelSettings({
     summaryCurrency: panelState.summaryCurrency,
     backgroundTheme: panelState.backgroundTheme,
+    compactView: panelState.compactView,
     ...nextSettings
   });
   panelState.summaryCurrency = settings.summaryCurrency;
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
+  panelState.compactView = settings.compactView;
   if (options.rerender === false) {
     const shouldAnimateSummary =
       options.animateSummary || previousCurrency !== settings.summaryCurrency;
     syncPanelSettingsControls();
+    if (options.syncViewMode) {
+      syncPanelViewMode();
+    }
     renderPanelSummaryOnly({
       animate: shouldAnimateSummary
     });

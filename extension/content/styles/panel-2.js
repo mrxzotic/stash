@@ -1,13 +1,10 @@
 function panelStylesChunk2() {
-  return `      gap: 8px;
-      flex: 0 0 auto;
-    }
-
+  return `
     .wp-summary {
       display: inline-flex;
-      align-items: baseline;
+      align-items: center;
       gap: 6px;
-      min-width: 0;
+      min-width: 64px;
       flex: 1 1 auto;
       color: var(--foreground);
       font-size: var(--text-ui);
@@ -15,8 +12,91 @@ function panelStylesChunk2() {
       white-space: nowrap;
     }
 
+    .wp-brand-mark {
+      color: var(--foreground);
+      font-size: var(--text-ui);
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: 0;
+      opacity: 0.4;
+      user-select: none;
+    }
+
     .wp-count {
-      font-weight: 400;
+      position: relative;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.36);
+      color: rgba(8, 11, 16, 0.72);
+      font-size: var(--text-control);
+      font-weight: 660;
+      line-height: 1;
+      text-align: left;
+      appearance: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+      isolation: isolate;
+      transition:
+        color 160ms ease,
+        border-color 160ms ease,
+        transform 180ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .wp-count::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(115, 196, 255, 0.8), transparent 38%),
+        radial-gradient(circle at 82% 10%, rgba(255, 144, 221, 0.72), transparent 42%),
+        radial-gradient(circle at 58% 94%, rgba(174, 255, 196, 0.62), transparent 42%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.44));
+      opacity: 0;
+      transform: scaleX(0.72);
+      transform-origin: left center;
+      transition:
+        opacity 180ms ease,
+        transform 240ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .wp-count:hover,
+    .wp-count:focus-visible {
+      color: var(--foreground);
+      border-color: rgba(8, 11, 16, 0.12);
+      outline: 0;
+      transform: translateY(-1px);
+    }
+
+    .wp-count:hover::before,
+    .wp-count:focus-visible::before {
+      opacity: 0.72;
+      transform: scaleX(1);
+    }
+
+    .wp-count.is-active {
+      color: var(--primary-foreground);
+      border-color: rgba(8, 11, 16, 0.84);
+      background: rgba(8, 11, 16, 0.84);
+      font-weight: 720;
+    }
+
+    .wp-count.is-active::before {
+      opacity: 0.2;
+      transform: scaleX(1);
+      mix-blend-mode: screen;
+    }
+
+    .wp-count-label {
+      position: relative;
+      z-index: 1;
+      white-space: nowrap;
     }
 
     .wp-total {
@@ -33,14 +113,16 @@ function panelStylesChunk2() {
         rgba(255, 255, 255, 0.75);
       font-family: var(--figure-font);
       font-variant-numeric: tabular-nums;
+      font-size: var(--text-ui);
       font-weight: 780;
+      line-height: 1;
       box-shadow: none;
       white-space: nowrap;
     }
 
     .wp-icon-button {
       position: relative;
-      width: 40px;
+      width: 36px;
       height: 40px;
       display: grid;
       place-items: center;

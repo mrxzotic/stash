@@ -7,7 +7,8 @@ function renderStashPanel(options = {}) {
         panelState.activeCategory === "all" ||
         item.category === panelState.activeCategory
     )
-    .filter(panelItemMatchesSearch);
+    .filter(panelItemMatchesSearch)
+    .filter(panelItemMatchesBrandFilter);
   const filterCategories = [
     { id: "all", label: "All" },
     ...panelState.categories
@@ -18,7 +19,7 @@ function renderStashPanel(options = {}) {
     <button class="wp-panel-close${panelState.hasRenderedPanel ? " is-static" : ""}" type="button" aria-label="Close Stash" title="Close Stash" data-panel-close>
       ${lucideXIcon("wp-lucide wp-panel-close-icon")}
     </button>
-    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stash">
+    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stash">
       ${renderPanelTopbarHtml(displayItems)}
 
       <section class="wp-settings wp-popover" ${panelState.settingsOpen ? "" : "hidden"}>
@@ -30,15 +31,20 @@ function renderStashPanel(options = {}) {
           <div class="wp-settings-section-title">Background</div>
           ${renderSettingsBackgroundGrid()}
         </section>
+        <section class="wp-settings-section" aria-label="View settings">
+          <div class="wp-settings-section-title">View</div>
+          ${renderSettingsViewOptions()}
+        </section>
       </section>
 
-      <nav class="wp-filters" aria-label="Stash categories">
+      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen ? " is-expanded" : ""}" aria-label="Stash categories">
         ${renderCategoryFilters(filterCategories)}
       </nav>
       ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
       ${panelState.deleteCategoryId ? renderDeleteCategoryDialog() : ""}
+      ${panelState.deleteItemId ? renderDeleteItemDialog() : ""}
 
-      <section class="wp-items" aria-live="polite">
+      <section class="wp-items${panelState.compactView ? " is-compact" : ""}${panelState.brandCloudOpen && !panelState.brandFilterKey ? " is-brand-cloud" : ""}" aria-live="polite">
         ${renderPanelItemsHtml(visibleItems)}
       </section>
     </section>
@@ -94,23 +100,28 @@ function renderSettingsBackgroundGrid() {
 }
 
 function renderCategoryFilters(filterCategories) {
-  return `
-    ${filterCategories.map((category) => {
-      const isAll = category.id === "all";
-      const isActive = category.id === panelState.activeCategory;
-      return `
-        <span class="wp-filter-shell${isActive ? " is-active" : ""}${isAll ? " is-all" : ""}">
-          <button class="wp-filter${isActive ? " is-active" : ""}" data-category="${escapeAttribute(category.id)}" type="button">
-            ${escapeHtml(category.label)}
+  const [allCategory, ...restCategories] = filterCategories;
+  const renderCategory = (category) => {
+    const isAll = category.id === "all";
+    const isActive = category.id === panelState.activeCategory;
+    return `
+      <span class="wp-filter-shell${isActive ? " is-active" : ""}${isAll ? " is-all" : ""}">
+        <button class="wp-filter${isActive ? " is-active" : ""}" data-category="${escapeAttribute(category.id)}" type="button">
+          ${escapeHtml(category.label)}
+        </button>
+        ${isAll ? "" : `
+          <button class="wp-filter-remove" type="button" aria-label="Remove ${escapeAttribute(category.label)}" data-remove-category-prompt="${escapeAttribute(category.id)}">
+            ${lucideXIcon("wp-filter-remove-icon")}
           </button>
-          ${isAll ? "" : `
-            <button class="wp-filter-remove" type="button" aria-label="Remove ${escapeAttribute(category.label)}" data-remove-category-prompt="${escapeAttribute(category.id)}">
-              ${lucideXIcon("wp-filter-remove-icon")}
-            </button>
-          `}
-        </span>
-      `;
-    }).join("")}
+        `}
+      </span>
+    `;
+  };
+
+  return `
+    ${renderPanelSummaryLead()}
+    ${renderCategory(allCategory)}
+    ${restCategories.map(renderCategory).join("")}
     <button class="wp-filter wp-filter-add${panelState.categoryComposerOpen ? " is-active" : ""}" type="button" aria-label="Add category" data-add-category>
       ${lucidePlusIcon("wp-filter-add-icon")}
     </button>
@@ -146,6 +157,27 @@ function renderDeleteCategoryDialog() {
   `;
 }
 
+function renderDeleteItemDialog() {
+  const item = panelState.items
+    .map(normalizePanelItem)
+    .find((savedItem) => savedItem.id === panelState.deleteItemId);
+  if (!item) {
+    return "";
+  }
+
+  return `
+    <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-item></div>
+    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-label="Delete item">
+      <h3>Delete ${escapeHtml(item.title)}?</h3>
+      <p>This removes it from Stash.</p>
+      <div class="wp-confirm-actions">
+        <button class="wp-confirm-cancel" type="button" data-cancel-delete-item>Cancel</button>
+        <button class="wp-confirm-delete" type="button" data-confirm-delete-item="${escapeAttribute(item.id)}">Delete</button>
+      </div>
+    </section>
+  `;
+}
+
 function renderPanelSearchHtml() {
   const hasQuery = Boolean(panelState.searchQuery);
 
@@ -164,7 +196,7 @@ function renderPanelSearchHtml() {
 function renderPanelSummaryHtml(displayItems) {
   return `
     <span class="wp-summary">
-      <span class="wp-count">${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}</span>
+      <span class="wp-brand-mark" aria-label="Stash">Stash</span>
     </span>
     <div class="wp-actions">
       <div class="wp-currency-select" data-currency-root>
@@ -203,43 +235,10 @@ function renderCurrencyMenuHtml() {
   `;
 }
 
-function renderSettingsSelect({ label, ariaLabel, value, options, dataAttribute }) {
-  const currentOption =
-    options.find((option) => option.value === value) ||
-    options[0] ||
-    { value, label: value };
-
-  return `
-    <div class="wp-settings-row">
-      <span>${escapeHtml(label)}</span>
-      <div class="wp-select" data-select-root>
-        <button class="wp-select-trigger" type="button" aria-label="${escapeAttribute(ariaLabel)}" aria-haspopup="menu" aria-expanded="false" data-select-trigger>
-          <span class="wp-select-value">
-            <span>${escapeHtml(currentOption.label)}</span>
-            ${currentOption.meta ? `<span class="wp-select-symbol">${escapeHtml(currentOption.meta)}</span>` : ""}
-          </span>
-          ${lucideChevronDownIcon("wp-select-chevron")}
-        </button>
-        <div class="wp-select-menu" role="menu" hidden>
-          ${options.map((option) => {
-            const isSelected = option.value === value;
-            return `
-              <button class="wp-select-option${isSelected ? " is-selected" : ""}" type="button" role="menuitemradio" aria-checked="${isSelected}" ${dataAttribute}="${escapeAttribute(option.value)}">
-                <span class="wp-select-check-slot">${isSelected ? lucideCheckIcon("wp-select-check") : ""}</span>
-                <span>${escapeHtml(option.label)}</span>
-                ${option.meta ? `<span class="wp-select-symbol">${escapeHtml(option.meta)}</span>` : ""}
-              </button>
-            `;
-          }).join("")}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
 function renderPanelItem(item) {
   const brand = formatBrandName(item.brand || item.source || sourceNameFromUrl(item.url));
   const priceHtml = renderSitePriceHtml(item, "wp");
+  const sourceIconClass = item.faviconUrl ? "wp-source-icon has-favicon" : "wp-source-icon";
   const faviconNode = item.faviconUrl
     ? `<img class="wp-source-favicon" src="${escapeAttribute(item.faviconUrl)}" alt="">`
     : "";
@@ -247,16 +246,16 @@ function renderPanelItem(item) {
   return `
     <article class="wp-item${item.id === panelState.highlightedItemId ? " is-new" : ""}">
       <a class="wp-media" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">
-        ${item.imageUrl ? `<img src="${escapeAttribute(item.imageUrl)}" alt="">` : lucideImageIcon("wp-image-placeholder")}
+        ${item.imageUrl ? `<span class="wp-image-frame is-wide"><img src="${escapeAttribute(item.imageUrl)}" alt=""></span>` : lucideImageIcon("wp-image-placeholder")}
+        <span class="${sourceIconClass}" title="${escapeAttribute(item.sourceDomain)}" aria-hidden="true">
+          <span class="wp-source-fallback">${escapeHtml(item.sourceDomain.charAt(0).toUpperCase())}</span>
+          ${faviconNode}
+        </span>
         <button class="wp-remove" type="button" title="Remove" aria-label="Remove" data-remove-id="${escapeAttribute(item.id)}"></button>
       </a>
       <div class="wp-item-copy">
         <div class="wp-brand-row">
           <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
-          <a class="wp-source-icon" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" title="${escapeAttribute(item.sourceDomain)}">
-            <span class="wp-source-fallback">${escapeHtml(item.sourceDomain.charAt(0).toUpperCase())}</span>
-            ${faviconNode}
-          </a>
         </div>
         <div class="wp-title-row">
           <a class="wp-item-title" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a>
@@ -280,7 +279,8 @@ function renderPanelItemsOnly(root) {
         panelState.activeCategory === "all" ||
         item.category === panelState.activeCategory
     )
-    .filter(panelItemMatchesSearch);
+    .filter(panelItemMatchesSearch)
+    .filter(panelItemMatchesBrandFilter);
   list.innerHTML = renderPanelItemsHtml(visibleItems);
   bindImageFallbacks(root);
 }
@@ -288,6 +288,14 @@ function renderPanelItemsOnly(root) {
 function renderPanelItemsHtml(items) {
   if (!items.length) {
     return renderPanelEmpty();
+  }
+
+  if (panelState.brandCloudOpen && !panelState.brandFilterKey) {
+    return renderPanelBrandCloud(items);
+  }
+
+  if (panelState.compactView) {
+    return `<div class="wp-compact-list">${items.map(renderPanelCompactItem).join("")}</div>`;
   }
 
   const columns = [[], []];
@@ -301,7 +309,7 @@ function renderPanelItemsHtml(items) {
 }
 
 function bindImageFallbacks(root) {
-  root.querySelectorAll(".wp-media img, .wl-image img").forEach((image) => {
+  root.querySelectorAll(".wp-image-frame > img, .wl-image img").forEach((image) => {
     syncProductImageRatio(image);
     if (image.__stashImageFallbackBound) {
       return;
@@ -311,6 +319,11 @@ function bindImageFallbacks(root) {
       const placeholderClass = image.closest(".wl-image")
         ? "wl-image-placeholder"
         : "wp-image-placeholder";
+      const frame = image.closest(".wp-image-frame");
+      if (frame) {
+        frame.replaceWith(svgElementFromHtml(lucideImageIcon(placeholderClass)));
+        return;
+      }
       image.replaceWith(svgElementFromHtml(lucideImageIcon(placeholderClass)));
     });
     image.__stashImageFallbackBound = true;
@@ -338,12 +351,21 @@ function markSourceFaviconLoaded(image) {
 
 function syncProductImageRatio(image) {
   const media = image.closest(".wp-media");
-  if (!media || !image.naturalWidth || !image.naturalHeight) {
+  if (!image.naturalWidth || !image.naturalHeight) {
     return;
   }
 
-  const ratio = clamp(image.naturalWidth / image.naturalHeight, 0.62, 1.7);
-  media.style.setProperty("--wp-media-ratio", ratio.toFixed(4));
+  const imageRatio = image.naturalWidth / image.naturalHeight;
+  const mediaRatio = clamp(imageRatio, 0.62, 1.7);
+  const frame = image.closest(".wp-image-frame");
+  if (media) {
+    media.style.setProperty("--wp-media-ratio", mediaRatio.toFixed(4));
+  }
+  if (frame) {
+    frame.style.setProperty("--wp-image-ratio", imageRatio.toFixed(4));
+    frame.classList.toggle("is-wide", imageRatio >= mediaRatio);
+    frame.classList.toggle("is-tall", imageRatio < mediaRatio);
+  }
 }
 
 function svgElementFromHtml(html) {

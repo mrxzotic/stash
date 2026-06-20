@@ -50,6 +50,23 @@ function lucidePlusIcon(className = "wp-lucide") {
   `;
 }
 
+function lucidePauseIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M10 5v14"/>
+      <path d="M14 5v14"/>
+    </svg>
+  `;
+}
+
+function lucidePlayIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m8 5 11 7-11 7Z"/>
+    </svg>
+  `;
+}
+
 function lucideLinkIcon(className = "wp-lucide") {
   return `
     <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">

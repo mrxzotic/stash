@@ -86,12 +86,15 @@ function renderPanelSummaryOnly(options = {}) {
   const root = document.getElementById("stash-panel-root")?.shadowRoot;
   const total = root?.querySelector("[data-total-value]");
   const count = root?.querySelector(".wp-count");
-  if (!total || !count) {
-    return;
-  }
+  if (!total) return;
 
   const displayItems = panelState.items.map(normalizePanelItem);
-  count.textContent = `${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}`;
+  if (count) {
+    count.textContent = `${panelState.items.length} ${panelState.items.length === 1 ? "item" : "items"}`;
+    count.classList.toggle("is-active", panelState.brandCloudOpen);
+    count.setAttribute("aria-pressed", String(panelState.brandCloudOpen));
+    count.setAttribute("title", panelState.brandCloudOpen ? "Show items" : "Show brands");
+  }
   setPanelTotalText(
     total,
     formatPanelSummaryTotal(displayItems, panelState.summaryCurrency),
@@ -114,6 +117,7 @@ function syncPanelSettingsControls() {
 
   syncPanelCurrencyControl(root);
   syncPanelBackgroundChoices(root);
+  syncPanelCompactViewControl(root);
 
   const backgroundLabel =
     backgroundThemeOptions().find((theme) => theme.id === panelState.backgroundTheme)?.label ||
@@ -250,6 +254,12 @@ function syncPanelBackgroundChoices(root) {
     if (check) {
       check.innerHTML = isSelected ? lucideCheckIcon("wp-background-check-icon") : "";
     }
+  });
+}
+
+function syncPanelCompactViewControl(root) {
+  root.querySelectorAll("[data-compact-view]").forEach((input) => {
+    input.checked = Boolean(panelState.compactView);
   });
 }
 

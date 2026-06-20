@@ -37,11 +37,15 @@ vm.createContext(sandbox);
   "extension/content/storage-settings.js",
   "extension/content/pricing/dom.js",
   "extension/content/pricing/rates.js",
+  "extension/content/pricing/noise.js",
   "extension/content/pricing/parse.js",
   "extension/content/extractors/embedded.js",
   "extension/content/extractors/main.js",
   "extension/content/extractors/context.js",
   "extension/content/extractors/jsonld.js",
+  "extension/content/extractors/rendezvous.js",
+  "extension/content/extractors/verify.js",
+  "extension/content/extractors/quality.js",
   "extension/content/extractors/enrich.js"
 ].forEach((file) => {
   vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), sandbox, {
@@ -50,7 +54,6 @@ vm.createContext(sandbox);
 });
 
 const realExtractFromEmbeddedJson = sandbox.extractFromEmbeddedJson;
-
 assert.equal(
   sandbox.isProductLikeUrl(
     "https://www.farfetch.com/shopping/men/dsquared2-dc-642-sneakers-item-30107002.aspx?storeid=123"
@@ -190,6 +193,38 @@ assert.equal(
 );
 assert.equal(cloudmonsterProduct.priceAmount, 130, "On PDP image ranking should preserve price");
 
+const discountedUrl = "https://shop.example/products/logo-jacket";
+sandbox.location = new URL(discountedUrl);
+sandbox.document.title = "Logo Jacket | Shop Example";
+sandbox.findJsonLdProduct = () => ({
+  title: "Logo Jacket",
+  brand: "Acme",
+  url: discountedUrl,
+  priceText: "$240",
+  priceAmount: 240,
+  currency: "USD"
+});
+sandbox.extractFromCommonSelectors = () => ({
+  title: "Logo Jacket",
+  brand: "Acme",
+  url: discountedUrl,
+  priceText: "$180 $240",
+  priceAmount: 180,
+  currency: "USD",
+  compareAtPriceText: "$240",
+  compareAtPriceAmount: 240
+});
+sandbox.extractFromPagePrice = () => ({
+  priceText: "$240",
+  priceAmount: 240,
+  currency: "USD"
+});
+sandbox.extractFromContext = () => ({});
+
+const discountedProduct = sandbox.extractProduct({});
+assert.equal(discountedProduct.priceAmount, 180, "Sale-aware sources should beat full-price-only sources");
+assert.equal(discountedProduct.compareAtPriceAmount, 240, "Sale-aware source compare-at should stay attached");
+
 const aboutBlankUrl =
   "https://about---blank.com/en-eu/products/alpaca-crew-alpaca-mix-light-grey";
 const aboutBlankPrice = sandbox.findBestPrice([
@@ -260,7 +295,7 @@ async function runAsyncSmoke() {
   };
 
   const pyeExtracted = sandbox.extractFromFetchedProductPage(pyeDoc, pyeUrl);
-  assert.equal(pyeExtracted.title, "Theo M", "PYE model names should come from PDP slugs");
+  assert.equal(pyeExtracted.title, "Theo M Cirrus", "PYE PDP titles should keep color variants");
   assert.equal(pyeExtracted.brand, "PYE", "PYE saves should use the canonical brand");
   assert.equal(pyeExtracted.priceAmount, 12300, "PYE saves should use the current PDP price");
   assert.equal(
@@ -326,7 +361,7 @@ async function runAsyncSmoke() {
     compareAtPriceText: "13 000 ₽",
     compareAtPriceAmount: 13000
   });
-  assert.equal(pyeEnriched.title, "Theo M", "PYE PDP data should replace listing noise");
+  assert.equal(pyeEnriched.title, "Theo M Cirrus", "PYE PDP data should replace listing noise");
   assert.equal(pyeEnriched.brand, "PYE", "PYE PDP data should replace source-domain brands");
   assert.equal(pyeEnriched.priceAmount, 12300, "PYE enrichment should keep current price");
   assert.equal(

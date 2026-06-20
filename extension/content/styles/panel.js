@@ -4,6 +4,7 @@ function panelStyles() {
     panelStylesChunk2(),
     panelStylesChunk3(),
     panelStylesChunk4(),
+    panelContentStyles(),
     panelStylesChunk5(),
     panelCurrencyStyles()
   ].join("");

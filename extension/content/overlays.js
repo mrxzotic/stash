@@ -1,37 +1,70 @@
+var SAVED_OVERLAY_DURATION_MS = 8000;
+
 function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
   const root = getOverlayRoot();
+  const dismiss = () => dismissSavedOverlay(root);
 
+  clearOverlayTimers(root);
   root.innerHTML = `
     <style>${overlayStyles()}</style>
-    <section class="wl-panel" aria-live="polite">
-      <p class="wl-kicker">Added:</p>
+    <section class="wl-panel" aria-live="polite" style="--wl-dismiss-duration: ${SAVED_OVERLAY_DURATION_MS}ms">
+      <div class="wl-progress" aria-hidden="true"><span></span></div>
+      <button class="wl-close" type="button" aria-label="Close" title="Close" data-close-overlay>
+        ${lucideXIcon("wl-close-icon")}
+      </button>
+      <header class="wl-header">
+        <p class="wl-kicker">Saved</p>
+        <div class="wl-timer-row">
+          <p class="wl-countdown" data-countdown aria-hidden="true">Closes in ${Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000)}s</p>
+          <button class="wl-timer-button" type="button" data-toggle-timer aria-label="Pause timer" aria-pressed="false" title="Pause timer">
+            ${lucidePauseIcon("wl-timer-icon")}
+          </button>
+        </div>
+      </header>
       <article class="wl-item">
         <div class="wl-image">${item.imageUrl ? `<img src="${escapeAttribute(item.imageUrl)}" alt="">` : lucideImageIcon("wl-image-placeholder")}</div>
-        <h2>${escapeHtml(item.title)}</h2>
-        ${renderSitePriceHtml(item, "wl")}
+        <dl class="wl-fields">${renderSavedOverlayFields(item)}</dl>
       </article>
-      <button class="wl-open-button" type="button" data-open-stash>
-        ${lucideLinkIcon("wl-button-icon")}
-        <span>Open Stash</span>
-      </button>
+      <div class="wl-actions">
+        <button class="wl-open-button" type="button" data-open-stash>
+          ${lucideLinkIcon("wl-button-icon")}
+          <span>Open Stash</span>
+        </button>
+        <button class="wl-cancel-button" type="button" data-cancel-addition>
+          <span>Undo</span>
+        </button>
+      </div>
     </section>
   `;
 
+  root.querySelector("[data-close-overlay]")?.addEventListener("click", dismiss);
+  root.querySelector("[data-toggle-timer]")?.addEventListener("click", () => {
+    toggleSavedOverlayTimer(root);
+  });
   root.querySelector("[data-open-stash]")?.addEventListener("click", () => {
-    window.clearTimeout(root.__stashTimer);
-    root.innerHTML = "";
+    dismissSavedOverlay(root);
     safelyRunPanelAction(() => openStashPanel());
   });
-  bindImageFallbacks(root);
+  root.querySelector("[data-cancel-addition]")?.addEventListener("click", () => {
+    safelyRunPanelAction(() => cancelSavedOverlayAddition(root, item));
+  });
+  root.querySelector(".wl-fields")?.addEventListener("click", (event) => {
+    const button = event.target.closest?.("[data-field-alternative]");
+    if (!button) {
+      return;
+    }
 
-  window.clearTimeout(root.__stashTimer);
-  root.__stashTimer = window.setTimeout(() => {
-    root.innerHTML = "";
-  }, 8000);
+    safelyRunPanelAction(() =>
+      applySavedOverlayAlternative(item, categories, button.dataset.field, button.dataset.index)
+    );
+  });
+  bindImageFallbacks(root);
+  startSavedOverlayCountdown(root, SAVED_OVERLAY_DURATION_MS);
 }
 
 function showErrorOverlay(error) {
   const root = getOverlayRoot();
+  clearOverlayTimers(root);
   root.innerHTML = `
     <style>${overlayStyles()}</style>
     <div class="wl-error">
@@ -43,6 +76,121 @@ function showErrorOverlay(error) {
   root.__stashTimer = window.setTimeout(() => {
     root.innerHTML = "";
   }, 2600);
+}
+
+function startSavedOverlayCountdown(root, durationMs) {
+  const countdown = root.querySelector("[data-countdown]");
+  let countdownText = "";
+  const renderCountdown = () => {
+    const state = root.__stashCountdown;
+    if (!state || state.paused) {
+      return;
+    }
+
+    state.remainingMs = Math.max(0, state.endsAt - Date.now());
+    const remainingSeconds = Math.ceil(state.remainingMs / 1000);
+    const nextText = `Closes in ${remainingSeconds}s`;
+    if (countdown && nextText !== countdownText) {
+      countdown.textContent = nextText;
+      countdownText = nextText;
+    }
+  };
+
+  root.__stashCountdown = {
+    durationMs,
+    endsAt: Date.now() + durationMs,
+    paused: false,
+    remainingMs: durationMs
+  };
+  renderCountdown();
+  root.__stashTicker = window.setInterval(renderCountdown, 250);
+  root.__stashTimer = window.setTimeout(() => dismissSavedOverlay(root), durationMs);
+}
+
+function toggleSavedOverlayTimer(root) {
+  if (root.__stashCountdown?.paused) {
+    resumeSavedOverlayTimer(root);
+    return;
+  }
+
+  pauseSavedOverlayTimer(root);
+}
+
+function pauseSavedOverlayTimer(root) {
+  const state = root.__stashCountdown;
+  if (!state) {
+    return;
+  }
+
+  state.remainingMs = Math.max(0, state.endsAt - Date.now());
+  state.paused = true;
+  clearOverlayTimers(root);
+  root.__stashCountdown = state;
+  root.querySelector(".wl-panel")?.classList.add("is-timer-paused");
+
+  const countdown = root.querySelector("[data-countdown]");
+  if (countdown) {
+    countdown.textContent = "Paused";
+  }
+
+  const button = root.querySelector("[data-toggle-timer]");
+  if (button) {
+    button.setAttribute("aria-pressed", "true");
+    button.setAttribute("aria-label", "Resume timer");
+    button.setAttribute("title", "Resume timer");
+    button.innerHTML = lucidePlayIcon("wl-timer-icon");
+  }
+}
+
+function resumeSavedOverlayTimer(root) {
+  const state = root.__stashCountdown;
+  if (!state) {
+    return;
+  }
+
+  const durationMs = Math.max(0, state.remainingMs || state.durationMs || SAVED_OVERLAY_DURATION_MS);
+  root.querySelector(".wl-panel")?.classList.remove("is-timer-paused");
+  const button = root.querySelector("[data-toggle-timer]");
+  if (button) {
+    button.setAttribute("aria-pressed", "false");
+    button.setAttribute("aria-label", "Pause timer");
+    button.setAttribute("title", "Pause timer");
+    button.innerHTML = lucidePauseIcon("wl-timer-icon");
+  }
+  startSavedOverlayCountdown(root, durationMs);
+}
+
+async function cancelSavedOverlayAddition(root, item) {
+  const stored = await getLocalStorageValue(STORAGE_KEY);
+  const currentItems = Array.isArray(stored[STORAGE_KEY]) ? stored[STORAGE_KEY] : [];
+  const itemId = item.id || productId(item.url);
+  const itemUrl = normalizeUrl(item.url);
+  const nextItems = currentItems.filter((savedItem) => {
+    const savedUrl = normalizeUrl(savedItem.url);
+    const savedId = savedItem.id || productId(savedUrl);
+    return savedId !== itemId && savedUrl !== itemUrl;
+  });
+
+  await setLocalStorageValue(STORAGE_KEY, nextItems);
+  if (Array.isArray(panelState.items)) {
+    panelState.items = nextItems;
+  }
+  if (panelState.open) {
+    renderStashPanel();
+  }
+  dismissSavedOverlay(root);
+}
+
+function dismissSavedOverlay(root) {
+  clearOverlayTimers(root);
+  root.innerHTML = "";
+}
+
+function clearOverlayTimers(root) {
+  window.clearTimeout(root.__stashTimer);
+  window.clearInterval(root.__stashTicker);
+  root.__stashTimer = 0;
+  root.__stashTicker = 0;
 }
 
 function getOverlayRoot() {

@@ -1,35 +1,41 @@
 async function enrichProduct(product) {
   if (hasCompletePageProduct(product)) {
-    return product;
+    return ensureExtractionQuality(product);
   }
 
   const pageProduct = await fetchProductPageProduct(product);
   if (pageProduct.title || pageProduct.priceText || pageProduct.imageUrl) {
-    if (pageProduct.fromPyeProductPage) {
+    if (pageProduct.fromPyeProductPage || pageProduct.fromRendezVousProductPage) {
       product = mergeProducts([pageProduct]);
     } else {
-      const preferFetchedImage = shouldPreferFetchedImage(product, pageProduct);
-      product = shouldPreferFetchedProduct(product, pageProduct)
-        ? mergeProducts([pageProduct, product])
-        : mergeProducts([product, pageProduct]);
-      if (preferFetchedImage) {
-        product = compactObject({ ...product, imageUrl: pageProduct.imageUrl });
-      }
+      product = reconcileProductWithFetchedProduct(product, pageProduct);
     }
   }
 
   const shopifyProduct = await fetchShopifyProduct(product.url);
   if (!shopifyProduct.title && !shopifyProduct.priceText && !shopifyProduct.imageUrl) {
-    return product;
+    return ensureExtractionQuality(product);
   }
 
   if (shopifyProduct.fromSelectedVariant) {
-    return mergeProducts([shopifyProduct, product]);
+    return attachExtractionQuality(
+      mergeProducts([shopifyProduct, product]),
+      [
+        { ...shopifyProduct, extractionSource: "shopify" },
+        { ...product, extractionSource: product.fromContext ? "card" : "page" }
+      ]
+    );
   }
 
   return product.fromContext
-    ? mergeProducts([product, shopifyProduct])
-    : mergeProducts([shopifyProduct, product]);
+    ? reconcileProductWithFetchedProduct(product, shopifyProduct)
+    : attachExtractionQuality(
+        mergeProducts([shopifyProduct, product]),
+        [
+          { ...shopifyProduct, extractionSource: "shopify" },
+          { ...product, extractionSource: "page" }
+        ]
+      );
 }
 
 function hasCompletePageProduct(product) {
@@ -38,23 +44,6 @@ function hasCompletePageProduct(product) {
       product.title &&
       product.imageUrl &&
       (product.priceText || Number.isFinite(product.priceAmount))
-  );
-}
-
-function shouldPreferFetchedProduct(product, pageProduct) {
-  return Boolean(
-    (!product?.priceText && !Number.isFinite(product?.priceAmount) && pageProduct?.priceText) ||
-      looksLikeDescriptiveTitle(product?.title) ||
-      !product?.title
-  );
-}
-
-function shouldPreferFetchedImage(product, pageProduct) {
-  return Boolean(
-    (product?.fromContext || needsOnProductImageUpgrade(product)) &&
-      product?.imageUrl &&
-      pageProduct?.imageUrl &&
-      normalizeUrl(product.imageUrl) !== normalizeUrl(pageProduct.imageUrl)
   );
 }
 
@@ -97,8 +86,10 @@ function needsFetchedProductPage(product) {
       (!product.priceText ||
         !Number.isFinite(product.priceAmount) ||
         !product.imageUrl ||
+        isRendezVousProductUrl(product.url) ||
         isPyeProductUrl(product.url) ||
         needsFetchedProductImage(product) ||
+        needsProductPageDoubleCheck(product) ||
         looksLikeDescriptiveTitle(product.title) ||
         !product.title)
   );
@@ -109,9 +100,10 @@ function needsFetchedProductImage(product) {
 }
 
 function extractFromFetchedProductPage(doc, productUrl) {
+  const rendezVousProduct = extractRendezVousProductFromFetchedPage(doc, productUrl);
+  if (rendezVousProduct.fromRendezVousProductPage) return rendezVousProduct;
   const pyeProduct = extractPyeProductFromFetchedPage(doc, productUrl);
   if (pyeProduct.fromPyeProductPage) return pyeProduct;
-
   const jsonProduct = findJsonLdProductInDocument(doc, productUrl);
   const metaProduct = extractMetaProductFromDocument(doc, productUrl);
   const priceProduct = extractPriceFromFetchedDocument(doc);
@@ -123,7 +115,7 @@ function extractPyeProductFromFetchedPage(doc, productUrl) {
     return {};
   }
 
-  const title = pyeProductTitleFromUrl(productUrl) || pyeProductTitleFromMeta(doc);
+  const title = pyeProductTitleFromMeta(doc) || pyeProductTitleFromUrl(productUrl);
   const priceSource =
     `${fetchedMetaContent(doc, "description")} ${fetchedMetaContent(doc, "og:title")} ${doc.title || ""}`;
   const price = normalizePrice({ amount: pyePriceAmountFromText(priceSource), currency: "RUB" });
@@ -182,7 +174,6 @@ async function fetchShopifyProduct(productUrl) {
   if (!productUrl) {
     return {};
   }
-
   let url;
   try {
     url = new URL(productUrl, location.href);
@@ -194,7 +185,6 @@ async function fetchShopifyProduct(productUrl) {
   if (!match) {
     return {};
   }
-
   const productJsonUrl = `${url.origin}/products/${match[1]}.js`;
 
   try {
@@ -368,13 +358,7 @@ function normalizeRawProductPrice(value) {
 
 function mergeProducts(products) {
   const sources = products.filter(Boolean);
-  const price = normalizePrice({
-    amount: firstValue(sources, "priceAmount"),
-    currency: firstValue(sources, "currency"),
-    text: firstValue(sources, "priceText"),
-    compareAtAmount: firstValue(sources, "compareAtPriceAmount"),
-    compareAtText: firstValue(sources, "compareAtPriceText")
-  });
+  const price = bestPriceFromSources(sources);
   const url = firstValue(sources, "url") || normalizeUrl(location.href);
 
   return compactObject({

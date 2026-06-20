@@ -174,13 +174,8 @@ function imageCandidatesFromElement(image, baseScore = 0) {
   ];
   const picture = image.closest?.("picture");
 
-  Array.from(picture?.querySelectorAll?.("source[srcset]") || []).forEach((source) => {
-    candidates.push(
-      ...parseSrcset(source.getAttribute("srcset")).map((candidate) => ({
-        ...candidate,
-        score: candidate.score + baseScore + 1400
-      }))
-    );
+  Array.from(picture?.querySelectorAll?.("source") || []).forEach((source) => {
+    candidates.push(...imageCandidatesFromPictureSource(source, baseScore + 1400));
   });
 
   for (const attribute of [
@@ -216,6 +211,31 @@ function imageCandidatesFromElement(image, baseScore = 0) {
   });
 
   return candidates.filter((candidate) => isUsableProductImageUrl(candidate.url));
+}
+
+function imageCandidatesFromPictureSource(source, baseScore = 0) {
+  const candidates = [];
+  for (const attribute of ["srcset", "data-srcset", "data-original-srcset", "data-lazy-srcset"]) {
+    const value = source.getAttribute(attribute);
+    if (!value) {
+      continue;
+    }
+    candidates.push(
+      ...parseSrcset(value).map((candidate) => ({
+        ...candidate,
+        score: candidate.score + baseScore
+      }))
+    );
+  }
+
+  for (const attribute of ["src", "data-src", "data-original", "data-image", "data-lazy-src"]) {
+    const value = source.getAttribute(attribute);
+    if (value) {
+      candidates.push({ url: value, score: baseScore + 5000 });
+    }
+  }
+
+  return candidates;
 }
 
 function isUsableProductImageUrl(value) {
