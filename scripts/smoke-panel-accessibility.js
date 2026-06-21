@@ -42,6 +42,8 @@ assert.match(panelReleaseStyles, /\.wp-edit-category input:focus-visible \+ span
 assert.match(panelReleaseStyles, /\.wp-item:focus-within \.wp-archive/, "Archive action should reveal for keyboard focus");
 assert.match(panelReleaseStyles, /\.wp-item:focus-within \.wp-remove/, "Delete action should reveal for keyboard focus");
 assert.match(panelReleaseStyles, /z-index: 4;/, "Card action buttons should sit above the media link layer");
+assert.match(panelContentStyles, /\.wp-archive,[\s\S]*?\.wp-remove\s*\{[\s\S]*?pointer-events: auto;/, "Archive hitbox should be clickable on first pointer press");
+assert.match(panelReleaseStyles, /\.wp-edit,[\s\S]*?\.wp-restore,[\s\S]*?\.wp-archive,[\s\S]*?\.wp-remove\s*\{[\s\S]*?pointer-events: auto;/, "Card action buttons should not require a prior hover before click");
 assert.match(panelReleaseStyles, /\.wp-filter-archive\.is-active\s*\{[\s\S]*?border-style: dotted;[\s\S]*?background: rgba\(8, 11, 16, 0\.08\);/, "Archived active pill should stay neutral and dotted");
 assert.doesNotMatch(panelReleaseStyles, /\.wp-filter-archive\.is-active\s*\{[\s\S]*?210, 34, 34|\.wp-theme-graphite \.wp-filter-archive\.is-active\s*\{[\s\S]*?255, 92, 92/, "Archived active pill should not use destructive red styling");
 

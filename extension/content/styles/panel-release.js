@@ -68,7 +68,7 @@ function panelReleaseStyles() {
       background: transparent;
       cursor: pointer;
       opacity: 0;
-      pointer-events: none;
+      pointer-events: auto;
       transform: translateY(0) scale(1);
       transition: opacity 140ms ease, color 140ms ease, transform 140ms ease;
       will-change: opacity, transform;
@@ -114,7 +114,6 @@ function panelReleaseStyles() {
     .wp-item.is-archived .wp-restore,
     .wp-item.is-archived .wp-edit {
       opacity: 0;
-      pointer-events: none;
     }
 
     .wp-item:hover .wp-restore,
