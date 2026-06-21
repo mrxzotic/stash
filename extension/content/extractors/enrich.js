@@ -379,6 +379,7 @@ function mergeProducts(products) {
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
     imageUrl: bestProductImageFromSources(sources, url),
+    imageUrls: bestProductImageUrlsFromSources(sources, url),
     rawCategory: firstValue(sources, "rawCategory")
   });
 }

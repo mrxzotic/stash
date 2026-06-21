@@ -1,9 +1,12 @@
 function panelStylesChunk1() {
   return `
+    ${extensionFontFaceStyles()}
+
     :host {
       all: initial;
       color-scheme: light;
-      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      --ui-font: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      font-family: var(--ui-font);
       --figure-font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       --text-micro: 10px;
       --text-caption: 11px;
@@ -11,6 +14,8 @@ function panelStylesChunk1() {
       --text-body: 13px;
       --text-ui: 14px;
       --text-heading: 16px;
+      --wp-pill-height: 28px;
+      --wp-pill-icon-size: 12px;
       --background: #fbfbf8;
       --foreground: #080b10;
       --muted: #737373;
@@ -71,46 +76,8 @@ function panelStylesChunk1() {
       animation: wpPanelIn 260ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
-    .wp-panel-close {
-      position: fixed;
-      top: 8px;
-      right: var(--panel-right);
-      z-index: 20;
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      color: rgba(8, 11, 16, 0.5);
-      box-shadow: none;
-      pointer-events: auto;
-      transform: translateZ(0);
-      transition:
-        color 160ms ease,
-        transform 180ms cubic-bezier(.16, 1, .3, 1);
-      animation: wpPanelCloseIn 220ms cubic-bezier(.16, 1, .3, 1) both;
-    }
-
-    .wp-panel-close:hover {
-      color: rgba(8, 11, 16, 0.92);
-      transform: translateY(-1px) scale(1.04) translateZ(0);
-    }
-
-    .wp-panel-close:active {
-      transform: scale(0.94) translateZ(0);
-    }
-
-    .wp-panel-close.is-static {
-      animation: none;
-    }
-
-    .wp-panel-close-icon {
-      width: 17px;
-      height: 17px;
-      stroke-width: 2.25;
+    .wp-shell {
+      font-family: var(--ui-font);
     }
 
     .wp-theme-white {
@@ -256,7 +223,8 @@ function panelStylesChunk1() {
 
     button,
     a,
-    input {
+    input,
+    select {
       font: inherit;
     }
 
@@ -264,11 +232,19 @@ function panelStylesChunk1() {
       cursor: pointer;
     }
 
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid rgba(10, 132, 255, 0.72);
+      outline-offset: 2px;
+    }
+
     .wp-topbar {
       position: relative;
       z-index: 8;
-      height: 42px;
-      min-height: 42px;
+      height: 40px;
+      min-height: 40px;
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -288,7 +264,7 @@ function panelStylesChunk1() {
     .wp-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       flex: 0 0 auto;
       margin-left: auto;
     }`;

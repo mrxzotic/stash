@@ -23,12 +23,13 @@ function renderPanelCompactItem(item, index = 0) {
   const brand = formatBrandName(item.brand || item.source || sourceNameFromUrl(item.url));
   const priceHtml = renderSitePriceHtml(item, "wp");
   const isArchived = isPanelItemArchived(item);
+  const itemLabel = panelItemAccessibleName(item);
 
   return `
     <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}">
       <span class="wp-compact-index" aria-label="Item ${index + 1}">#${index + 1}</span>
-      <a class="wp-compact-thumb" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">
-        ${item.imageUrl ? `<span class="wp-image-frame is-wide"><img src="${escapeAttribute(item.imageUrl)}" alt="" referrerpolicy="no-referrer"></span>` : lucideImageIcon("wp-image-placeholder")}
+      <a class="wp-compact-thumb ${compactThumbFocusClass(item)}" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(`Open ${itemLabel}`)}">
+        ${renderPanelCardImageFrame(item, { slider: false })}
       </a>
       <div class="wp-compact-copy">
         <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
@@ -37,13 +38,25 @@ function renderPanelCompactItem(item, index = 0) {
       ${priceHtml ? `<div class="wp-price-row wp-compact-price">${priceHtml}</div>` : ""}
       <div class="wp-compact-actions">
         ${isArchived
-          ? `<button class="wp-restore" type="button" title="Restore" aria-label="Restore" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
-             <button class="wp-remove" type="button" title="Delete" aria-label="Delete" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
-          : `<button class="wp-edit" type="button" title="Edit" aria-label="Edit" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
-             <button class="wp-archive" type="button" title="Archive" aria-label="Archive" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
+          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
+             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
+          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
+             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
       </div>
     </article>
   `;
+}
+
+function compactThumbFocusClass(item) {
+  const terms = [
+    item.category,
+    item.title,
+    item.brand,
+    item.source
+  ].join(" ").toLowerCase();
+  return /\b(shoe|shoes|sneaker|sneakers|trainer|trainers|boot|boots|loafer|loafers|sandal|sandals|flip flop|flip flops|bag|bags|bucket|tote)\b/.test(terms)
+    ? "is-object-bottom"
+    : "";
 }
 
 function toggledGraphiteThemeId() {
@@ -193,11 +206,7 @@ function bindPanelPreferenceEvents(root) {
     event.stopPropagation();
     panelState.settingsOpen = false;
     safelyRunPanelAction(async () => {
-      await savePanelSettings(
-        { compactView: !panelState.compactView },
-        { rerender: false, syncViewMode: true }
-      );
-      syncPanelTopbarPreferenceControls(root);
+      await savePanelSettings({ compactView: !panelState.compactView });
     });
   });
 

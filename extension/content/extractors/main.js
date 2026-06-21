@@ -104,6 +104,7 @@ function extractProduct(context) {
     priceSources,
     url
   });
+  const imageUrls = bestProductImageUrlsFromSources(imageSources, url);
 
   return compactObject({
     source: sourceNameFromUrl(url),
@@ -118,7 +119,8 @@ function extractProduct(context) {
     compareAtPriceText: price.compareAtText,
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
-    imageUrl: bestProductImageFromSources(imageSources, url),
+    imageUrl: imageUrls[0] || "",
+    imageUrls,
     rawCategory: firstValue(detailSources, "rawCategory") || contextualProduct.rawCategory,
     fromProductPage: isProductPageContext
   });

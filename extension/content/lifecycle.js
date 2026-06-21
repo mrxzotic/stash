@@ -40,6 +40,9 @@ async function openStashPanel() {
 
 function closeStashPanel() {
   const host = document.getElementById("stash-panel-root");
+  if (typeof unbindPanelDismissEvents === "function") {
+    unbindPanelDismissEvents(host?.shadowRoot);
+  }
   if (host) {
     host.remove();
   }

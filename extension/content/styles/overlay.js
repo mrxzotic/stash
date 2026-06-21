@@ -9,12 +9,64 @@ function extensionAssetUrl(path) {
   }
 }
 
+function extensionFontUrl(path) {
+  return String(extensionAssetUrl(path) || "").replace(/["'\\\n\r]/g, "");
+}
+
+function extensionFontFaceStyles() {
+  const interUrl = extensionFontUrl("fonts/inter-latin-var.woff2");
+  const plexRegularUrl = extensionFontUrl("fonts/ibm-plex-mono-latin-400.woff2");
+  const plexSemiBoldUrl = extensionFontUrl("fonts/ibm-plex-mono-latin-600.woff2");
+  const plexBoldUrl = extensionFontUrl("fonts/ibm-plex-mono-latin-700.woff2");
+
+  return `
+    ${interUrl ? `
+    @font-face {
+      font-family: "Inter";
+      src: url("${interUrl}") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }` : ""}
+
+    ${plexRegularUrl ? `
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("${plexRegularUrl}") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }` : ""}
+
+    ${plexSemiBoldUrl ? `
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("${plexSemiBoldUrl}") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }` : ""}
+
+    ${plexBoldUrl ? `
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("${plexBoldUrl}") format("woff2");
+      font-weight: 700 900;
+      font-style: normal;
+      font-display: swap;
+    }` : ""}
+  `;
+}
+
 function overlayStyles() {
   return `
+    ${extensionFontFaceStyles()}
+
     :host {
       all: initial;
       color-scheme: light;
-      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      --ui-font: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      font-family: var(--ui-font);
       --figure-font: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       --text-control: 12px;
       --text-body: 13px;
@@ -51,6 +103,10 @@ function overlayStyles() {
       animation: wlPanelIn 220ms cubic-bezier(.16, 1, .3, 1) both;
       overflow: hidden;
       pointer-events: auto;
+    }
+
+    .wl-panel {
+      font-family: var(--ui-font);
     }
 
     .wl-progress {

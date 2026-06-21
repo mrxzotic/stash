@@ -1,7 +1,7 @@
 const MENU_ROOT_ID = "stash-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
-const CONTENT_SCRIPT_VERSION = "2026-06-20-founder-opaque-screen-v1";
+const CONTENT_SCRIPT_VERSION = "2026-06-21-panel-size-revert-v1";
 const MESSAGE_PING = "STASH_PING_V2";
 const MESSAGE_SAVE = "STASH_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
@@ -9,19 +9,28 @@ const CONTENT_SCRIPT_FILES = [
   "content/constants.js",
   "content/lifecycle.js",
   "content/panel/archive.js",
+  "content/panel/filter-controls.js",
   "content/panel/sort.js",
   "content/panel/promo.js",
   "content/panel/compact-view.js",
   "content/panel/focus.js",
+  "content/panel/dismiss.js",
+  "content/panel/images.js",
+  "content/panel/save-current.js",
+  "content/panel/empty.js",
   "content/panel/render.js",
+  "content/panel/search.js",
   "content/panel/events.js",
   "content/panel/items.js",
   "content/panel/edit.js",
   "content/panel/export.js",
   "content/icons.js",
+  "content/source-icons.js",
+  "content/extractors/product-url.js",
   "content/extractors/main.js",
   "content/extractors/jsonld.js",
   "content/extractors/dom.js",
+  "content/extractors/pye.js",
   "content/extractors/embedded.js",
   "content/extractors/rendezvous.js",
   "content/extractors/verify.js",
@@ -37,10 +46,12 @@ const CONTENT_SCRIPT_FILES = [
   "content/styles/panel-3.js",
   "content/styles/panel-4.js",
   "content/styles/panel-content.js",
+  "content/styles/panel-images.js",
   "content/styles/panel-compact.js",
   "content/styles/panel-5.js",
   "content/styles/panel-currency.js",
   "content/styles/panel-sort.js",
+  "content/styles/panel-save-current.js",
   "content/styles/panel-promo.js",
   "content/styles/panel-release.js",
   "content/styles/panel.js",
@@ -56,6 +67,8 @@ const CONTENT_SCRIPT_FILES = [
   "content/utils.js",
   "content/bootstrap.js"
 ];
+
+void ensureContextMenu();
 
 chrome.runtime.onInstalled.addListener(() => {
   void rebuildContextMenus();
@@ -75,9 +88,13 @@ chrome.action.onClicked.addListener((tab) => {
 
 async function rebuildContextMenus() {
   await contextMenusRemoveAll();
+  await ensureContextMenu();
+}
+
+async function ensureContextMenu() {
   await contextMenusCreate({
     id: MENU_ROOT_ID,
-    title: "Save to Stash",
+    title: "Save to Stashed",
     contexts: CONTEXTS,
     documentUrlPatterns: PAGE_PATTERNS
   });
@@ -86,7 +103,10 @@ async function rebuildContextMenus() {
 function contextMenusRemoveAll() {
   return new Promise((resolve) => {
     chrome.contextMenus.removeAll(() => {
-      void chrome.runtime.lastError;
+      const error = chrome.runtime.lastError;
+      if (error) {
+        console.warn("Stashed could not clear context menus", error);
+      }
       resolve();
     });
   });
@@ -97,17 +117,13 @@ function contextMenusCreate(options) {
     chrome.contextMenus.create(options, () => {
       const error = chrome.runtime.lastError;
       if (error && /duplicate id/i.test(error.message || "")) {
-        chrome.contextMenus.remove(options.id, () => {
-          void chrome.runtime.lastError;
-          chrome.contextMenus.create(options, () => {
-            void chrome.runtime.lastError;
-            resolve();
-          });
-        });
+        resolve();
         return;
       }
 
-      void error;
+      if (error) {
+        console.warn("Stashed could not create context menu", error);
+      }
       resolve();
     });
   });
@@ -128,7 +144,7 @@ async function handleActionClick(tab) {
       contentVersion: CONTENT_SCRIPT_VERSION
     });
   } catch (error) {
-    console.warn("Stash could not open on this page", error);
+    console.warn("Stashed could not open on this page", error);
   }
 }
 
@@ -154,7 +170,7 @@ async function handleSaveClick(info, tab) {
       }
     });
   } catch (error) {
-    console.warn("Stash could not save this page", error);
+    console.warn("Stashed could not save this page", error);
   }
 }
 
@@ -175,7 +191,7 @@ async function ensureContentScript(tabId) {
     });
     return (await pingContentScript(tabId))?.version === CONTENT_SCRIPT_VERSION;
   } catch (error) {
-    console.warn("Stash could not inject content script", error);
+    console.warn("Stashed could not inject content script", error);
     return false;
   }
 }

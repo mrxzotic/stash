@@ -12,14 +12,31 @@ function bestImageFromElement(image) {
   return imageCandidatesFromElement(image).sort((a, b) => b.score - a.score)[0]?.url || "";
 }
 
-function bestProductImageUrl(context, image, scope) {
+function bestProductImageUrl(context, image, scope, productUrl = "") {
+  return bestProductImageUrls(context, image, scope, 1, productUrl)[0] || "";
+}
+
+function bestProductImageUrls(context, image, scope, limit = Number.POSITIVE_INFINITY, productUrl = "") {
+  return productImageUrlsFromCandidates(
+    productImageCandidates(context, image, scope, productUrl),
+    limit
+  );
+}
+
+function productImageCandidates(context, image, scope, productUrl = "") {
   const candidates = [];
 
   if (context.srcUrl && !image) {
-    candidates.push({ url: context.srcUrl, score: 12000 });
+    candidates.push({
+      url: context.srcUrl,
+      score: 12000 + productImageUrlContextScore(context.srcUrl, productUrl)
+    });
   }
 
-  candidates.push(...imageCandidatesFromElement(image, 7000 + imageRoleScore(image)));
+  candidates.push(...imageCandidatesFromElement(
+    image,
+    7000 + imageRoleScore(image) + imageProductContextScore(image, productUrl)
+  ));
 
   Array.from(scope?.querySelectorAll?.("img") || []).forEach((scopeImage, index) => {
     const firstProductImageBonus = Math.max(0, 5200 - index * 800);
@@ -28,16 +45,13 @@ function bestProductImageUrl(context, image, scope) {
         scopeImage,
         Math.max(0, imageScore(scopeImage) / 100) +
           firstProductImageBonus +
-          imageRoleScore(scopeImage)
+          imageRoleScore(scopeImage) +
+          imageProductContextScore(scopeImage, productUrl)
       )
     );
   });
 
-  return toAbsoluteUrl(
-    candidates
-      .filter((candidate) => isUsableProductImageUrl(candidate.url))
-      .sort((a, b) => b.score - a.score)[0]?.url || ""
-  );
+  return candidates;
 }
 
 function imageRoleScore(image) {
@@ -57,6 +71,43 @@ function imageRoleScore(image) {
   }
 
   return score;
+}
+
+function imageProductContextScore(image, productUrl) {
+  return productImageUrlContextScore(image?.currentSrc || image?.src || "", productUrl) +
+    productImageUrlContextScore(image?.srcset || "", productUrl);
+}
+
+function productImageUrlContextScore(value, productUrl) {
+  const imageText = normalizeComparableText(value);
+  if (!imageText) {
+    return 0;
+  }
+
+  const tokens = productImageContextTokens(productUrl);
+  if (tokens.length && tokens.some((token) => imageText.includes(token))) {
+    return 9000;
+  }
+
+  if (looksLikeSiteFallbackImage(value)) {
+    return -16000;
+  }
+
+  return 0;
+}
+
+function productImageContextTokens(productUrl) {
+  try {
+    const url = new URL(productUrl || "", location.href);
+    const sku = (url.pathname.split("/").filter(Boolean).at(-1) || "")
+      .replace(/\.(?:html?|aspx|php)$/i, "");
+    const tokens = [sku, sku.replace(/[-_][a-z0-9]{2,}$/i, "")];
+    return tokens
+      .map(normalizeComparableText)
+      .filter((token, index, list) => token.length >= 4 && list.indexOf(token) === index);
+  } catch {
+    return [];
+  }
 }
 
 function imageSignal(image) {
@@ -82,19 +133,81 @@ function imageSignal(image) {
 }
 
 function bestProductImageFromSources(sources, productUrl) {
+  return bestProductImageUrlsFromSources(sources, productUrl, 1)[0] || "";
+}
+
+function bestProductImageUrlsFromSources(sources, productUrl, limit = Number.POSITIVE_INFINITY) {
   const first = firstValue(sources, "imageUrl");
   if (!shouldRankProductImageSources(productUrl)) {
-    return first || "";
+    return normalizeProductImageUrls(
+      sources.flatMap((source) => [source?.imageUrl, source?.imageUrls]),
+      first,
+      limit
+    );
   }
 
   const candidates = sources
-    .map((source, index) => ({
-      url: source?.imageUrl,
-      score: productImageUrlScore(source?.imageUrl, index)
-    }))
+    .flatMap((source, index) =>
+      normalizeProductImageUrls(source?.imageUrls, source?.imageUrl).map((url, imageIndex) => ({
+        url,
+        score: productImageUrlScore(url, index) - imageIndex
+      }))
+    )
     .filter((candidate) => isUsableProductImageUrl(candidate.url));
 
-  return toAbsoluteUrl(candidates.sort((a, b) => b.score - a.score)[0]?.url || first || "");
+  return productImageUrlsFromCandidates(candidates, limit, first);
+}
+
+function productImageUrlsFromCandidates(candidates, limit = Number.POSITIVE_INFINITY, fallback = "") {
+  const ranked = candidates
+    .filter((candidate) => isUsableProductImageUrl(candidate.url))
+    .sort((a, b) => b.score - a.score)
+    .map((candidate) => candidate.url);
+
+  return normalizeProductImageUrls([...ranked, fallback], "", limit);
+}
+
+function normalizeProductImageUrls(values, primary = "", limit = Number.POSITIVE_INFINITY) {
+  return normalizeProductImageUrlsFor(values, primary, location.href, limit);
+}
+
+function normalizeProductImageUrlsFor(values, primary = "", baseUrl = location.href, limit = Number.POSITIVE_INFINITY) {
+  const urls = [primary, ...flattenImageUrlValues(values)]
+    .map((value) => toAbsoluteUrlFor(value, baseUrl))
+    .filter(isUsableProductImageUrl);
+  const seen = new Set();
+
+  return urls.filter((url) => {
+    const key = normalizeUrl(url);
+    if (!key || seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  }).slice(0, limit);
+}
+
+function flattenImageUrlValues(value) {
+  if (!Array.isArray(value)) {
+    if (value && typeof value === "object") {
+      return flattenImageUrlValues([
+        value.src,
+        value.url,
+        value.contentUrl,
+        value.thumbnailUrl,
+        value.extra_large,
+        value.large,
+        value.medium,
+        value.small,
+        value.originalSrc,
+        value.preview_image?.src,
+        value.image?.src
+      ]);
+    }
+    return [value];
+  }
+
+  return value.flatMap(flattenImageUrlValues);
 }
 
 function shouldRankProductImageSources(productUrl) {
@@ -253,7 +366,14 @@ function isUsableProductImageUrl(value) {
     return false;
   }
 
-  return !/(?:blank|placeholder|transparent|spacer|sprite|pixel|loader|loading|logo|favicon|icon)\.(?:gif|png|svg|webp|jpg|jpeg)(?:[?#]|$)/i.test(text);
+  return !looksLikeSiteFallbackImage(text) &&
+    !/(?:blank|placeholder|transparent|spacer|sprite|pixel|loader|loading|logo|favicon|icon)\.(?:gif|png|svg|webp|jpg|jpeg)(?:[?#]|$)/i.test(text);
+}
+
+function looksLikeSiteFallbackImage(value) {
+  return /(?:fallback[-_/]?image|default[-_/]?image|site[-_/]?image|brand[-_/]?image|\/static\/fallback|AcneStudios\.png)(?:[?#/]|$)/i.test(
+    cleanText(value)
+  );
 }
 
 function parseSrcset(srcset) {

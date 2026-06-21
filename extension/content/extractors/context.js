@@ -1,25 +1,3 @@
-function itemProp(scope, name) {
-  if (!scope) {
-    return "";
-  }
-
-  const element = scope.matches?.(`[itemprop="${name}"]`)
-    ? scope
-    : scope.querySelector?.(`[itemprop="${name}"]`);
-
-  if (!element) {
-    return "";
-  }
-
-  return (
-    element.getAttribute("content") ||
-    element.getAttribute("href") ||
-    element.getAttribute("src") ||
-    element.textContent ||
-    ""
-  );
-}
-
 function extractFromMeta(context) {
   const title =
     metaContent("og:title") ||
@@ -53,6 +31,7 @@ function extractFromMeta(context) {
         location.href
     ),
     imageUrl: toAbsoluteUrl(imageUrl),
+    imageUrls: normalizeProductImageUrls(imageUrl),
     priceText: price.originalText,
     priceAmount: price.amount,
     currency: price.currency,
@@ -87,12 +66,15 @@ function extractFromContext(context) {
     linkText ||
     context.selectionText;
 
+  const imageUrls = bestProductImageUrls(context, image, scope, Number.POSITIVE_INFINITY, linkUrl);
+
   return compactObject({
     fromContext: true,
     title: cleanProductTitle(stripPriceFromText(title), brand, linkUrl || location.href),
     brand: cleanBrandName(brand),
     url: linkUrl ? normalizeUrl(linkUrl) : "",
-    imageUrl: bestProductImageUrl(context, image, scope),
+    imageUrl: imageUrls[0] || "",
+    imageUrls,
     priceText: parsedPrice.originalText,
     priceAmount: parsedPrice.amount,
     currency: parsedPrice.currency,
@@ -103,6 +85,11 @@ function extractFromContext(context) {
 }
 
 function findProductScope(target, link) {
+  const tileScope = findClosestSingleProductScope(target, link);
+  if (tileScope) {
+    return tileScope;
+  }
+
   const candidates = [];
   let node = target.nodeType === Node.ELEMENT_NODE ? target : target.parentElement;
 
@@ -130,6 +117,26 @@ function findProductScope(target, link) {
     .sort((a, b) => b.score - a.score || a.area - b.area);
 
   return scored[0]?.node || link?.closest("article, li, div, a") || target.closest?.("article, li, div, a") || target;
+}
+
+function findClosestSingleProductScope(target, link) {
+  let node = target?.nodeType === Node.ELEMENT_NODE ? target : target?.parentElement;
+
+  for (let depth = 0; node && node !== document.body && depth < 8; depth += 1) {
+    const urls = productPageUrlsInScope(node);
+    const imageCount = node.querySelectorAll?.("img").length || 0;
+    const lines = getTextLines(node);
+    const matchesLink = !link?.href || urls.some((url) => sameProductPageUrl(url, link.href));
+    const hasDetails = lines.some(looksLikeProductName) || Boolean(findBestPrice(lines).amount);
+
+    if (urls.length === 1 && matchesLink && imageCount > 0 && hasDetails) {
+      return node;
+    }
+
+    node = node.parentElement;
+  }
+
+  return null;
 }
 
 function expandProductScopeToDetails(scope, target) {
@@ -305,39 +312,6 @@ function imageScore(image) {
   return visibleArea - distance * 8;
 }
 
-function isProductLikeUrl(value) {
-  try {
-    const url = new URL(value, location.href);
-    const isFarfetchProduct =
-      /^(?:.+\.)?farfetch\.com$/i.test(url.hostname) && /-item-\d+\.aspx$/i.test(url.pathname);
-    const isPyeProduct =
-      typeof isPyeProductUrl === "function" && isPyeProductUrl(url.href);
-    return (
-      /\/(product|products|item|items|p)\//i.test(url.pathname) ||
-      isFarfetchProduct ||
-      isPyeProduct ||
-      looksLikeSkuProductPath(url)
-    );
-  } catch {
-    return false;
-  }
-}
-
-function looksLikeSkuProductPath(url) {
-  const segments = url.pathname.split("/").filter(Boolean);
-  const skuSegment = segments.at(-1) || "";
-  const titleSegment = segments.at(-2) || "";
-  if (!/\.html?$/i.test(skuSegment) || !titleSegment) {
-    return false;
-  }
-
-  const sku = skuSegment.replace(/\.html?$/i, "");
-  return (
-    /^(?=[a-z0-9_-]*[a-z])(?=[a-z0-9_-]*\d)[a-z0-9]{4,24}(?:[-_][a-z0-9]{2,})*$/i.test(sku) &&
-    looksLikeProductName(cleanUrlTitleSegment(titleSegment))
-  );
-}
-
 function findParentLink(target) {
   let node = target;
   for (let depth = 0; node && depth < 4; depth += 1) {
@@ -379,7 +353,8 @@ function findLikelyTitle(textLines, imageAlt, linkText, brand) {
 function findLikelyBrand(textLines, imageAlt, linkText) {
   if (/(^|\.)post-post-scriptum\.com$/i.test(location.hostname)) return "P.P.S.";
   const candidates = productTextCandidates(textLines, imageAlt, linkText);
-  return candidates.find(isBrandLikeLine) || sourceNameFromUrl(location.href);
+  return candidates.find((value) => isBrandLikeLine(value) && !looksLikeProductName(value)) ||
+    sourceNameFromUrl(location.href);
 }
 
 function productTextCandidates(...groups) {
@@ -387,6 +362,7 @@ function productTextCandidates(...groups) {
     .flat()
     .map((value) => cleanText(value))
     .filter(Boolean)
+    .filter((value) => !isProductAttributeLine(value))
     .map(stripPriceFromText)
     .map(stripTitleActionNoise)
     .map(cleanText)
@@ -395,6 +371,10 @@ function productTextCandidates(...groups) {
     .filter((value) => !looksLikePrice(value))
     .filter((value) => !isNoiseLine(value))
     .filter((value) => !looksLikeMeasurementLine(value));
+}
+
+function isProductAttributeLine(value) {
+  return /^(?:current\s+colo(?:u)?r|price|discounted\s+price|original\s+price)\s*:/i.test(cleanText(value));
 }
 
 function isBrandLikeLine(value) {

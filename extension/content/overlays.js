@@ -22,19 +22,19 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
         </div>
       </header>
       <article class="wl-item">
-        <div class="wl-image">${item.imageUrl ? `<img src="${escapeAttribute(item.imageUrl)}" alt="" referrerpolicy="no-referrer">` : lucideImageIcon("wl-image-placeholder")}</div>
+        <div class="wl-image">${item.imageUrl ? `<img src="${escapeAttribute(item.imageUrl)}" alt="${escapeAttribute(panelProductImageAlt(item))}" referrerpolicy="no-referrer">` : lucideImageIcon("wl-image-placeholder")}</div>
         <dl class="wl-fields">${renderSavedOverlayFields(item)}</dl>
       </article>
       <div class="wl-actions">
-        <button class="wl-edit-button" type="button" data-edit-saved-item>
+        <button class="wl-edit-button" type="button" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-saved-item>
           ${lucidePencilIcon("wl-button-icon")}
           <span>Edit</span>
         </button>
-        <button class="wl-open-button" type="button" data-open-stash>
+        <button class="wl-open-button" type="button" aria-label="Open Stashed panel" data-open-stash>
           ${lucideLinkIcon("wl-button-icon")}
-          <span>Open Stash</span>
+          <span>Open Stashed</span>
         </button>
-        <button class="wl-cancel-button" type="button" data-cancel-addition>
+        <button class="wl-cancel-button" type="button" aria-label="Undo save" data-cancel-addition>
           <span>Undo</span>
         </button>
       </div>
@@ -101,10 +101,11 @@ async function openSavedOverlayEditor(root, item) {
 function showErrorOverlay(error) {
   const root = getOverlayRoot();
   clearOverlayTimers(root);
+  const title = error.title || "Could not save this item";
   root.innerHTML = `
     <style>${overlayStyles()}</style>
     <div class="wl-error">
-      <strong>Could not save this item</strong>
+      <strong>${escapeHtml(title)}</strong>
       <span>${escapeHtml(error.message || "Try a product page or product card.")}</span>
     </div>
   `;

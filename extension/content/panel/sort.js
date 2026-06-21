@@ -19,16 +19,14 @@ function renderPanelSortButton(field, disabled) {
 }
 
 function panelSortButtonState(field) {
-  const active = panelState.sortField === field;
   const next = panelNextSortState(field);
   if (field === PANEL_SORT_FIELD_NAME) {
     const ascending = next.sortDirection === PANEL_SORT_ASC;
     const label = ascending ? "Name A to Z" : "Name Z to A";
     return {
-      active,
       shortLabel: ascending ? "A-Z" : "Z-A",
-      label,
-      title: ascending ? "Sort name A to Z" : "Sort name Z to A",
+      label: `Sort ${label.toLowerCase()}`,
+      title: `Sort name ${ascending ? "A to Z" : "Z to A"}`,
       icon: ascending
         ? lucideArrowDownIcon("wp-sort-arrow")
         : lucideArrowUpIcon("wp-sort-arrow")
@@ -38,10 +36,9 @@ function panelSortButtonState(field) {
   const newestFirst = next.sortDirection === PANEL_SORT_DESC;
   const label = newestFirst ? "Newest first" : "Oldest first";
   return {
-    active,
     shortLabel: newestFirst ? "New" : "Old",
-    label,
-    title: newestFirst ? "Sort newest first" : "Sort oldest first",
+    label: `Sort ${label.toLowerCase()}`,
+    title: `Sort ${newestFirst ? "newest first" : "oldest first"}`,
     icon: newestFirst
       ? lucideArrowDownIcon("wp-sort-arrow")
       : lucideArrowUpIcon("wp-sort-arrow")
@@ -54,25 +51,89 @@ function bindPanelSortEvents(root) {
     return;
   }
 
-  filters.addEventListener("mouseenter", () => syncPanelSortControlLayout(root));
-  filters.addEventListener("mouseleave", () => syncPanelSortControlLayout(root));
-  filters.addEventListener("focusin", () => syncPanelSortControlLayout(root));
-  filters.addEventListener("focusout", () => syncPanelSortControlLayout(root));
-  filters.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-panel-sort]");
-    if (!button || !filters.contains(button)) {
+  const shell = root.querySelector(".wp-shell");
+  filters.addEventListener("pointerover", () => showPanelFilterControls(root));
+  filters.addEventListener("mouseenter", () => showPanelFilterControls(root));
+  filters.addEventListener("pointermove", (event) => syncPanelFilterPointerBounds(root, event));
+  filters.addEventListener("mouseover", (event) => {
+    const shell = event.target.closest?.(".wp-filter-shell:not(.is-all)");
+    setPanelFilterRemoveShell(filters, shell && filters.contains(shell) ? shell : null);
+  });
+  filters.addEventListener("mouseleave", (event) => schedulePanelFilterControlsHide(root, event));
+  shell?.addEventListener("pointermove", (event) => syncPanelFilterPointerBounds(root, event));
+  shell?.addEventListener("mouseleave", () => {
+    hidePanelFilterControls(root);
+  });
+  filters.addEventListener("focusin", (event) => {
+    setPanelFilterControlsVisible(root, true);
+    const shell = event.target.closest?.(".wp-filter-shell:not(.is-all)");
+    setPanelFilterRemoveShell(filters, shell && filters.contains(shell) ? shell : null);
+  });
+  filters.addEventListener("focusout", () => {
+    window.setTimeout(() => {
+      setPanelFilterControlsVisible(root, panelFilterControlsShouldStayVisible(root, filters));
+    }, 0);
+  });
+  filters.addEventListener("pointerdown", (event) => {
+    if (!isPrimaryPanelPointer(event)) {
       return;
     }
 
-    if (button.disabled) {
+    const button = panelSortEventButton(event, filters);
+    if (!button) {
       return;
     }
 
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
+    rememberPanelSortPointer(root, button.dataset.panelSort);
     applyPanelSort(button.dataset.panelSort, root);
+    clearPanelFilterPointerFocus(filters);
+    setPanelFilterControlsVisible(root, true);
   }, true);
+  filters.addEventListener("click", (event) => {
+    const button = panelSortEventButton(event, filters);
+    if (!button) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    if (didHandlePanelSortPointerClick(root, button.dataset.panelSort)) {
+      return;
+    }
+
+    applyPanelSort(button.dataset.panelSort, root);
+    setPanelFilterControlsVisible(root, true);
+  }, true);
+}
+
+function panelSortEventButton(event, filters) {
+  const button = event.target.closest?.("[data-panel-sort]");
+  if (!button || !filters.contains(button) || button.disabled) {
+    return null;
+  }
+
+  return button;
+}
+
+function isPrimaryPanelPointer(event) {
+  return event.isPrimary !== false && (event.button === undefined || event.button === 0);
+}
+
+function rememberPanelSortPointer(root, field) {
+  root.__stashSortPointerHandledAt = Date.now();
+  root.__stashSortPointerHandledField = field;
+}
+
+function didHandlePanelSortPointerClick(root, field) {
+  const handledAt = root.__stashSortPointerHandledAt || 0;
+  const handled = root.__stashSortPointerHandledField === field && Date.now() - handledAt < 700;
+  root.__stashSortPointerHandledAt = 0;
+  root.__stashSortPointerHandledField = "";
+  return handled;
 }
 
 function applyPanelSort(field, root) {
@@ -113,9 +174,7 @@ function syncPanelSortControlLayout(root) {
 
 function panelNextSortState(field) {
   const sortField = isPanelSortField(field) ? field : PANEL_SORT_FIELD_RECENT;
-  const defaultDirection = sortField === PANEL_SORT_FIELD_NAME
-    ? PANEL_SORT_ASC
-    : PANEL_SORT_DESC;
+  const defaultDirection = panelDefaultSortDirection(sortField);
 
   if (panelState.sortField !== sortField) {
     return { sortField, sortDirection: defaultDirection };
@@ -145,7 +204,7 @@ function panelSortedItems(items) {
 
 function panelCompareSortEntries(left, right, sortField, sortDirection) {
   if (sortField === PANEL_SORT_FIELD_NAME) {
-    const comparison = panelSortName(left.item).localeCompare(panelSortName(right.item));
+    const comparison = panelCompareNameEntries(left.item, right.item);
     if (comparison !== 0) {
       return sortDirection === PANEL_SORT_ASC ? comparison : -comparison;
     }
@@ -168,13 +227,23 @@ function panelCompareRecentEntries(left, right, sortDirection) {
     : left.index - right.index;
 }
 
-function panelSortName(item) {
-  return normalizeComparableText(`${item.title || ""} ${item.brand || ""} ${item.sourceDomain || ""}`);
+function panelCompareNameEntries(left, right) {
+  return panelSortText(left.title).localeCompare(panelSortText(right.title)) ||
+    panelSortText(left.brand).localeCompare(panelSortText(right.brand)) ||
+    panelSortText(left.sourceDomain).localeCompare(panelSortText(right.sourceDomain));
+}
+
+function panelSortText(value) {
+  return normalizeComparableText(value || "");
 }
 
 function panelCreatedTime(item) {
   const time = Date.parse(item.createdAt || "");
   return Number.isFinite(time) ? time : 0;
+}
+
+function panelDefaultSortDirection(field) {
+  return field === PANEL_SORT_FIELD_NAME ? PANEL_SORT_ASC : PANEL_SORT_DESC;
 }
 
 function isPanelSortField(value) {

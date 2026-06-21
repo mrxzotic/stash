@@ -106,7 +106,7 @@ function panelContentStyles() {
       min-width: 0;
       display: grid;
       align-content: start;
-      gap: 20px;
+      gap: 16px;
     }
 
     .wp-items.is-brand-cloud {
@@ -124,8 +124,8 @@ function panelContentStyles() {
       align-content: center;
       align-items: baseline;
       justify-content: center;
-      gap: 14px 18px;
-      padding: 40px 6px 74px;
+      gap: 16px;
+      padding: 40px 8px 72px;
       text-align: center;
       isolation: isolate;
     }
@@ -133,7 +133,7 @@ function panelContentStyles() {
     .wp-brand-cloud-item {
       display: inline-flex;
       align-items: baseline;
-      gap: 5px;
+      gap: 8px;
       min-width: 0;
       color: rgba(8, 11, 16, 0.72);
       font-variant-numeric: tabular-nums;
@@ -223,6 +223,22 @@ function panelContentStyles() {
       contain: paint;
     }
 
+    .wp-media-link,
+    .wp-media-link:link,
+    .wp-media-link:visited,
+    .wp-media-link:hover,
+    .wp-media-link:focus-visible {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: inherit;
+      text-decoration: none;
+    }
+
     .wp-image-frame {
       display: grid;
       place-items: center;
@@ -308,7 +324,7 @@ function panelContentStyles() {
 
     .wp-item-copy {
       display: grid;
-      gap: 4px;
+      gap: 8px;
     }
 
     .wp-brand-row,
@@ -325,7 +341,7 @@ function panelContentStyles() {
       display: inline-flex;
       align-items: baseline;
       justify-content: flex-start;
-      gap: 6px;
+      gap: 8px;
       max-width: 100%;
     }
 

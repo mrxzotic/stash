@@ -25,13 +25,15 @@ function panelStylesChunk4() {
       height: 40px;
       min-height: 40px;
       display: grid;
-      grid-template-columns: 22px minmax(0, 1fr) 26px;
+      grid-template-columns: 24px minmax(0, 1fr) 32px;
       align-items: center;
       gap: 8px;
-      padding: 0 6px 0 12px;
+      padding: 0 4px 0 12px;
       border: 1px solid rgba(10, 10, 10, 0.08);
       border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.62);
+      background:
+        linear-gradient(135deg, rgba(110, 194, 255, 0.15), rgba(255, 139, 222, 0.15) 52%, rgba(160, 255, 208, 0.15)),
+        rgba(255, 255, 255, 0.62);
       color: var(--foreground);
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.66),
@@ -46,7 +48,9 @@ function panelStylesChunk4() {
 
     .wp-inline-search:focus-within {
       border-color: rgba(8, 11, 16, 0.18);
-      background: rgba(255, 255, 255, 0.78);
+      background:
+        linear-gradient(135deg, rgba(110, 194, 255, 0.15), rgba(255, 139, 222, 0.15) 52%, rgba(160, 255, 208, 0.15)),
+        rgba(255, 255, 255, 0.78);
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.78),
         0 8px 22px rgba(15, 23, 42, 0.06);
@@ -104,8 +108,8 @@ function panelStylesChunk4() {
     }
 
     .wp-clear-search {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       display: grid;
       place-items: center;
       border: 0;
@@ -151,29 +155,31 @@ function panelStylesChunk4() {
       z-index: 3;
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
     }
 
     .wp-filter {
       flex: 0 0 auto;
-      height: 28px;
+      height: var(--wp-pill-height);
       padding: 0 12px;
       border: 1px solid var(--border);
       border-radius: 999px;
       color: var(--foreground);
       background: rgba(255, 255, 255, 0.5);
       font-size: var(--text-control);
-      font-weight: 660;
+      font-weight: 650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       transition:
         background 140ms ease,
         color 140ms ease,
         border-color 140ms ease,
         opacity 140ms ease,
-        padding 180ms cubic-bezier(.16, 1, .3, 1),
-        transform 180ms cubic-bezier(.16, 1, .3, 1),
-        width 180ms cubic-bezier(.16, 1, .3, 1);
+        padding 160ms cubic-bezier(.16, 1, .3, 1),
+        transform 180ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-filter-shell {
@@ -185,13 +191,13 @@ function panelStylesChunk4() {
       transition: transform 220ms cubic-bezier(.16, 1, .3, 1);
     }
 
-    .wp-filter-shell:not(.is-all) .wp-filter {
-      padding-right: 12px;
+    .wp-filter-shell.is-remove-pinned {
+      width: var(--wp-filter-static-width);
     }
 
-    .wp-filter-shell:not(.is-all):hover .wp-filter,
-    .wp-filter-shell:not(.is-all):focus-within .wp-filter {
-      padding-right: 28px;
+    .wp-filter-shell.is-remove-pinned .wp-filter {
+      width: 100%;
+      min-width: 0;
     }
 
     .wp-filter.is-active {
@@ -201,14 +207,20 @@ function panelStylesChunk4() {
       font-weight: 720;
     }
 
+    .wp-filter-shell.is-remove-visible .wp-filter,
+    .wp-filter-shell:focus-within .wp-filter {
+      padding-right: 28px;
+    }
+
     .wp-filter-remove {
       position: absolute;
       top: 50%;
-      right: 7px;
-      width: 16px;
-      height: 16px;
+      right: 8px;
+      width: 20px;
+      height: var(--wp-pill-height);
       display: grid;
       place-items: center;
+      z-index: 2;
       border: 0;
       border-radius: 0;
       background: transparent;
@@ -222,7 +234,7 @@ function panelStylesChunk4() {
         transform 180ms cubic-bezier(.16, 1, .3, 1);
     }
 
-    .wp-filter-shell:hover .wp-filter-remove,
+    .wp-filter-shell.is-remove-visible .wp-filter-remove,
     .wp-filter-shell:focus-within .wp-filter-remove {
       opacity: 0.74;
       pointer-events: auto;
@@ -246,8 +258,8 @@ function panelStylesChunk4() {
     }
 
     .wp-filter-remove-icon {
-      width: 12px;
-      height: 12px;
+      width: var(--wp-pill-icon-size);
+      height: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.35;
       stroke-linecap: round;
@@ -256,31 +268,39 @@ function panelStylesChunk4() {
 
     .wp-filter-add {
       width: 0;
-      height: 28px;
+      max-width: 0;
+      height: var(--wp-pill-height);
       align-self: center;
       padding: 0;
       border-color: transparent;
       background: transparent;
       opacity: 0;
+      visibility: hidden;
       display: grid;
       place-items: center;
       overflow: hidden;
       pointer-events: none;
       transform: scale(0.84);
+      transition:
+        opacity 140ms ease,
+        transform 180ms cubic-bezier(.16, 1, .3, 1),
+        visibility 0s linear 140ms;
     }
 
-    .wp-filters:hover .wp-filter-add,
+    .wp-filters.is-controls-visible .wp-filter-add,
     .wp-filters:focus-within .wp-filter-add,
     .wp-filter-add:hover,
     .wp-filter-add:focus-visible,
     .wp-filter-add.is-active {
-      width: 28px;
-      max-width: 28px;
+      width: var(--wp-pill-height);
+      max-width: var(--wp-pill-height);
       background: transparent;
       border-color: transparent;
       opacity: 0.62;
+      visibility: visible;
       pointer-events: auto;
       transform: scale(1);
+      transition-delay: 0s;
     }
 
     .wp-filter-add:hover,
@@ -290,8 +310,8 @@ function panelStylesChunk4() {
     }
 
     .wp-filter-add-icon {
-      width: 15px;
-      height: 15px;
+      width: var(--wp-pill-icon-size);
+      height: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.7;
       stroke-linecap: round;
@@ -299,12 +319,12 @@ function panelStylesChunk4() {
     }
 
     .wp-category-composer.wp-popover {
-      top: 126px;
+      top: 128px;
       right: 24px;
       z-index: 8;
       width: min(332px, calc(100% - 48px));
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto 28px;
+      grid-template-columns: minmax(0, 1fr) auto 32px;
       align-items: center;
       gap: 8px;
       padding: 8px;
@@ -312,8 +332,8 @@ function panelStylesChunk4() {
 
     .wp-category-composer input {
       min-width: 0;
-      height: 36px;
-      padding: 0 12px;
+      height: 40px;
+      padding: 0 16px;
       border: 1px solid rgba(60, 60, 67, 0.14);
       border-radius: var(--radius);
       outline: 0;
@@ -328,8 +348,8 @@ function panelStylesChunk4() {
     }
 
     .wp-category-submit {
-      height: 36px;
-      padding: 0 14px;
+      height: 40px;
+      padding: 0 16px;
       border: 0;
       border-radius: var(--radius);
       background: var(--primary);
@@ -339,8 +359,8 @@ function panelStylesChunk4() {
     }
 
     .wp-category-cancel {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       display: grid;
       place-items: center;
       border: 0;
@@ -357,8 +377,8 @@ function panelStylesChunk4() {
     }
 
     .wp-category-cancel-icon {
-      width: 15px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
       stroke: currentColor;
       stroke-width: 2.4;
       stroke-linecap: round;

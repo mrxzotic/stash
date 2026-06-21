@@ -16,6 +16,8 @@ vm.createContext(sandbox);
 [
   "extension/content/constants.js",
   "extension/content/utils.js",
+  "extension/content/text.js",
+  "extension/content/source-icons.js",
   "extension/content/media.js",
   "extension/content/extractors/context.js"
 ].forEach((file) => {
@@ -69,6 +71,31 @@ assert.equal(
   ),
   packshotImageUrl,
   "Image role scoring should prefer product packshots over model shots in the same card"
+);
+
+const detailImageUrl = "https://cdn.example/cloudmonster-detail.jpg";
+const sideImageUrl = "https://cdn.example/cloudmonster-side.jpg";
+const detailImage = fakeImage({
+  alt: "Cloudmonster 2 product detail",
+  className: "product-image detail",
+  src: detailImageUrl,
+  width: 800
+});
+const sideImage = fakeImage({
+  alt: "Cloudmonster 2 product side",
+  className: "product-image alternate",
+  src: sideImageUrl,
+  width: 760
+});
+
+assert.deepEqual(
+  Array.from(sandbox.bestProductImageUrls(
+    {},
+    packshotImage,
+    { querySelectorAll: () => [packshotImage, detailImage, sideImage, modelImage] }
+  )),
+  [packshotImageUrl, detailImageUrl, sideImageUrl, modelImageUrl],
+  "Image extraction should keep all available product image candidates"
 );
 
 console.log("product image ranking smoke passed");

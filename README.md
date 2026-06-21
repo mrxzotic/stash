@@ -1,6 +1,6 @@
-# Stash
+# Stashed
 
-Stash is a plain Manifest V3 Chrome/Arc extension for saving products from any shop into a private local stash.
+Stashed is a plain Manifest V3 Chrome/Arc extension for saving products from any shop into a private local stash.
 
 The v0.1 promise is intentionally narrow: save products cleanly from arbitrary shops, keep the library local, and make saved data easy to correct or back up.
 
@@ -12,7 +12,7 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 - Opens as a compact in-page panel with category filters, search, and view/theme toggles.
 - Keeps visible product cards clean: short commercial model name, brand, image, source URL, and original site price.
 - Lets users edit saved brand, name, price, image URL, and category.
-- Exports a local JSON backup.
+- Exports and imports local JSON backups.
 - Supports sale display with current price and compare-at price.
 - Converts totals with cached RUB fallback rates while preserving the original site currency on cards.
 
@@ -22,23 +22,23 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 2. Enable Developer mode.
 3. Choose **Load unpacked**.
 4. Select the `extension` folder from this repo.
-5. Click the Stash extension icon to open the in-page panel.
-6. Open a product page or product grid, right click an item/image/card, then choose **Save to Stash**.
+5. Click the Stashed extension icon to open the in-page panel.
+6. Open a product page or product grid, right click an item/image/card, then choose **Save to Stashed**.
 
 ## Privacy
 
-Stash has no backend, accounts, telemetry, or hidden collection. Saved items stay in local browser storage.
+Stashed has no backend, accounts, telemetry, or hidden collection. Saved items stay in local browser storage.
 
-Stash uses `activeTab`, `contextMenus`, `scripting`, and `storage`. It does not request persistent all-site host access. Content scripts are injected only after the user clicks the extension action or chooses **Save to Stash** from the context menu on an HTTP/HTTPS page.
+Stashed uses `activeTab`, `contextMenus`, `scripting`, and `storage`. It does not request persistent all-site host access. Content scripts are injected only after the user clicks the extension action or chooses **Save to Stashed** from the context menu on an HTTP/HTTPS page.
 
 Current network behavior is limited to user-triggered save/open flows:
 
 - Product-page enrichment can fetch the same-origin product page when the clicked card is missing title, image, price, or a sharper product image.
-- Shopify enrichment can fetch a matching same-origin `/products/<handle>.js` endpoint.
+- Shopify enrichment can fetch a matching `/products/<handle>.js` endpoint on the user-selected product URL origin.
 - Currency totals can fetch RUB exchange rates from `https://open.er-api.com/v6/latest/<currency>` and cache the numeric rate locally.
 - Saved product images can load from the original shop when the panel is open, with `referrerpolicy="no-referrer"` on rendered image elements.
 
-Stash does not call a remote favicon proxy or render passive third-party favicon lookups.
+Stashed does not call a remote favicon proxy or render passive third-party favicon lookups.
 
 ## Project structure
 
@@ -82,7 +82,7 @@ find scripts -maxdepth 1 -name 'smoke-*.js' -print | sort | xargs -n1 node
 
 ## Status
 
-Stash is approaching a v0.1 public release. It currently focuses on local saving, generic extraction, manual correction, JSON backup export, and a polished in-page panel. It does not include sync, accounts, price tracking, import/restore, store-specific adapters, or Chrome Web Store packaging automation yet.
+Stashed is approaching a v0.1 public release. It currently focuses on local saving, generic extraction, manual correction, JSON backup export/import, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or Chrome Web Store packaging automation yet.
 
 ## License
 

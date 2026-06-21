@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-20-founder-opaque-screen-v1";
+var CONTENT_VERSION = "2026-06-21-panel-size-revert-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -18,6 +18,7 @@ var STORAGE_MAX_DEPTH = 8;
 var STORAGE_MAX_ARRAY_LENGTH = 500;
 var STORAGE_MAX_OBJECT_KEYS = 80;
 var STORAGE_MAX_STRING_LENGTH = 8192;
+var SAVED_IMAGE_URL_LIMIT = 3;
 var DEFAULT_SETTINGS = {
   summaryCurrency: "USD",
   backgroundTheme: "warm",
@@ -109,6 +110,8 @@ var PANEL_SORT_FIELD_NAME = "name";
 var PANEL_SORT_ASC = "asc";
 var PANEL_SORT_DESC = "desc";
 var BRAND_ALIASES = new Map([
+  ["acnestudios", "Acne Studios"],
+  ["acne studios", "Acne Studios"],
   ["aime leon dore eu", "Aimé Leon Dore"],
   ["aime leon dore", "Aimé Leon Dore"],
   ["aimé leon dore eu", "Aimé Leon Dore"],

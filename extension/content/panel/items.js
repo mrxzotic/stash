@@ -18,6 +18,7 @@ function normalizePanelItem(item) {
     category: item.category || panelState.categories[0]?.id || "tops",
     sourceDomain,
     faviconUrl: faviconUrlForSource(url, item.faviconUrl),
+    imageUrls: normalizeProductImageUrls(item.imageUrls, item.imageUrl, SAVED_IMAGE_URL_LIMIT),
     price
   };
 }

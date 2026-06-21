@@ -1,3 +1,25 @@
+function itemProp(scope, name) {
+  if (!scope) {
+    return "";
+  }
+
+  const element = scope.matches?.(`[itemprop="${name}"]`)
+    ? scope
+    : scope.querySelector?.(`[itemprop="${name}"]`);
+
+  if (!element) {
+    return "";
+  }
+
+  return (
+    element.getAttribute("content") ||
+    element.getAttribute("href") ||
+    element.getAttribute("src") ||
+    element.textContent ||
+    ""
+  );
+}
+
 function extractFromMicrodata() {
   const product =
     document.querySelector('[itemscope][itemtype*="schema.org/Product" i]') ||

@@ -1,0 +1,52 @@
+function bindPanelSearchEvents(root) {
+  root.querySelector("[data-panel-search]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    panelState.searchOpen = true;
+    panelState.settingsOpen = false;
+    renderStashPanel();
+  });
+
+  root.querySelector("[data-search]")?.addEventListener("input", (event) => {
+    panelState.searchQuery = event.target.value;
+    syncSearchClearButton(root);
+    renderPanelItemsOnly(root);
+  });
+
+  root.querySelector("[data-clear-search]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    clearOrClosePanelSearch(root);
+  });
+}
+
+function handlePanelSearchEscape(root) {
+  if (!panelState.searchOpen) return false;
+  clearOrClosePanelSearch(root);
+  return true;
+}
+
+function clearOrClosePanelSearch(root) {
+  if (!panelState.searchQuery) {
+    panelState.searchOpen = false;
+    renderStashPanel();
+    return;
+  }
+
+  panelState.searchQuery = "";
+  const input = root.querySelector("[data-search]");
+  if (input) input.value = "";
+  syncSearchClearButton(root);
+  renderPanelItemsOnly(root);
+  window.requestAnimationFrame(() => focusPanelElement(input));
+}
+
+function syncSearchClearButton(root) {
+  const clearButton = root.querySelector("[data-clear-search]");
+  if (!clearButton) return;
+  const label = panelState.searchQuery ? "Clear search" : "Close search";
+  clearButton.disabled = false;
+  clearButton.classList.add("is-visible");
+  clearButton.setAttribute("aria-label", label);
+  clearButton.setAttribute("title", label);
+}

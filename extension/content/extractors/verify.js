@@ -20,6 +20,7 @@ function reconcileProductWithFetchedProduct(product, fetchedProduct) {
   const title = verifiedProductTitle(product, fetchedProduct, brand, url);
   const price = bestPriceFromSources([product, fetchedProduct]);
   const imageUrl = verifiedProductImage(product, fetchedProduct, url);
+  const imageUrls = normalizeProductImageUrls([product?.imageUrls, fetchedProduct?.imageUrls], imageUrl);
 
   const reconciled = compactObject({
     ...product,
@@ -36,6 +37,7 @@ function reconcileProductWithFetchedProduct(product, fetchedProduct) {
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
     imageUrl,
+    imageUrls,
     rawCategory: product.rawCategory || fetchedProduct.rawCategory
   });
   return attachExtractionQuality(reconciled, [
