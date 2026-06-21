@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-21-archive-hitbox-v1";
+var CONTENT_VERSION = "2026-06-22-release-readiness-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -107,6 +107,7 @@ var SUMMARY_CURRENCY_PICKER_OPTIONS = ["USD", "EUR", "GBP", "CHF", "RUB", "UAH"]
 var RATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 var PANEL_SORT_FIELD_RECENT = "recent";
 var PANEL_SORT_FIELD_NAME = "name";
+var PANEL_SORT_FIELD_PRICE = "price";
 var PANEL_SORT_ASC = "asc";
 var PANEL_SORT_DESC = "desc";
 var BRAND_ALIASES = new Map([
@@ -148,6 +149,9 @@ var panelState = {
   editItemId: "",
   archivedOpen: false,
   brandCloudOpen: false,
+  brandCloudSortList: false,
+  filterMenuOpen: false,
+  sortMenuOpen: false,
   brandFilterKey: "",
   brandFilterLabel: "",
   activeCategory: "all",
@@ -168,6 +172,9 @@ var panelState = {
   backgroundTheme: DEFAULT_SETTINGS.backgroundTheme,
   compactView: DEFAULT_SETTINGS.compactView,
   hasRenderedPanel: false,
+  rebuildMotion: "",
+  rebuildMotionTimer: 0,
   highlightedItemId: "",
+  displacedItemId: "",
   highlightTimer: 0
 };

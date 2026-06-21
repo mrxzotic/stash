@@ -20,6 +20,10 @@ function panelScopedItems(items = panelState.items) {
     : panelActiveItems(items);
 }
 
+function panelSummaryItems(items = panelState.items) {
+  return panelScopedItems(items);
+}
+
 function panelArchivedCount(items = panelState.items) {
   return panelArchivedItems(items).length;
 }
@@ -65,11 +69,14 @@ function togglePanelArchivedView() {
   const willOpen = !panelState.archivedOpen;
   panelState.archivedOpen = willOpen;
   panelState.brandCloudOpen = false;
+  panelState.brandCloudSortList = false;
   panelState.brandFilterKey = "";
   panelState.brandFilterLabel = "";
   panelState.searchOpen = false;
   panelState.searchQuery = "";
   panelState.activeCategory = "all";
+  panelState.filterMenuOpen = false;
+  panelState.sortMenuOpen = false;
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";

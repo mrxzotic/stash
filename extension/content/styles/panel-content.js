@@ -22,11 +22,13 @@ function panelContentStyles() {
       display: grid;
       gap: 8px;
       padding: 18px;
-      border: 1px solid rgba(60, 60, 67, 0.14);
+      border: 1px solid var(--wp-popover-border);
       border-radius: var(--radius);
-      background: #fff;
+      background: var(--wp-popover-bg);
       color: var(--foreground);
-      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.18);
+      -webkit-backdrop-filter: var(--wp-popover-blur);
+      backdrop-filter: var(--wp-popover-blur);
+      box-shadow: var(--wp-popover-shadow);
       overflow: hidden;
       transform: translateY(-50%);
       animation: wpPanelIn 140ms cubic-bezier(.16, 1, .3, 1) both;
@@ -92,7 +94,8 @@ function panelContentStyles() {
       grid-template-columns: repeat(2, minmax(0, 1fr));
       align-content: start;
       column-gap: 16px;
-      padding: var(--wp-items-padding-top, 148px) 24px 48px;
+      row-gap: 0;
+      padding: var(--wp-items-padding-top, 136px) 24px 48px;
       margin-top: 0;
       overflow-y: auto;
       scroll-behavior: smooth;
@@ -102,6 +105,12 @@ function panelContentStyles() {
       contain: layout style;
     }
 
+    .wp-items.is-brand-cloud {
+      grid-template-columns: 1fr;
+      align-content: start;
+      padding-top: var(--wp-items-padding-top, 136px);
+    }
+
     .wp-item-column {
       min-width: 0;
       display: grid;
@@ -109,30 +118,34 @@ function panelContentStyles() {
       gap: 16px;
     }
 
-    .wp-items.is-brand-cloud {
-      grid-template-columns: 1fr;
-      align-content: center;
-      padding-top: var(--wp-items-padding-top, 126px);
-    }
-
     .wp-brand-cloud {
       position: relative;
       z-index: 0;
-      min-height: min(460px, calc(100vh - 250px));
       display: flex;
       flex-wrap: wrap;
-      align-content: center;
+      align-content: flex-start;
       align-items: baseline;
       justify-content: center;
       gap: 16px;
-      padding: 40px 8px 72px;
+      padding: 8px 8px 72px;
       text-align: center;
       isolation: isolate;
+    }
+
+    .wp-brand-cloud.is-sort-list {
+      min-height: min(540px, calc(100vh - 250px));
+      flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding: 28px 8px 72px;
     }
 
     .wp-brand-cloud-item {
       display: inline-flex;
       align-items: baseline;
+      justify-content: center;
       gap: 8px;
       min-width: 0;
       color: rgba(8, 11, 16, 0.72);
@@ -142,10 +155,13 @@ function panelContentStyles() {
       line-height: 1.05;
       text-transform: uppercase;
       white-space: nowrap;
+      transform: translate3d(0, 0, 0);
     }
 
     .wp-brand-cloud-count {
       color: rgba(8, 11, 16, 0.38);
+      font-family: var(--figure-font);
+      font-variant-numeric: tabular-nums;
       font-size: 0.72em;
       font-weight: 650;
     }
@@ -156,9 +172,15 @@ function panelContentStyles() {
       min-width: 0;
       isolation: isolate;
       transform: translateY(0);
-      transition: transform 180ms cubic-bezier(.16, 1, .3, 1);
-      animation: wpItemIn 240ms cubic-bezier(.16, 1, .3, 1) both;
+      transition: transform 220ms cubic-bezier(.18, .9, .22, 1);
+      animation: wpItemIn 360ms cubic-bezier(.18, .9, .22, 1) both;
     }
+
+    .wp-item-column .wp-item:nth-child(2) { animation-delay: 34ms; }
+    .wp-item-column .wp-item:nth-child(3) { animation-delay: 68ms; }
+    .wp-item-column .wp-item:nth-child(4) { animation-delay: 102ms; }
+    .wp-item-column .wp-item:nth-child(5) { animation-delay: 136ms; }
+    .wp-item-column .wp-item:nth-child(n + 6) { animation-delay: 170ms; }
 
     .wp-item::before {
       content: "";
@@ -276,10 +298,37 @@ function panelContentStyles() {
       width: 42px;
       height: 42px;
       color: rgba(16, 16, 16, 0.2);
+      font-size: 42px;
       stroke: currentColor;
       stroke-width: 1.8;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    .wp-image-missing {
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 120px;
+      padding: 24px;
+      color: rgba(16, 16, 16, 0.42);
+      text-align: center;
+    }
+
+    .wp-image-missing-logo {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      opacity: 0.34;
+    }
+
+    .wp-image-missing-text {
+      max-width: 120px;
+      font-size: var(--text-caption);
+      line-height: 1.2;
+      font-weight: 720;
+      text-transform: uppercase;
     }
 
     .wp-item:hover .wp-image-frame > img {

@@ -4,7 +4,7 @@ function renderPanelEmpty() {
   return `
     <div class="wp-empty">
       <div>
-        ${state.icon ? lucidePackagePlusIcon("wp-empty-icon") : ""}
+        ${state.icon ? `<img class="wp-empty-logo" src="${escapeAttribute(stashedGreyscaleLogoUrl())}" alt="" aria-hidden="true">` : ""}
         <strong>${escapeHtml(state.title)}</strong>
         <span>${escapeHtml(state.detail)}</span>
       </div>
@@ -65,4 +65,12 @@ function panelEmptyState() {
 function panelActiveCategoryLabel() {
   const category = panelState.categories.find((item) => item.id === panelState.activeCategory);
   return category?.label || "this category";
+}
+
+function stashedGreyscaleLogoUrl() {
+  try {
+    return chrome.runtime.getURL("icons/stashed-lock-greyscale-128.png");
+  } catch {
+    return "";
+  }
 }

@@ -17,7 +17,7 @@ function renderPanelCardImageFrame(item, options = {}) {
   const alt = options.alt ?? panelProductImageAlt(item);
   const frame = imageUrl
     ? `<span class="wp-image-frame is-wide"><img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(alt)}" referrerpolicy="no-referrer"></span>`
-    : lucideImageIcon("wp-image-placeholder");
+    : renderMissingProductImage("wp");
   const slider = options.slider === false || urls.length < 2
     ? ""
     : renderPanelImageSliderControls(urls, item);
@@ -25,14 +25,26 @@ function renderPanelCardImageFrame(item, options = {}) {
   return `${frame}${slider}`;
 }
 
+function renderMissingProductImage(namespace = "wp") {
+  const className = namespace === "wl" ? "wl-image-missing" : "wp-image-missing";
+  const logoClass = namespace === "wl" ? "wl-image-missing-logo" : "wp-image-missing-logo";
+  const textClass = namespace === "wl" ? "wl-image-missing-text" : "wp-image-missing-text";
+  return `
+    <span class="${className}" role="img" aria-label="Oops, image missing">
+      <img class="${logoClass}" src="${escapeAttribute(stashedGreyscaleLogoUrl())}" alt="" aria-hidden="true">
+      <span class="${textClass}">Oops, image missing</span>
+    </span>
+  `;
+}
+
 function renderPanelImageSliderControls(urls, item = null) {
   const label = item ? ` for ${panelItemAccessibleName(item)}` : "";
   return `
     <button class="wp-image-slider-button is-prev" type="button" aria-label="${escapeAttribute(`Previous image${label}`)}" data-image-slide="previous">
-      ${lucideChevronLeftIcon("wp-image-slider-icon")}
+      ${phosphorChevronLeftIcon("wp-image-slider-icon")}
     </button>
     <button class="wp-image-slider-button is-next" type="button" aria-label="${escapeAttribute(`Next image${label}`)}" data-image-slide="next">
-      ${lucideChevronRightIcon("wp-image-slider-icon")}
+      ${phosphorChevronRightIcon("wp-image-slider-icon")}
     </button>
     <span class="wp-image-slider-tray">
       ${renderPanelImageDeleteButton(item)}
@@ -55,7 +67,7 @@ function renderPanelImageDeleteButton(item = null) {
   const label = item ? ` from ${panelItemAccessibleName(item)}` : "";
   return `
     <button class="wp-image-delete-button" type="button" aria-label="${escapeAttribute(`Remove current image${label}`)}" title="Remove image" data-image-delete>
-      ${lucideImageOffIcon("wp-image-delete-icon")}
+      ${phosphorImageOffIcon("wp-image-delete-icon")}
     </button>
   `;
 }

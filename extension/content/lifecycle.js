@@ -59,11 +59,14 @@ function closeStashPanel() {
   panelState.brandFilterLabel = "";
   panelState.hasRenderedPanel = false;
   panelState.highlightedItemId = "";
+  panelState.displacedItemId = "";
   window.clearTimeout(panelState.highlightTimer);
 }
 
 function showSavedItemInPanel(item, items, categories, options = {}) {
   clearSavedOverlay();
+  const previousActiveCategory = panelState.activeCategory;
+  const previousSearchQuery = panelState.searchQuery;
   panelState.items = items;
   panelState.categories = categories;
   panelState.highlightedItemId = item.id;
@@ -78,6 +81,10 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
     panelState.searchOpen = false;
   }
 
+  const listContextChanged =
+    previousActiveCategory !== panelState.activeCategory ||
+    previousSearchQuery !== panelState.searchQuery;
+  panelState.displacedItemId = listContextChanged ? "" : panelSavedItemDisplacedId(item);
   renderStashPanel({ summaryAnimationFrom: options.summaryAnimationFrom });
   window.clearTimeout(panelState.highlightTimer);
   panelState.highlightTimer = window.setTimeout(() => {
@@ -85,8 +92,33 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
       return;
     }
     panelState.highlightedItemId = "";
+    panelState.displacedItemId = "";
     renderStashPanel();
   }, 1400);
+}
+
+function panelSavedItemDisplacedId(item) {
+  if (panelState.compactView || panelState.archivedOpen || (panelState.brandCloudOpen && !panelState.brandFilterKey)) {
+    return "";
+  }
+
+  const savedId = normalizePanelItem(item).id;
+  const visibleItems = panelSortedItems(
+    panelScopedItems(panelState.items)
+      .filter(
+        (savedItem) =>
+          panelState.activeCategory === "all" ||
+          savedItem.category === panelState.activeCategory
+      )
+      .filter(panelItemMatchesSearch)
+      .filter(panelItemMatchesBrandFilter)
+  ).map(normalizePanelItem);
+
+  if (visibleItems[0]?.id !== savedId) {
+    return "";
+  }
+
+  return visibleItems[1]?.id || "";
 }
 
 function clearSavedOverlay() {

@@ -124,7 +124,7 @@ function findClosestSingleProductScope(target, link) {
 
   for (let depth = 0; node && node !== document.body && depth < 8; depth += 1) {
     const urls = productPageUrlsInScope(node);
-    const imageCount = node.querySelectorAll?.("img").length || 0;
+    const imageCount = node.querySelectorAll?.("img, picture, source").length || 0;
     const lines = getTextLines(node);
     const matchesLink = !link?.href || urls.some((url) => sameProductPageUrl(url, link.href));
     const hasDetails = lines.some(looksLikeProductName) || Boolean(findBestPrice(lines).amount);

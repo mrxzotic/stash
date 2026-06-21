@@ -43,6 +43,25 @@ const sandbox = {
 vm.createContext(sandbox);
 vm.runInContext(archiveSource, sandbox, { filename: "content/panel/archive.js" });
 
+const summaryScopeItems = [
+  { id: "active-item", title: "Active", url: "https://example.com/active" },
+  { id: "archived-item", title: "Archived", url: "https://example.com/archived", archivedAt: "2026-06-21T00:00:00.000Z" }
+];
+sandbox.panelState.items = summaryScopeItems;
+assert.deepEqual(
+  vm.runInContext("panelSummaryItems(panelState.items).map((item) => item.id)", sandbox),
+  ["active-item"],
+  "Summary should use active items outside archive view"
+);
+sandbox.panelState.archivedOpen = true;
+assert.deepEqual(
+  vm.runInContext("panelSummaryItems(panelState.items).map((item) => item.id)", sandbox),
+  ["archived-item"],
+  "Summary should use archived items inside archive view"
+);
+sandbox.panelState.archivedOpen = false;
+sandbox.panelState.items = [{ id: "item-1", title: "Cabin", url: "https://example.com/cabin" }];
+
 const clickListeners = {};
 const archiveButton = {
   dataset: { archiveId: "item-1" },

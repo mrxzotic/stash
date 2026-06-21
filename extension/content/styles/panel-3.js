@@ -49,11 +49,13 @@ function panelStylesChunk3() {
       justify-content: space-between;
       gap: 8px;
       padding: 0 8px 0 12px;
-      border: 1px solid rgba(60, 60, 67, 0.14);
+      border: 1px solid var(--wp-chrome-border);
       border-radius: var(--radius);
-      background: #fff;
+      background: var(--wp-chrome-bg);
       color: var(--foreground);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      -webkit-backdrop-filter: var(--wp-chrome-blur);
+      backdrop-filter: var(--wp-chrome-blur);
+      box-shadow: var(--wp-chrome-shadow);
       font-size: var(--text-body);
       font-weight: 700;
       letter-spacing: 0;
@@ -114,14 +116,14 @@ function panelStylesChunk3() {
       display: grid;
       gap: 4px;
       padding: 4px;
-      border: 1px solid rgba(60, 60, 67, 0.14);
+      border: 1px solid var(--wp-popover-border);
       border-radius: var(--radius);
-      background: #fff;
+      background: var(--wp-popover-bg);
+      -webkit-backdrop-filter: var(--wp-popover-blur);
+      backdrop-filter: var(--wp-popover-blur);
       overflow-y: auto;
       scrollbar-width: none;
-      box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.9) inset,
-        0 14px 34px rgba(15, 23, 42, 0.16);
+      box-shadow: var(--wp-popover-shadow);
     }
 
     .wp-select-menu::-webkit-scrollbar {
@@ -174,6 +176,8 @@ function panelStylesChunk3() {
     .wp-select-check {
       width: 14px;
       height: 14px;
+      color: var(--foreground);
+      font-size: 14px;
       stroke: var(--foreground);
       stroke-width: 2.4;
       stroke-linecap: round;
@@ -195,11 +199,14 @@ function panelStylesChunk3() {
       padding: 8px;
       border: 1px solid rgba(60, 60, 67, 0.12);
       border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.72);
+      background: var(--wp-chrome-bg);
       color: var(--foreground);
       text-align: left;
       font-size: var(--text-control);
       font-weight: 720;
+      -webkit-backdrop-filter: var(--wp-chrome-blur);
+      backdrop-filter: var(--wp-chrome-blur);
+      box-shadow: var(--wp-chrome-shadow);
       transition:
         border-color 140ms ease,
         background 140ms ease,
@@ -210,13 +217,13 @@ function panelStylesChunk3() {
     .wp-background-choice:focus-visible {
       outline: 0;
       border-color: rgba(8, 11, 16, 0.22);
-      background: rgba(255, 255, 255, 0.9);
+      background: var(--wp-chrome-bg-hover);
       transform: translateY(-1px);
     }
 
     .wp-background-choice.is-selected {
       border-color: rgba(8, 11, 16, 0.74);
-      background: #fff;
+      background: var(--wp-chrome-bg-hover);
     }
 
     .wp-background-swatch {
@@ -271,6 +278,7 @@ function panelStylesChunk3() {
     .wp-background-check-icon {
       width: 12px;
       height: 12px;
+      font-size: 12px;
       stroke: currentColor;
       stroke-width: 3;
       stroke-linecap: round;

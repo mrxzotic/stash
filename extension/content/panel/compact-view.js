@@ -26,7 +26,7 @@ function renderPanelCompactItem(item, index = 0) {
   const itemLabel = panelItemAccessibleName(item);
 
   return `
-    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}">
+    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}" data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}">
       <span class="wp-compact-index" aria-label="Item ${index + 1}">#${index + 1}</span>
       <a class="wp-compact-thumb ${compactThumbFocusClass(item)}" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(`Open ${itemLabel}`)}">
         ${renderPanelCardImageFrame(item, { slider: false })}
@@ -35,13 +35,13 @@ function renderPanelCompactItem(item, index = 0) {
         <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
         <a class="wp-item-title" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a>
       </div>
-      ${priceHtml ? `<div class="wp-price-row wp-compact-price">${priceHtml}</div>` : ""}
+      <div class="wp-price-row wp-compact-price${priceHtml ? "" : " is-empty"}"${priceHtml ? "" : " aria-hidden=\"true\""}>${priceHtml}</div>
       <div class="wp-compact-actions">
         ${isArchived
-          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
-             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
-          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
-             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
+          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
+             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>`
+          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
+             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${phosphorTrashIcon("wp-card-action-icon")}</button>`}
       </div>
     </article>
   `;
@@ -73,51 +73,63 @@ function syncPanelTopbarPreferenceControls(root = document.getElementById("stash
   const compactButton = root.querySelector("[data-panel-compact-toggle]");
   if (compactButton) {
     compactButton.classList.toggle("is-toggle-active", panelState.compactView);
-    compactButton.setAttribute("aria-pressed", String(panelState.compactView));
-    compactButton.setAttribute("aria-label", panelState.compactView ? "Compact view on. Switch to cards" : "Card view on. Switch to compact");
-    compactButton.setAttribute("title", panelState.compactView ? "Card view" : "Compact view");
-    compactButton.innerHTML = panelState.compactView ? lucideGridIcon() : lucideListIcon();
+    compactButton.setAttribute("aria-checked", String(panelState.compactView));
+    compactButton.setAttribute("aria-label", panelState.compactView ? "List view on" : "List view off");
+    compactButton.setAttribute("title", "List view");
+    compactButton.innerHTML = renderPanelCompactToggleContents();
   }
 
   const themeButton = root.querySelector("[data-panel-theme-toggle]");
   if (themeButton) {
     const isGraphite = panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME;
     themeButton.classList.toggle("is-toggle-active", isGraphite);
-    themeButton.setAttribute("aria-pressed", String(isGraphite));
-    themeButton.setAttribute("aria-label", isGraphite ? "Graphite mode on. Switch to light" : "Graphite mode off. Switch to graphite");
-    themeButton.setAttribute("title", isGraphite ? "Light mode" : "Graphite mode");
-    themeButton.innerHTML = isGraphite ? lucideSunIcon() : lucideMoonIcon();
+    themeButton.setAttribute("aria-checked", String(isGraphite));
+    themeButton.setAttribute("aria-label", isGraphite ? "Dark mode on" : "Dark mode off");
+    themeButton.setAttribute("title", "Dark mode");
+    themeButton.innerHTML = renderPanelThemeToggleContents();
   }
 }
 
-function renderPanelSummaryLead() {
-  if (!panelState.brandFilterKey) {
-    const itemCount = panelActiveItems(panelState.items).length;
-    return `
-      <button class="wp-count${panelState.brandCloudOpen ? " is-active" : ""}" type="button" aria-pressed="${panelState.brandCloudOpen}" aria-label="${panelCountAriaLabel(itemCount)}" title="${panelState.brandCloudOpen ? "Close brands" : "Show brands"}" data-brand-cloud-toggle>
-        ${renderPanelCountContents(itemCount)}
-      </button>
-    `;
-  }
-
-  const label = panelState.brandFilterLabel || "Brand";
+function renderPanelThemeToggleContents() {
+  const isGraphite = panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME;
   return `
-    <span class="wp-summary-brand-filter">
-      <span class="wp-summary-brand-pill is-active" aria-label="${escapeAttribute(`Brand filter active: ${label}`)}">
-        <span class="wp-summary-brand-label">${escapeHtml(label)}</span>
-        <button class="wp-summary-brand-clear" type="button" aria-label="Clear ${escapeAttribute(label)} brand filter" data-clear-brand-filter>
-          ${lucideXIcon("wp-filter-remove-icon")}
-        </button>
-      </span>
+    ${phosphorMoonIcon("wp-overflow-option-icon")}
+    <span>Dark mode</span>
+    ${renderPanelOverflowSwitch(isGraphite)}
+  `;
+}
+
+function renderPanelCompactToggleContents() {
+  return `
+    ${phosphorListIcon("wp-overflow-option-icon")}
+    <span>List view</span>
+    ${renderPanelOverflowSwitch(panelState.compactView)}
+  `;
+}
+
+function renderPanelOverflowSwitch(isActive) {
+  return `<span class="wp-overflow-switch${isActive ? " is-on" : ""}" aria-hidden="true"></span>`;
+}
+
+function renderPanelSummaryLead(displayItems = panelSummaryItems(panelState.items)) {
+  return `
+    <span class="wp-count" aria-label="${escapeAttribute(panelCountAriaLabel(displayItems))}">
+      ${renderPanelCountContents(displayItems)}
     </span>
   `;
 }
 
-function renderPanelCountContents(itemCount) {
-  const label = panelState.brandCloudOpen ? "Brands" : panelItemCountLabel(itemCount);
+function renderPanelCountContents(displayItems = panelSummaryItems(panelState.items)) {
+  const totalCount = displayItems.length;
+  if (panelTopbarCountIsScoped()) {
+    return `
+      <span class="wp-count-figure">${panelTopbarVisibleItems().length}</span><span class="wp-count-label">&nbsp;of&nbsp;</span>
+      <span class="wp-count-figure">${totalCount}</span>
+    `;
+  }
+
   return `
-    <span class="wp-count-label">${escapeHtml(label)}</span>
-    ${panelState.brandCloudOpen ? lucideXIcon("wp-count-clear-icon") : ""}
+    <span class="wp-count-figure">${totalCount}</span><span class="wp-count-label">&nbsp;${escapeHtml(totalCount === 1 ? "item" : "items")}</span>
   `;
 }
 
@@ -127,18 +139,39 @@ function syncPanelBrandCountControl(root = document.getElementById("stash-panel-
     return;
   }
 
-  const itemCount = panelActiveItems(panelState.items).length;
-  count.innerHTML = renderPanelCountContents(itemCount);
-  count.classList.toggle("is-active", panelState.brandCloudOpen);
-  count.setAttribute("aria-pressed", String(panelState.brandCloudOpen));
-  count.setAttribute("aria-label", panelCountAriaLabel(itemCount));
-  count.setAttribute("title", panelState.brandCloudOpen ? "Close brands" : "Show brands");
+  const displayItems = panelSummaryItems(panelState.items);
+  count.innerHTML = renderPanelCountContents(displayItems);
+  count.classList.remove("is-active");
+  count.removeAttribute("aria-pressed");
+  count.setAttribute("aria-label", panelCountAriaLabel(displayItems));
 }
 
-function panelCountAriaLabel(itemCount) {
-  return panelState.brandCloudOpen
-    ? "Brands view open. Close brands"
-    : `${panelItemCountLabel(itemCount)} view. Show brands`;
+function panelCountAriaLabel(displayItems = panelSummaryItems(panelState.items)) {
+  const label = panelTopbarCountLabel(displayItems);
+  return panelTopbarCountIsScoped()
+    ? `Showing ${label} items`
+    : `${label} saved`;
+}
+
+function panelTopbarCountLabel(displayItems = panelSummaryItems(panelState.items)) {
+  const totalCount = displayItems.length;
+  if (!panelTopbarCountIsScoped()) {
+    return panelItemCountLabel(totalCount);
+  }
+
+  return `${panelTopbarVisibleItems().length} of ${totalCount}`;
+}
+
+function panelTopbarValueItems(displayItems = panelSummaryItems(panelState.items)) {
+  return panelTopbarCountIsScoped() ? panelTopbarVisibleItems() : displayItems;
+}
+
+function panelTopbarVisibleItems() {
+  return panelVisibleItems(panelState.items);
+}
+
+function panelTopbarCountIsScoped() {
+  return Boolean(panelState.searchQuery || panelState.activeCategory !== "all" || panelState.brandFilterKey);
 }
 
 function panelItemCountLabel(itemCount) {
@@ -146,13 +179,14 @@ function panelItemCountLabel(itemCount) {
 }
 
 function renderPanelBrandCloud(items) {
+  const modeClass = panelState.brandCloudSortList ? " is-sort-list" : "";
   const brandNodes = panelBrandCloudItems(items).map((brand) => `
-    <button class="wp-brand-cloud-item" type="button" style="--wp-brand-cloud-scale: ${brand.scale.toFixed(3)}" data-brand-filter-key="${escapeAttribute(brand.key)}" data-brand-filter-label="${escapeAttribute(brand.label)}">
+    <button class="wp-brand-cloud-item" type="button" style="--wp-brand-cloud-scale: ${brand.scale.toFixed(3)}" data-panel-motion-id="brand:${escapeAttribute(brand.key)}" data-brand-filter-key="${escapeAttribute(brand.key)}" data-brand-filter-label="${escapeAttribute(brand.label)}">
       <span class="wp-brand-cloud-name">${escapeHtml(brand.label)}</span>
       <span class="wp-brand-cloud-count">${brand.count}</span>
     </button>
   `).join("");
-  return `<div class="wp-brand-cloud" aria-label="Brands by saved item count">${brandNodes}</div>`;
+  return `<div class="wp-brand-cloud${modeClass}" aria-label="Brands by saved item count">${brandNodes}</div>`;
 }
 
 function bindPanelBrandCloudEvents(root) {
@@ -160,8 +194,16 @@ function bindPanelBrandCloudEvents(root) {
   root.querySelector("[data-brand-cloud-toggle]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    panelState.brandCloudOpen = !panelState.brandCloudOpen;
+    const willOpen = !panelState.brandCloudOpen || Boolean(panelState.brandFilterKey);
+    panelState.brandCloudOpen = willOpen;
+    if (willOpen) {
+      panelState.brandFilterKey = "";
+      panelState.brandFilterLabel = "";
+    }
+    panelState.brandCloudSortList = false;
     panelState.archivedOpen = false;
+    panelState.filterMenuOpen = false;
+    panelState.sortMenuOpen = false;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
@@ -174,7 +216,10 @@ function bindPanelBrandCloudEvents(root) {
     panelState.brandFilterKey = "";
     panelState.brandFilterLabel = "";
     panelState.brandCloudOpen = false;
+    panelState.brandCloudSortList = false;
     panelState.searchOpen = false;
+    panelState.filterMenuOpen = false;
+    panelState.sortMenuOpen = false;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
@@ -190,9 +235,12 @@ function bindPanelBrandCloudEvents(root) {
     panelState.brandFilterKey = button.dataset.brandFilterKey || "";
     panelState.brandFilterLabel = button.dataset.brandFilterLabel || "";
     panelState.brandCloudOpen = false;
+    panelState.brandCloudSortList = false;
     panelState.archivedOpen = false;
     panelState.searchOpen = false;
     panelState.settingsOpen = false;
+    panelState.filterMenuOpen = false;
+    panelState.sortMenuOpen = false;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
@@ -204,19 +252,24 @@ function bindPanelPreferenceEvents(root) {
   root.querySelector("[data-panel-compact-toggle]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    panelState.settingsOpen = false;
+    closePanelOverflowMenu(root);
     safelyRunPanelAction(async () => {
-      await savePanelSettings({ compactView: !panelState.compactView });
+      await savePanelSettings(
+        { compactView: !panelState.compactView },
+        { rerender: false, syncViewMode: true, rebuildMotion: "view" }
+      );
     });
   });
 
   root.querySelector("[data-panel-theme-toggle]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    panelState.settingsOpen = false;
+    closePanelOverflowMenu(root);
     safelyRunPanelAction(async () => {
-      await savePanelSettings({ backgroundTheme: toggledGraphiteThemeId() }, { rerender: false });
-      syncPanelTopbarPreferenceControls(root);
+      await savePanelSettings(
+        { backgroundTheme: toggledGraphiteThemeId() },
+        { rerender: false, rebuildMotion: "theme" }
+      );
     });
   });
 }
@@ -230,17 +283,62 @@ function panelBrandCloudItems(items) {
   items.forEach((item) => {
     const label = panelItemBrandLabel(item);
     const key = panelItemBrandKey(item);
-    const current = brands.get(key) || { key, label, count: 0 };
+    const current = brands.get(key) || { key, label, count: 0, recentAt: 0, price: undefined };
+    const itemPrice = panelSortPrice(item);
     current.count += 1;
+    current.recentAt = Math.max(current.recentAt, panelCreatedTime(item));
+    current.price = Number.isFinite(itemPrice)
+      ? Math.min(current.price ?? itemPrice, itemPrice)
+      : current.price;
     brands.set(key, current);
   });
-  const sorted = Array.from(brands.values())
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
-    .slice(0, 40);
+  const sorted = panelSortedBrandCloudItems(Array.from(brands.values())).slice(0, 40);
   const maxRoot = Math.sqrt(sorted[0]?.count || 1);
   return sorted.map((brand) => ({
-    ...brand, scale: maxRoot <= 1 ? 1 : 0.9 + (Math.sqrt(brand.count) / maxRoot) * 0.58
+    ...brand,
+    scale: panelState.brandCloudSortList
+      ? 1.3
+      : maxRoot <= 1 ? 1 : 0.9 + (Math.sqrt(brand.count) / maxRoot) * 0.58
   }));
+}
+
+function panelSortedBrandCloudItems(brands) {
+  if (!panelState.brandCloudSortList) {
+    return brands.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }
+
+  const direction = panelState.sortDirection === PANEL_SORT_ASC ? 1 : -1;
+  if (panelState.sortField === PANEL_SORT_FIELD_NAME) {
+    return brands.sort((a, b) =>
+      direction * a.label.localeCompare(b.label) ||
+      b.count - a.count ||
+      b.recentAt - a.recentAt
+    );
+  }
+
+  if (panelState.sortField === PANEL_SORT_FIELD_PRICE) {
+    return brands.sort((a, b) =>
+      direction * panelCompareBrandPriceEntries(a, b) ||
+      a.label.localeCompare(b.label)
+    );
+  }
+
+  return brands.sort((a, b) =>
+    direction * (a.recentAt - b.recentAt) ||
+    a.label.localeCompare(b.label)
+  );
+}
+
+function panelCompareBrandPriceEntries(left, right) {
+  if (Number.isFinite(left.price) && Number.isFinite(right.price) && left.price !== right.price) {
+    return left.price - right.price;
+  }
+
+  if (Number.isFinite(left.price) !== Number.isFinite(right.price)) {
+    return Number.isFinite(left.price) ? -1 : 1;
+  }
+
+  return 0;
 }
 
 function panelItemBrandLabel(item) {

@@ -1,6 +1,6 @@
 function isNoiseLine(value) {
   const text = cleanText(value);
-  return /^(new|new in|new season|exclusive|runway|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|shipping|returns|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging|slide\s+\d+|carousel\s+slide\s+\d+|image\s+\d+)$/i.test(
+  return /^(new|new in|new season|exclusive|runway|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|add to wish\s?list|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|shipping|returns|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging|slide\s+\d+|carousel\s+slide\s+\d+|image\s+\d+)$/i.test(
     text
   ) || /^\d+\s+available\s+colou?rs?$/i.test(
     text
@@ -22,9 +22,10 @@ function looksLikeMeasurementLine(value) {
 }
 
 function looksLikeProductName(value) {
+  const text = cleanText(value);
   return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|bombers?|blousons?|windbreakers?|coats?|joggers?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|buckets?|totes?|backpacks?|luggage|suitcases?|cabins?|check[\s-]?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|scar(?:f|ves)|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
-    cleanText(value)
-  );
+    text
+  ) || /(?:джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)/i.test(text);
 }
 
 function looksLikeVariantDescriptor(value) {

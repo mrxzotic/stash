@@ -64,6 +64,7 @@ function panelSaveCurrentStyles() {
     .wp-topbar-info-icon {
       width: 20px;
       height: 20px;
+      font-size: 20px;
       stroke: currentColor;
       stroke-width: 2.1;
       stroke-linecap: round;
@@ -73,6 +74,7 @@ function panelSaveCurrentStyles() {
     .wp-brand-save-icon {
       width: 22px;
       height: 22px;
+      font-size: 22px;
       stroke: currentColor;
       stroke-width: 2.15;
       stroke-linecap: round;

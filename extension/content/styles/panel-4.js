@@ -19,145 +19,35 @@ function panelStylesChunk4() {
       background: #fff;
     }
 
-    .wp-inline-search {
-      position: relative;
-      width: 100%;
-      height: 40px;
-      min-height: 40px;
-      display: grid;
-      grid-template-columns: 24px minmax(0, 1fr) 32px;
-      align-items: center;
-      gap: 8px;
-      padding: 0 4px 0 12px;
-      border: 1px solid rgba(10, 10, 10, 0.08);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(135deg, rgba(110, 194, 255, 0.15), rgba(255, 139, 222, 0.15) 52%, rgba(160, 255, 208, 0.15)),
-        rgba(255, 255, 255, 0.62);
-      color: var(--foreground);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.66),
-        0 6px 18px rgba(15, 23, 42, 0.04);
-      transition:
-        border-color 160ms ease,
-        background 160ms ease,
-        box-shadow 160ms ease;
-      transform-origin: right center;
-      animation: wpSearchIn 220ms cubic-bezier(.16, 1, .3, 1) both;
-    }
-
-    .wp-inline-search:focus-within {
-      border-color: rgba(8, 11, 16, 0.18);
-      background:
-        linear-gradient(135deg, rgba(110, 194, 255, 0.15), rgba(255, 139, 222, 0.15) 52%, rgba(160, 255, 208, 0.15)),
-        rgba(255, 255, 255, 0.78);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.78),
-        0 8px 22px rgba(15, 23, 42, 0.06);
-    }
-
-    .wp-inline-search-label {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      border: 0;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-    }
-
-    .wp-inline-search-icon {
-      width: 20px;
-      height: 20px;
-      color: rgba(8, 11, 16, 0.78);
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      transition: color 160ms ease, transform 160ms ease;
-    }
-
-    .wp-inline-search:focus-within .wp-inline-search-icon {
-      color: var(--foreground);
-      transform: scale(1.03);
-    }
-
-    .wp-inline-search input {
-      width: 100%;
-      min-width: 0;
-      height: 38px;
-      padding: 0;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--foreground);
-      font-size: var(--text-ui);
-      font-weight: 620;
-      line-height: 1;
-    }
-
-    .wp-inline-search input::placeholder {
-      color: var(--muted-foreground);
-      font-weight: 620;
-      transition: color 160ms ease;
-    }
-
-    .wp-inline-search:focus-within input::placeholder {
-      color: rgba(8, 11, 16, 0.42);
-    }
-
-    .wp-clear-search {
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      border: 0;
-      border-radius: var(--radius);
-      background: transparent;
-      color: var(--muted);
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.82);
-      transition:
-        opacity 160ms ease,
-        transform 180ms cubic-bezier(.16, 1, .3, 1),
-        background 160ms ease,
-        color 160ms ease;
-    }
-
-    .wp-clear-search.is-visible {
-      opacity: 1;
-      pointer-events: auto;
-      transform: scale(1);
-    }
-
-    .wp-clear-search:hover {
-      background: rgba(0, 0, 0, 0.06);
-      color: var(--foreground);
-    }
-
-    .wp-clear-search:disabled {
-      cursor: default;
-    }
-
-    .wp-clear-search-icon {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      stroke-width: 2.2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
     .wp-filters {
       position: relative;
       z-index: 3;
-      display: flex;
-      flex-wrap: wrap;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
       gap: 8px;
       align-items: center;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .wp-filter-rail {
+      min-width: 0;
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 2px 2px 8px;
+      margin: -2px -2px -8px;
+      scroll-padding-inline: 2px 24px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+    }
+
+    .wp-filter-rail::-webkit-scrollbar {
+      display: none;
     }
 
     .wp-filter {
@@ -189,15 +79,6 @@ function panelStylesChunk4() {
       max-width: 168px;
       min-width: 0;
       transition: transform 220ms cubic-bezier(.16, 1, .3, 1);
-    }
-
-    .wp-filter-shell.is-remove-pinned {
-      width: var(--wp-filter-static-width);
-    }
-
-    .wp-filter-shell.is-remove-pinned .wp-filter {
-      width: 100%;
-      min-width: 0;
     }
 
     .wp-filter.is-active {
@@ -260,6 +141,7 @@ function panelStylesChunk4() {
     .wp-filter-remove-icon {
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
+      font-size: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.35;
       stroke-linecap: round;
@@ -312,6 +194,7 @@ function panelStylesChunk4() {
     .wp-filter-add-icon {
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
+      font-size: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.7;
       stroke-linecap: round;
@@ -334,13 +217,15 @@ function panelStylesChunk4() {
       min-width: 0;
       height: 40px;
       padding: 0 16px;
-      border: 1px solid rgba(60, 60, 67, 0.14);
+      border: 1px solid var(--wp-chrome-border);
       border-radius: var(--radius);
       outline: 0;
-      background: #fff;
+      background: var(--wp-chrome-bg);
       color: var(--foreground);
       font-size: var(--text-body);
       font-weight: 680;
+      -webkit-backdrop-filter: var(--wp-chrome-blur);
+      backdrop-filter: var(--wp-chrome-blur);
     }
 
     .wp-category-composer input:focus {
@@ -379,6 +264,7 @@ function panelStylesChunk4() {
     .wp-category-cancel-icon {
       width: 16px;
       height: 16px;
+      font-size: 16px;
       stroke: currentColor;
       stroke-width: 2.4;
       stroke-linecap: round;

@@ -12,6 +12,9 @@ const sandbox = {
     querySelectorAll: () => [],
     title: "New in: handpicked daily from the world's best brands and boutiques"
   },
+  chrome: {
+    runtime: { getURL: (assetPath) => `chrome-extension://stash/${assetPath}` }
+  },
   location: new URL("https://www.farfetch.com/fi/shopping/men/new-in-today-2/items.aspx")
 };
 
@@ -57,6 +60,7 @@ const pageImage =
 const scarfImage =
   "https://cdn-images.farfetch-contents.com/36/89/99/95/36899995_69000000_1000.jpg";
 const farfetchFavicon = "https://www.farfetch.com/favicon.ico";
+const localSourceFallback = "chrome-extension://stash/assets/phosphor-light/globe.svg";
 const scarfCardLines = ["Exclusive", "Jacquemus", "The Supporter silk scarf", "184 €"];
 const amiSneakerCardLines = ["Runway", "AMI Paris", "mesh mirage sneakers", "350 €"];
 
@@ -132,7 +136,12 @@ assert.equal(extracted.priceAmount, 305);
 assert.equal(extracted.imageUrl, cardImage);
 assert.equal(
   sandbox.faviconUrlForSource(beltUrl, farfetchFavicon),
-  farfetchFavicon
+  localSourceFallback
+);
+assert.doesNotMatch(
+  fs.readFileSync(path.join(root, "extension/content/source-icons.js"), "utf8"),
+  /https?:\/\/|favicon\.ico/,
+  "Saved source icons should not render passive remote favicon lookups"
 );
 
 sandbox.extractFromEmbeddedJson = () => ({

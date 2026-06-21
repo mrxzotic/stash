@@ -78,13 +78,9 @@ function extractProduct(context) {
   const priceSources = isProductPageContext
     ? [pagePriceProduct, commonSelectorProduct, microdataProduct, jsonLdProduct, embeddedProduct, metaProduct]
     : detailSources;
-  const pageImageSources = [
-    jsonLdProduct,
-    metaProduct,
-    commonSelectorProduct,
-    microdataProduct,
-    embeddedProduct
-  ];
+  const pageImageSources = hasVariantSelectionParam(pageUrl)
+    ? [commonSelectorProduct, microdataProduct, jsonLdProduct, metaProduct, embeddedProduct]
+    : [jsonLdProduct, metaProduct, commonSelectorProduct, microdataProduct, embeddedProduct];
   const imageSources = isProductPageContext
     ? [...pageImageSources, contextualProduct]
     : clickedProductImageSources(contextualProduct, sources);
@@ -93,7 +89,11 @@ function extractProduct(context) {
     ? "RIMOWA"
     : isTheRowProductUrl(url)
       ? "The Row"
-      : bestProductBrand([...detailSources, contextualProduct], url);
+      : isOnProductUrl(url)
+        ? "On"
+        : /^(.+\.)?adidas\./i.test(sourceDomainFromUrl(url))
+          ? "Adidas"
+        : bestProductBrand([...detailSources, contextualProduct], url);
   const rawTitle = isRimowaProductUrl(url)
     ? rimowaProductTitleFromUrl(url)
     : firstProductTitle([...detailSources, contextualProduct], document.title, rawBrand, url);
@@ -134,6 +134,13 @@ function bestProductPrice({ commonSelectorProduct, pagePriceProduct, contextualP
     }
   }
 
+  if (hasVariantSelectionParam(url) || isAllSaintsProductUrl(url)) {
+    const visiblePrice = bestPriceFromSources([pagePriceProduct, commonSelectorProduct]);
+    if (Number.isFinite(visiblePrice.amount) && visiblePrice.currency) {
+      return visiblePrice.isSale ? visiblePrice : priceWithoutCompareAt(visiblePrice);
+    }
+  }
+
   if (isMrPorterProductUrl(url)) {
     const contextualPrice = bestPriceFromSources([contextualProduct]);
     if (contextualPrice.isSale) {
@@ -154,12 +161,12 @@ function priceWithoutCompareAt(price) {
 
 function firstProductTitle(sources, fallbackTitle, brand, productUrl) {
   return sources
-    .map((source, index) => titleSourceCandidate(source, index, brand, productUrl))
+    .map((source, index) => titleSourceCandidate(source, index, brand, productUrl, fallbackTitle))
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)[0]?.title || fallbackTitle;
 }
 
-function titleSourceCandidate(source, index, brand, productUrl) {
+function titleSourceCandidate(source, index, brand, productUrl, fallbackTitle) {
   const cleaned = cleanTitle(source?.title, brand);
   if (!cleaned) {
     return null;
@@ -168,7 +175,7 @@ function titleSourceCandidate(source, index, brand, productUrl) {
 
   return {
     title: titleSourceValue(source.title, cleaned, urlTitle),
-    score: titleSourceScore(cleaned, urlTitle, index)
+    score: titleSourceScore(cleaned, urlTitle, index, fallbackTitle, source, productUrl)
   };
 }
 
@@ -180,8 +187,11 @@ function titleSourceValue(rawTitle, cleanedTitle, urlTitle) {
   return rawTitle;
 }
 
-function titleSourceScore(title, urlTitle, index) {
+function titleSourceScore(title, urlTitle, index, fallbackTitle, source, productUrl) {
   const wordCount = title.split(/\s+/).filter(Boolean).length;
+  const titleText = cleanText(title).toLocaleLowerCase();
+  const fallbackText = cleanText(fallbackTitle).toLocaleLowerCase();
+  const sourceMatchesProduct = sameProductPageUrl(source?.url || productUrl, productUrl);
   let score = Math.max(0, 32 - index * 2);
 
   if (looksLikeProductName(title)) score += 18;
@@ -189,6 +199,8 @@ function titleSourceScore(title, urlTitle, index) {
   if (title.length >= 5 && title.length <= 64) score += 8;
   if (wordCount >= 2 && wordCount <= 8) score += 8;
   if (looksLikeDescriptiveTitle(title)) score -= 24;
+  if (source?.fromPyeCatalogCard && sourceMatchesProduct) score += 34;
+  if (!source?.fromContext && sourceMatchesProduct && titleText && fallbackText.includes(titleText)) score += 20;
   if (urlTitle && titleMatchesUrlTitle(title, urlTitle)) score += 14;
   if (urlTitle && hasTrailingTitleFacet(title, urlTitle)) score -= 10;
 
@@ -299,6 +311,15 @@ function isExtractableProductPageUrl(value) {
       (typeof isProductLikeUrl === "function" && isProductLikeUrl(value)) ||
       (typeof isPyeProductUrl === "function" && isPyeProductUrl(value))
   );
+}
+
+function hasVariantSelectionParam(value) {
+  try {
+    const params = new URL(value || location.href, location.href).searchParams;
+    return ["variant", "color", "colour", "option"].some((key) => params.has(key));
+  } catch {
+    return false;
+  }
 }
 
 function isKnownProductPageUrl(value) {

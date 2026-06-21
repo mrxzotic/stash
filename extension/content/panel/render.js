@@ -1,17 +1,12 @@
 function renderStashPanel(options = {}) {
   const root = getPanelRoot();
+  const previousItemRects = panelState.hasRenderedPanel ? capturePanelItemLayout(root) : null;
+  const rebuildMotionClass = panelState.hasRenderedPanel
+    ? panelRebuildMotionClass(panelState.rebuildMotion)
+    : "";
   const displayItems = panelState.items.map(normalizePanelItem);
-  const summaryItems = panelActiveItems(panelState.items);
-  const visibleItems = panelSortedItems(
-    panelScopedItems(panelState.items)
-      .filter(
-        (item) =>
-          panelState.activeCategory === "all" ||
-          item.category === panelState.activeCategory
-      )
-      .filter(panelItemMatchesSearch)
-      .filter(panelItemMatchesBrandFilter)
-  );
+  const summaryItems = panelSummaryItems(panelState.items);
+  const visibleItems = panelSortedItems(panelVisibleItems(panelState.items));
   const filterCategories = [
     { id: "all", label: "All" },
     ...panelState.categories
@@ -19,7 +14,7 @@ function renderStashPanel(options = {}) {
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
-    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stashed">
+    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}${rebuildMotionClass}" role="dialog" aria-label="Stashed">
       ${renderPanelTopbarHtml(summaryItems)}
       ${renderFounderPromoDialog()}
 
@@ -38,11 +33,14 @@ function renderStashPanel(options = {}) {
   `;
 
   bindPanelEvents(root);
+  syncPanelFilterRail(root);
   syncPanelItemsTopOffset(root);
   syncPanelFocusAfterRender(root);
   animatePanelSummaryAfterRender(root, summaryItems, options.summaryAnimationFrom);
   refreshPanelSummaryRate();
   panelState.hasRenderedPanel = true;
+  finishPanelRebuildMotion(root);
+  animatePanelItemLayout(root, previousItemRects);
 }
 
 function animatePanelSummaryAfterRender(root, displayItems, previousValue) {
@@ -55,12 +53,12 @@ function animatePanelSummaryAfterRender(root, displayItems, previousValue) {
     return;
   }
 
-  const nextValue = formatPanelSummaryTotal(displayItems, panelState.summaryCurrency);
+  const nextValue = formatPanelSummaryTotal(panelTopbarValueItems(displayItems), panelState.summaryCurrency);
   total.textContent = previousValue;
   setPanelTotalText(total, nextValue, { animate: true });
 }
 
-function syncPanelItemsTopOffset(root) {
+function syncPanelItemsTopOffset(root, options = {}) {
   const shell = root.querySelector(".wp-shell");
   const filters = root.querySelector(".wp-filters");
   const items = root.querySelector(".wp-items");
@@ -68,17 +66,68 @@ function syncPanelItemsTopOffset(root) {
     return;
   }
 
-  window.requestAnimationFrame(() => {
+  const applyOffset = () => {
     const shellTop = shell.getBoundingClientRect().top;
-    const filterBottom = filters.getBoundingClientRect().bottom;
+    const filterBottom = panelVisibleFiltersBottom(filters);
     const baseTop = panelState.compactView
-      ? 154
-      : panelState.brandCloudOpen && !panelState.archivedOpen
-        ? 126
-        : 148;
-    const measuredTop = Math.ceil(filterBottom - shellTop + 28);
-    items.style.setProperty("--wp-items-padding-top", `${Math.max(baseTop, measuredTop)}px`);
-  });
+      ? 144
+      : 136;
+    const measuredTop = filterBottom - shellTop + 16;
+    const nextTop = `${roundPanelGridOffset(Math.max(baseTop, measuredTop))}px`;
+    if (items.style.getPropertyValue("--wp-items-padding-top") !== nextTop) {
+      items.style.setProperty("--wp-items-padding-top", nextTop);
+    }
+  };
+
+  if (options.defer === false) {
+    applyOffset();
+    return;
+  }
+
+  window.requestAnimationFrame(applyOffset);
+}
+
+function roundPanelGridOffset(value) {
+  return Math.ceil(value / 8) * 8;
+}
+
+function panelVisibleFiltersBottom(filters) {
+  const visibleBottoms = Array.from(filters.children)
+    .map((child) => panelVisibleFilterChildBottom(filters, child))
+    .filter((bottom) => Number.isFinite(bottom));
+  return visibleBottoms.length ? Math.max(...visibleBottoms) : filters.getBoundingClientRect().bottom;
+}
+function panelVisibleFilterChildBottom(filters, child) {
+  if (panelIsFloatingFilterControl(child)) {
+    return NaN;
+  }
+  if (panelIsOptionalFilterControl(child) && !panelOptionalFilterControlIsVisible(filters, child)) {
+    return NaN;
+  }
+  const rect = child.getBoundingClientRect?.();
+  if (!rect || rect.width < 0.5 || rect.height < 0.5) {
+    return NaN;
+  }
+  const style = window.getComputedStyle?.(child);
+  if (style && (style.display === "none" || style.visibility === "hidden")) {
+    return NaN;
+  }
+  return rect.bottom;
+}
+
+function panelIsFloatingFilterControl(child) {
+  return child.matches?.(".wp-filter-menu") === true;
+}
+
+function panelIsOptionalFilterControl(child) {
+  return child.matches?.(".wp-filter-add") === true;
+}
+
+function panelOptionalFilterControlIsVisible(filters, child) {
+  return (
+    filters.classList?.contains?.("is-controls-visible") || filters.matches?.(":focus-within") === true ||
+    child.matches?.(":hover, :focus-within, .is-active") === true
+  );
 }
 
 function renderPanelTopbarHtml(displayItems) {
@@ -89,56 +138,12 @@ function renderPanelTopbarHtml(displayItems) {
   `;
 }
 
-function renderCategoryFilters(filterCategories, archivedCount = 0) {
-  const [allCategory, ...restCategories] = filterCategories;
-  const renderCategory = (category) => {
-    const isAll = category.id === "all";
-    const isActive = !panelState.archivedOpen && category.id === panelState.activeCategory;
-    return `
-      <span class="wp-filter-shell${isActive ? " is-active" : ""}${isAll ? " is-all" : ""}">
-        <button class="wp-filter${isActive ? " is-active" : ""}" data-category="${escapeAttribute(category.id)}" type="button">
-          ${escapeHtml(category.label)}
-        </button>
-        ${isAll ? "" : `
-          <button class="wp-filter-remove" type="button" aria-label="Remove ${escapeAttribute(category.label)}" data-remove-category-prompt="${escapeAttribute(category.id)}">
-            ${lucideXIcon("wp-filter-remove-icon")}
-          </button>
-        `}
-      </span>
-    `;
-  };
-
-  return `
-    ${renderPanelSummaryLead()}
-    ${renderCategory(allCategory)}
-    ${restCategories.map(renderCategory).join("")}
-    ${renderArchivedFilter(archivedCount)}
-    ${renderPanelSortControls()}
-    <button class="wp-filter wp-filter-add${panelState.categoryComposerOpen ? " is-active" : ""}" type="button" aria-label="Add category" data-add-category>
-      ${lucidePlusIcon("wp-filter-add-icon")}
-    </button>
-  `;
-}
-
-function renderArchivedFilter(archivedCount) {
-  if (!archivedCount) {
-    return "";
-  }
-
-  return `
-    <button class="wp-filter wp-filter-archive${panelState.archivedOpen ? " is-active" : ""}" type="button" aria-pressed="${panelState.archivedOpen}" data-archive-view-toggle>
-      <span>Archived</span>
-      <span class="wp-archive-count">${archivedCount}</span>
-    </button>
-  `;
-}
-
 function renderCategoryComposer() {
   return `
     <form class="wp-category-composer wp-popover" data-category-form>
       <input data-category-input type="text" placeholder="New category" maxlength="28" autocomplete="off" aria-label="New category">
       <button class="wp-category-submit" type="submit">Add</button>
-      <button class="wp-category-cancel" type="button" aria-label="Cancel category" data-cancel-category>${lucideXIcon("wp-category-cancel-icon")}</button>
+      <button class="wp-category-cancel" type="button" aria-label="Cancel category" data-cancel-category>${phosphorXIcon("wp-category-cancel-icon")}</button>
     </form>
   `;
 }
@@ -189,38 +194,62 @@ function renderPanelSearchHtml() {
 
   return `
     <div class="wp-inline-search" role="search">
-      ${lucideSearchIcon("wp-inline-search-icon")}
+      ${phosphorSearchIcon("wp-inline-search-icon")}
       <label class="wp-inline-search-label" for="wp-panel-search-input">Search</label>
       <input id="wp-panel-search-input" data-search type="text" inputmode="search" placeholder="Search saved" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
       <button class="wp-clear-search is-visible" type="button" aria-label="${escapeAttribute(actionLabel)}" title="${escapeAttribute(actionLabel)}" data-clear-search>
-        ${lucideXIcon("wp-clear-search-icon")}
+        ${phosphorXIcon("wp-clear-search-icon")}
       </button>
     </div>
   `;
 }
 
 function renderPanelSummaryHtml(displayItems) {
+  const valueItems = panelTopbarValueItems(displayItems);
   return `
     <span class="wp-summary">
-      ${renderFounderPromoTrigger()}
+      ${renderPanelSaveCurrentTrigger()}
+      <span class="wp-summary-capsule">
+        ${renderPanelSummaryLead(displayItems)}
+        <div class="wp-currency-select" data-currency-root>
+          <button class="wp-total" type="button" aria-label="Choose summary currency" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
+            <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(valueItems, panelState.summaryCurrency))}</span>
+            ${phosphorChevronDownIcon("wp-total-chevron")}
+          </button>
+          ${renderCurrencyMenuHtml()}
+        </div>
+      </span>
     </span>
     <div class="wp-actions">
-      <div class="wp-currency-select" data-currency-root>
-        <button class="wp-total" type="button" aria-label="Choose summary currency" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
-          <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(displayItems, panelState.summaryCurrency))}</span>
-          ${lucideChevronDownIcon("wp-total-chevron")}
-        </button>
-        ${renderCurrencyMenuHtml()}
-      </div>
       <button class="wp-icon-button wp-search-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
-        ${lucideSearchIcon()}
+        ${phosphorSearchIcon()}
       </button>
-      <button class="wp-icon-button wp-view-button${panelState.compactView ? " is-toggle-active" : ""}" type="button" aria-label="${panelState.compactView ? "Compact view on. Switch to cards" : "Card view on. Switch to compact"}" aria-pressed="${panelState.compactView}" title="${panelState.compactView ? "Card view" : "Compact view"}" data-panel-compact-toggle>
-        ${panelState.compactView ? lucideGridIcon() : lucideListIcon()}
+      ${renderPanelOverflowMenu()}
+    </div>
+  `;
+}
+
+function renderPanelOverflowMenu() {
+  const isOpen = panelState.settingsOpen;
+  return `
+    <div class="wp-overflow${isOpen ? " is-open" : ""}" data-panel-overflow-root>
+      <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="More options" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-overflow-trigger>
+        <span class="wp-overflow-dotmark" aria-hidden="true">⋮</span>
       </button>
-      <button class="wp-icon-button wp-theme-button${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME ? " is-toggle-active" : ""}" type="button" aria-label="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME ? "Graphite mode on. Switch to light" : "Graphite mode off. Switch to graphite"}" aria-pressed="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME}" title="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME ? "Light mode" : "Graphite mode"}" data-panel-theme-toggle>
-        ${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME ? lucideSunIcon() : lucideMoonIcon()}
-      </button>
+      <div class="wp-overflow-menu" role="menu" ${isOpen ? "" : "hidden"} data-panel-overflow-menu>
+        <button class="wp-overflow-option" type="button" role="menuitemcheckbox" aria-checked="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME}" data-panel-theme-toggle>
+          ${renderPanelThemeToggleContents()}
+        </button>
+        <button class="wp-overflow-option" type="button" role="menuitemcheckbox" aria-checked="${panelState.compactView}" data-panel-compact-toggle>
+          ${renderPanelCompactToggleContents()}
+        </button>
+        <div class="wp-overflow-divider" role="separator" aria-hidden="true"></div>
+        <button class="wp-overflow-option" type="button" role="menuitem" data-founder-promo-trigger>
+          ${phosphorInfoIcon("wp-overflow-option-icon")}
+          <span>About</span>
+          ${phosphorChevronRightIcon("wp-overflow-chevron")}
+        </button>
+      </div>
     </div>
   `;
 }
@@ -234,7 +263,7 @@ function renderCurrencyMenuHtml() {
         const isSelected = currency === panelState.summaryCurrency;
         return `
           <button class="wp-currency-option${isSelected ? " is-selected" : ""}" type="button" role="menuitemradio" aria-checked="${isSelected}" data-summary-currency="${escapeAttribute(currency)}">
-            <span class="wp-currency-check">${isSelected ? lucideCheckIcon("wp-currency-check-icon") : ""}</span>
+            <span class="wp-currency-check">${isSelected ? phosphorCheckIcon("wp-currency-check-icon") : ""}</span>
             <span>${escapeHtml(currency)}</span>
             <span class="wp-currency-symbol">${escapeHtml(currencySymbol(currency))}</span>
           </button>
@@ -250,19 +279,22 @@ function renderPanelItem(item) {
   const isArchived = isPanelItemArchived(item);
   const itemLabel = panelItemAccessibleName(item);
   const imageUrls = panelCardImageUrls(item);
+  const isNew = item.id === panelState.highlightedItemId;
+  const isShiftedRight = item.id === panelState.displacedItemId;
 
   return `
-    <article class="wp-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}">
+    <article class="wp-item${isNew ? " is-new" : ""}${isShiftedRight ? " is-shifted-right" : ""}${isArchived ? " is-archived" : ""}" data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}">
+      ${isNew && !isArchived ? renderPanelNewItemSkeleton() : ""}
       <div class="wp-media" ${panelImageSliderAttributes(item)}>
         <a class="wp-media-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(`Open ${itemLabel}`)}">
           ${renderPanelCardImageFrame(item, { slider: false })}
         </a>
         ${imageUrls.length > 1 ? renderPanelImageSliderControls(imageUrls, item) : ""}
         ${isArchived
-          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
-             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
-          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
-             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
+          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
+             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>`
+          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
+             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${phosphorTrashIcon("wp-card-action-icon")}</button>`}
       </div>
       <div class="wp-item-copy">
         <div class="wp-brand-row">
@@ -283,18 +315,12 @@ function renderPanelItemsOnly(root) {
     return;
   }
 
-  const visibleItems = panelSortedItems(
-    panelScopedItems(panelState.items)
-      .filter(
-        (item) =>
-          panelState.activeCategory === "all" ||
-          item.category === panelState.activeCategory
-      )
-      .filter(panelItemMatchesSearch)
-      .filter(panelItemMatchesBrandFilter)
-  );
+  const previousItemRects = capturePanelItemLayout(root);
+  const visibleItems = panelSortedItems(panelVisibleItems(panelState.items));
   list.innerHTML = renderPanelItemsHtml(visibleItems);
   bindImageFallbacks(root);
+  syncPanelSortControls(root);
+  animatePanelItemLayout(root, previousItemRects);
 }
 
 function renderPanelItemsHtml(items) {
@@ -310,14 +336,7 @@ function renderPanelItemsHtml(items) {
     return `<div class="wp-compact-list">${items.map(renderPanelCompactItem).join("")}</div>`;
   }
 
-  const columns = [[], []];
-  items.forEach((item, index) => {
-    columns[index % columns.length].push(renderPanelItem(item));
-  });
-
-  return columns.map(
-    (columnItems) => `<div class="wp-item-column">${columnItems.join("")}</div>`
-  ).join("");
+  return renderPanelCardColumns(items);
 }
 
 function bindImageFallbacks(root) {
@@ -333,10 +352,10 @@ function bindImageFallbacks(root) {
         : "wp-image-placeholder";
       const frame = image.closest(".wp-image-frame");
       if (frame) {
-        frame.replaceWith(svgElementFromHtml(lucideImageIcon(placeholderClass)));
+        frame.replaceWith(elementFromHtml(renderMissingProductImage("wp")));
         return;
       }
-      image.replaceWith(svgElementFromHtml(lucideImageIcon(placeholderClass)));
+      image.replaceWith(elementFromHtml(renderMissingProductImage(placeholderClass.startsWith("wl") ? "wl" : "wp")));
     });
     image.__stashImageFallbackBound = true;
   });
@@ -362,7 +381,7 @@ function syncProductImageRatio(image) {
   }
 }
 
-function svgElementFromHtml(html) {
+function elementFromHtml(html) {
   const template = document.createElement("template");
   template.innerHTML = html.trim();
   return template.content.firstElementChild || document.createElement("span");

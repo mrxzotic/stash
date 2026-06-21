@@ -49,66 +49,41 @@ function hasPanelFilterKeyboardFocus(filters) {
 function setPanelFilterControlsVisible(root, visible) {
   window.clearTimeout(root.__stashFilterControlsHideTimer);
   const filters = root.querySelector(".wp-filters");
-  filters?.classList.toggle("is-controls-visible", visible);
+  if (!filters) {
+    return;
+  }
+
+  const wasVisible = filters.classList.contains("is-controls-visible");
+  if (wasVisible === visible) {
+    if (!visible) {
+      setPanelFilterRemoveShell(filters, null);
+    }
+    return;
+  }
+
+  filters.classList.toggle("is-controls-visible", visible);
   if (!visible) {
     setPanelFilterRemoveShell(filters, null);
   }
-  syncPanelSortControlLayout(root);
+  syncPanelFilterControlsLayout(root);
+}
+
+function syncPanelFilterControlsLayout(root) {
+  syncPanelItemsTopOffset(root, { defer: false });
+  window.requestAnimationFrame(() => {
+    syncPanelItemsTopOffset(root, { defer: false });
+  });
 }
 
 function setPanelFilterRemoveShell(filters, activeShell) {
   filters?.querySelectorAll?.(".wp-filter-shell.is-remove-visible").forEach((shell) => {
     shell.classList.toggle("is-remove-visible", false);
-    shell.classList.toggle("is-remove-pinned", false);
-    shell.style?.removeProperty?.("--wp-filter-static-width");
   });
   if (!activeShell) {
     return;
   }
 
-  const staticWidth = panelFilterStaticRemoveWidth(filters, activeShell);
-  if (staticWidth) {
-    activeShell.style?.setProperty?.("--wp-filter-static-width", `${staticWidth}px`);
-    activeShell.classList.add("is-remove-pinned");
-  }
   activeShell.classList.add("is-remove-visible");
-}
-
-function panelFilterStaticRemoveWidth(filters, activeShell) {
-  const rect = activeShell?.getBoundingClientRect?.();
-  const filtersRect = filters?.getBoundingClientRect?.();
-  if (!rect || !filtersRect || !isPanelFilterLastInVisualRow(filters, activeShell, rect)) {
-    return 0;
-  }
-
-  const hoverGrowth = 16;
-  return rect.right + hoverGrowth > filtersRect.right + 0.5
-    ? Math.ceil(rect.width)
-    : 0;
-}
-
-function isPanelFilterLastInVisualRow(filters, activeShell, activeRect) {
-  const shells = Array.from(filters?.querySelectorAll?.(".wp-filter-shell") || []);
-  const index = shells.indexOf(activeShell);
-  if (index < 0) {
-    return true;
-  }
-
-  const rowTolerance = 4;
-  for (let nextIndex = index + 1; nextIndex < shells.length; nextIndex += 1) {
-    const nextRect = shells[nextIndex]?.getBoundingClientRect?.();
-    if (!nextRect) {
-      continue;
-    }
-    if (Math.abs(nextRect.top - activeRect.top) <= rowTolerance) {
-      return false;
-    }
-    if (nextRect.top > activeRect.top + rowTolerance) {
-      return true;
-    }
-  }
-
-  return true;
 }
 
 function schedulePanelFilterControlsHide(root, event) {

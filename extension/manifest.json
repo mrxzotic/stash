@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stashed",
-  "version": "0.1.237",
+  "version": "0.1.324",
   "description": "Save products from any shop into a compact local stash.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "background": {
@@ -14,30 +14,49 @@
   "action": {
     "default_title": "Stashed",
     "default_icon": {
-      "16": "icons/stash-cart-16.png",
-      "32": "icons/stash-cart-32.png",
-      "48": "icons/stash-cart-48.png",
-      "128": "icons/stash-cart-128.png"
+      "16": "icons/stashed-lock-16.png",
+      "32": "icons/stashed-lock-32.png",
+      "48": "icons/stashed-lock-48.png",
+      "128": "icons/stashed-lock-128.png"
+    }
+  },
+  "commands": {
+    "save-to-stashed": {
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "mac": "Alt+Shift+S"
+      },
+      "description": "Save current page to Stashed"
+    },
+    "toggle-stashed": {
+      "suggested_key": {
+        "default": "Alt+Shift+O",
+        "mac": "Alt+Shift+O"
+      },
+      "description": "Open or close Stashed"
     }
   },
   "icons": {
-    "16": "icons/stash-cart-16.png",
-    "32": "icons/stash-cart-32.png",
-    "48": "icons/stash-cart-48.png",
-    "128": "icons/stash-cart-128.png"
+    "16": "icons/stashed-lock-16.png",
+    "32": "icons/stashed-lock-32.png",
+    "48": "icons/stashed-lock-48.png",
+    "128": "icons/stashed-lock-128.png"
   },
   "web_accessible_resources": [
     {
       "resources": [
         "assets/alex-kornev.png",
-        "icons/stash-cart-48.png",
+        "icons/stashed-lock-48.png",
+        "icons/stashed-lock-greyscale-128.png",
         "assets/source-aimeleondore.png",
+        "assets/phosphor-light/*.svg",
         "fonts/inter-latin-var.woff2",
         "fonts/ibm-plex-mono-latin-400.woff2",
         "fonts/ibm-plex-mono-latin-600.woff2",
         "fonts/ibm-plex-mono-latin-700.woff2"
       ],
-      "matches": ["http://*/*", "https://*/*"]
+      "matches": ["http://*/*", "https://*/*"],
+      "use_dynamic_url": true
     }
   ]
 }

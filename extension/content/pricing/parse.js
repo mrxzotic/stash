@@ -330,22 +330,27 @@ function normalizeCompareAtPrice(compareAt, current) {
   const currency = cleanText(compareAt.currency || parsed.currency || current.currency).toUpperCase();
   const currentAmount = numericPrice(current.amount);
   const currentCurrency = cleanText(current.currency).toUpperCase();
+  const scaledAmount =
+    Number.isFinite(amount) && currentAmount > 0 &&
+    amount / Math.max(currentAmount, 1) >= 20 && amount / 100 > currentAmount
+      ? amount / 100
+      : amount;
 
   if (
-    !Number.isFinite(amount) ||
+    !Number.isFinite(scaledAmount) ||
     !Number.isFinite(currentAmount) ||
     !currency ||
     currency !== currentCurrency ||
-    amount <= currentAmount
+    scaledAmount <= currentAmount
   ) {
     return {};
   }
 
   return {
-    amount,
+    amount: scaledAmount,
     currency,
     originalText:
-      formatOriginalPrice(amount, currency) ||
+      formatOriginalPrice(scaledAmount, currency) ||
       parsed.originalText ||
       cleanText(compareAt.text)
   };

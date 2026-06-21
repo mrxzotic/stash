@@ -203,6 +203,27 @@ function panelStylesChunk5() {
       text-overflow: ellipsis;
     }
 
+    .wp-price-stack {
+      min-width: 0;
+      display: inline-flex;
+      max-width: 100%;
+    }
+
+    .wp-price-line {
+      min-width: 0;
+      display: inline-flex;
+      align-items: baseline;
+      flex-wrap: nowrap;
+      gap: 8px;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .wp-price-line .wp-site-price {
+      color: rgba(8, 11, 16, 0.84);
+      font-weight: 780;
+    }
+
     .wp-site-price.is-sale {
       color: #d92d20;
     }
@@ -212,15 +233,32 @@ function panelStylesChunk5() {
       min-width: 0;
     }
 
+    .wp-native-price {
+      flex: 0 1 auto;
+      min-width: 0;
+      color: rgba(8, 11, 16, 0.42);
+      font-family: var(--figure-font);
+      font-variant-numeric: tabular-nums;
+      font-size: var(--text-control);
+      line-height: 1.2;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .wp-empty {
+      position: absolute;
+      inset: 0 24px 48px;
       grid-column: 1 / -1;
-      min-height: 430px;
+      min-height: 0;
       display: grid;
       place-items: center;
       color: rgba(16, 16, 16, 0.46);
       text-align: center;
       font-size: var(--text-body);
       line-height: 1.4;
+      pointer-events: none;
     }
 
     .wp-empty > div {
@@ -229,14 +267,13 @@ function panelStylesChunk5() {
       gap: 8px;
     }
 
-    .wp-empty-icon {
-      width: 56px;
-      height: 56px;
+    .wp-empty-logo {
+      width: 44px;
+      height: 44px;
       margin-bottom: 4px;
-      stroke: rgba(16, 16, 16, 0.24);
-      stroke-width: 1.9;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      display: block;
+      object-fit: contain;
+      opacity: 0.72;
     }
 
     .wp-empty strong {
@@ -280,12 +317,14 @@ function panelStylesChunk5() {
     @keyframes wpItemIn {
       from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translate3d(0, 10px, 0) scale(.992);
+        filter: blur(4px);
       }
 
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0) scale(1);
+        filter: blur(0);
       }
     }
 

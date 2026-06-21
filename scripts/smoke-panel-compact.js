@@ -11,24 +11,58 @@ const compactStyles = fs.readFileSync(
   path.join(root, "extension/content/styles/panel-compact.js"),
   "utf8"
 );
+const releaseStyles = fs.readFileSync(
+  path.join(root, "extension/content/styles/panel-release.js"),
+  "utf8"
+);
 
 assert.match(compactSource, /wp-compact-index/, "Compact rows should render an item index");
 assert.match(compactSource, /#\$\{index \+ 1\}/, "Compact item index should use # numbering");
 assert.match(compactSource, /wp-compact-actions/, "Compact row actions should be grouped");
 assert.match(
   compactSource,
-  /savePanelSettings\(\{\s*compactView: !panelState\.compactView\s*\}\)/,
-  "Compact toggle should save and fully rerender the requested view mode"
+  /<div class="wp-price-row wp-compact-price\$\{priceHtml \? "" : " is-empty"\}/,
+  "Compact rows should always reserve the price column"
 );
-assert.doesNotMatch(
+assert.match(
   compactSource,
-  /syncViewMode:\s*true/,
-  "Compact toggle should not rely on partial view-mode sync"
+  /aria-hidden=\\"true\\"/,
+  "Empty compact price cells should stay hidden from assistive tech"
+);
+assert.match(
+  compactSource,
+  /savePanelSettings\(\s*\{\s*compactView: !panelState\.compactView\s*\},[\s\S]*?syncViewMode:\s*true/,
+  "Compact toggle should save and synchronize the requested view mode"
 );
 assert.match(
   compactStyles,
-  /grid-template-columns: 32px 56px minmax\(0, 1fr\) minmax\(72px, max-content\) 56px;/,
-  "Compact rows should reserve columns for index, thumb, copy, price, and actions"
+  /grid-template-columns: 32px 56px minmax\(0, 1fr\) 104px 56px;/,
+  "Compact rows should reserve a fixed price column"
+);
+assert.match(
+  releaseStyles,
+  /grid-template-columns: 32px 56px minmax\(0, 1fr\) 104px 56px;/,
+  "Release styles should not override the fixed compact price column"
+);
+assert.doesNotMatch(
+  `${compactStyles}\n${releaseStyles}`,
+  /minmax\(72px, max-content\)/,
+  "Compact price columns should not size from row content"
+);
+assert.match(
+  compactStyles,
+  /\.wp-compact-item \.wp-compact-copy \.wp-item-title\s*\{[\s\S]*?-webkit-line-clamp: 1;/,
+  "Compact titles should truncate before colliding with the price column"
+);
+assert.match(
+  compactStyles,
+  /\.wp-compact-price\s*\{[\s\S]*?width: 104px;[\s\S]*?justify-self: stretch;[\s\S]*?text-align: left;/,
+  "Compact prices should fill the fixed scan column"
+);
+assert.match(
+  compactStyles,
+  /\.wp-compact-price \.wp-native-price\s*\{[\s\S]*?flex-basis: 100%;/,
+  "Native compact prices should wrap inside the fixed price column"
 );
 assert.match(
   compactStyles,

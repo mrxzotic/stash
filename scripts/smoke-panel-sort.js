@@ -7,13 +7,25 @@ const root = path.resolve(__dirname, "..");
 const sandbox = {
   PANEL_SORT_FIELD_RECENT: "recent",
   PANEL_SORT_FIELD_NAME: "name",
+  PANEL_SORT_FIELD_PRICE: "price",
   PANEL_SORT_ASC: "asc",
   PANEL_SORT_DESC: "desc",
   panelState: {
     sortField: "recent",
-    sortDirection: "desc"
+    sortDirection: "desc",
+    activeCategory: "all",
+    searchQuery: "",
+    brandCloudOpen: false,
+    brandCloudSortList: false,
+    brandFilterKey: "",
+    filterMenuOpen: false
   },
-  normalizeComparableText: (value) => String(value || "").toLowerCase().trim()
+  normalizeComparableText: (value) => String(value || "").toLowerCase().trim(),
+  numericPrice: (value) => {
+    const amount = Number(value);
+    return Number.isFinite(amount) ? amount : undefined;
+  },
+  normalizePanelPrice: (item) => item.price || { amount: item.priceAmount, rubAmount: item.rubPriceAmount }
 };
 
 vm.createContext(sandbox);
@@ -23,6 +35,14 @@ const filterControlsSource = fs.readFileSync(
 );
 const sortSource = fs.readFileSync(
   path.join(root, "extension/content/panel/sort.js"),
+  "utf8"
+);
+const filtersSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/filters.js"),
+  "utf8"
+);
+const compactViewSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/compact-view.js"),
   "utf8"
 );
 
@@ -40,31 +60,60 @@ const filterStylesSource = fs.readFileSync(
   path.join(root, "extension/content/styles/panel-4.js"),
   "utf8"
 );
+const filterMenuStylesSource = fs.readFileSync(
+  path.join(root, "extension/content/styles/panel-filter-menu.js"),
+  "utf8"
+);
 
 assert.match(
   sortStylesSource,
-  /\.wp-sort-controls\s*\{[\s\S]*?width: 0;[\s\S]*?min-width: 0;[\s\S]*?opacity: 0;[\s\S]*?visibility: hidden;[\s\S]*?pointer-events: none;/,
-  "Sort controls should not reserve layout space at rest"
+  /\.wp-sort-trigger\s*\{[\s\S]*?min-width: 74px;[\s\S]*?var\(--wp-chrome-bg\)/,
+  "Sort should be a stable separate chrome trigger"
+);
+assert.match(
+  filtersSource,
+  /renderBrandFilterChip\(\)[\s\S]*?renderAllFilter\(allCategory\)[\s\S]*?renderFilterMenuTrigger\(categoryOptions\)[\s\S]*?renderArchivedFilter\(archivedCount\)/,
+  "Second chip row should render brand chip, All, Filter, then optional Archived"
+);
+assert.match(
+  filtersSource,
+  /phosphorTagIcon\("wp-brand-chip-icon"\)[\s\S]*?<span class="wp-brand-chip-count">\$\{brandCount\}<\/span>/,
+  "Brand chip should use a tag icon and numeric count"
+);
+assert.match(
+  filtersSource,
+  /function panelFilterTriggerLabel\(categories\)[\s\S]*?return "Filter";[\s\S]*?return `Filter \(\$\{count\}\)`;/,
+  "Active filter trigger should show only the number of applied filters"
+);
+assert.doesNotMatch(
+  filtersSource,
+  /Filter ·|category\?\.label \|\| "Category"/,
+  "Active filter trigger should not name the selected category"
 );
 assert.match(
   sortStylesSource,
-  /\.wp-sort-controls\s*\{[\s\S]*?gap: 2px;[\s\S]*?padding: 1px;[\s\S]*?background: rgba\(8, 11, 16, 0\.032\);/,
-  "Sort controls should read as a lightweight neutral segmented utility group"
+  /\.wp-sort-menu\s*\{[\s\S]*?position: absolute;[\s\S]*?right: 0;[\s\S]*?width: 170px;/,
+  "Sort choices should live in a right-aligned menu"
 );
 assert.match(
   sortStylesSource,
-  /\.wp-filters\.is-controls-visible \.wp-sort-controls,[\s\S]*?\.wp-filters:focus-within \.wp-sort-controls\s*\{[\s\S]*?width: 104px;[\s\S]*?min-width: 104px;[\s\S]*?opacity: 1;[\s\S]*?visibility: visible;[\s\S]*?pointer-events: auto;/,
-  "Sort controls should reveal only while the filter row is hover-locked or focused"
+  /\.wp-sort-option\s*\{[\s\S]*?grid-template-columns: 18px minmax\(0, 1fr\);/,
+  "Sort menu options should be compact menu rows"
 );
 assert.match(
   sortStylesSource,
-  /\.wp-sort-button\s*\{[\s\S]*?width: 48px;[\s\S]*?height: calc\(var\(--wp-pill-height\) - 2px\);/,
-  "Sort buttons should stay lighter than category pills"
+  /@keyframes wpSortMenuIn/,
+  "Sort menu should have a restrained presence animation"
+);
+assert.doesNotMatch(
+  sortSource,
+  /title="\$\{escapeAttribute\(state\.title\)\}"|setAttribute\("title"/,
+  "Sort buttons should not use native title tooltips"
 );
 assert.doesNotMatch(
   sortStylesSource,
-  /width\s+160ms|min-width\s+160ms/,
-  "Sort controls should get a stable first-click hit area immediately"
+  /width\s+\d+ms|min-width\s+\d+ms/,
+  "Sort controls should not animate layout width"
 );
 assert.doesNotMatch(
   sortStylesSource,
@@ -73,8 +122,58 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(
   sortStylesSource,
-  /\.wp-sort-button\.is-active/,
-  "Sort buttons should stay immediate actions, not current-state toggles"
+  /\.wp-filters\.is-controls-visible \.wp-sort-controls/,
+  "Sort should no longer be a hover-revealed filter-row control"
+);
+assert.match(
+  filterStylesSource,
+  /\.wp-filters\s*\{[\s\S]*?grid-template-columns: minmax\(0, 1fr\) auto;/,
+  "Filters should reserve a separate fixed sort region"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-rail\s*\{[\s\S]*?justify-self: start;[\s\S]*?width: 100%;[\s\S]*?gap: 8px;[\s\S]*?overflow: hidden;/,
+  "Second-row chips should stay in a compact fixed left cluster"
+);
+assert.match(
+  filterStylesSource,
+  /\.wp-filters\s*\{[\s\S]*?gap: 8px;[\s\S]*?margin-bottom: 16px;/,
+  "Filter row should stay aligned to the 8px spacing grid"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-brand-chip,[\s\S]*?\.wp-filter-rail > \.wp-filter\s*\{[\s\S]*?border: 1px solid var\(--border\);[\s\S]*?border-radius: 999px;/,
+  "Brand chip should use the same pill treatment as other row chips"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-brand-chip\s*\{[\s\S]*?flex: 0 0 50px;[\s\S]*?padding: 0 8px;/,
+  "Brand chip should stay compact as tag icon plus count inside a pill"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-brand-chip\.is-active\s*\{[\s\S]*?border-color: rgba\(8, 11, 16, 0\.14\);[\s\S]*?background: rgba\(255, 255, 255, 0\.76\);/,
+  "Brand trigger active/open state should stay outlined instead of using selected-filter black"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-rail > \.wp-filter\.is-active\s*\{[\s\S]*?background: rgba\(8, 11, 16, 0\.86\);/,
+  "Only active filter chips should use the black selected surface"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-theme-graphite \.wp-brand-chip\.is-active\s*\{[\s\S]*?background: rgba\(255, 255, 255, 0\.08\);/,
+  "Graphite brand trigger active/open state should stay a muted trigger surface"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-theme-graphite \.wp-filter-rail > \.wp-filter\.is-active\s*\{[\s\S]*?color: #080b10;[\s\S]*?background: rgba\(244, 244, 240, 0\.9\);/,
+  "Graphite active filter chips should use the light selected surface, not black-on-black"
+);
+assert.match(
+  filtersSource,
+  /phosphorArchiveIcon\("wp-archive-chip-icon"\)[\s\S]*?wp-archive-count/,
+  "Archived chip should render as a Phosphor icon plus count"
 );
 assert.doesNotMatch(
   filterStylesSource,
@@ -104,18 +203,10 @@ assert.doesNotMatch(
 assert.match(
   filterStylesSource,
   /\.wp-filter-shell\.is-remove-visible \.wp-filter,[\s\S]*?\.wp-filter-shell:focus-within \.wp-filter\s*\{[\s\S]*?padding-right: 28px;/,
-  "Visible category remove affordance should grow the pill by 16px"
+  "Visible category remove affordance should use the original hover pill sizing"
 );
-assert.match(
-  filterStylesSource,
-  /\.wp-filter-shell\.is-remove-pinned\s*\{[\s\S]*?width: var\(--wp-filter-static-width\);/,
-  "Row-end category remove affordance should be able to pin shell width"
-);
-assert.match(
-  filterControlsSource,
-  /panelFilterStaticRemoveWidth[\s\S]*?const hoverGrowth = 16;[\s\S]*?isPanelFilterLastInVisualRow/,
-  "Row-end category remove affordance should guard against hover wrap"
-);
+assert.match(sortSource, /function panelShouldShowSortControls[\s\S]*?panelVisibleItems\(items\)\.length >= 2/, "Sort controls should only render for two or more currently visible items");
+assert.match(sortSource, /currentControls\.remove\(\);[\s\S]*?insertAdjacentHTML\?\.\("beforeend", renderPanelSortControls\(\)\)/, "Sort controls should be removed or reinserted as live result counts change");
 assert.match(
   filterStylesSource,
   /\.wp-filter-remove\s*\{[\s\S]*?right: 8px;[\s\S]*?z-index: 2;/,
@@ -128,10 +219,53 @@ assert.match(
 );
 
 const items = [
-  { title: "Cabin", brand: "RIMOWA", createdAt: "2026-06-18T10:00:00.000Z" },
-  { title: "Alpha Bag", brand: "Loewe", createdAt: "2026-06-20T10:00:00.000Z" },
-  { title: "Zip Hoodie", brand: "LIME", createdAt: "2026-06-19T10:00:00.000Z" }
+  { title: "Cabin", brand: "RIMOWA", createdAt: "2026-06-18T10:00:00.000Z", price: { rubAmount: 300 } },
+  { title: "Alpha Bag", brand: "Loewe", createdAt: "2026-06-20T10:00:00.000Z", price: { rubAmount: 100 } },
+  { title: "Zip Hoodie", brand: "LIME", createdAt: "2026-06-19T10:00:00.000Z", price: { rubAmount: 200 } }
 ];
+
+sandbox.panelScopedItems = (candidateItems) => candidateItems;
+sandbox.panelItemMatchesSearch = (item) => {
+  const query = String(sandbox.panelState.searchQuery || "").toLowerCase().trim();
+  return !query || `${item.title} ${item.brand}`.toLowerCase().includes(query);
+};
+sandbox.panelItemMatchesBrandFilter = (item) =>
+  !sandbox.panelState.brandFilterKey || item.brand === sandbox.panelState.brandFilterKey;
+sandbox.escapeHtml = (value) => value;
+sandbox.escapeAttribute = (value) => value;
+sandbox.phosphorChevronDownIcon = () => "";
+sandbox.phosphorCheckIcon = () => "";
+sandbox.phosphorArrowDownIcon = () => "";
+sandbox.phosphorArrowUpIcon = () => "";
+
+sandbox.panelState.items = [items[0]];
+assert.equal(vm.runInContext("renderPanelSortControls().trim()", sandbox), "");
+sandbox.panelState.items = items.slice(0, 2);
+assert.match(
+  vm.runInContext("renderPanelSortControls()", sandbox),
+  /wp-sort-controls/,
+  "Sort controls should render when the current list has at least two items"
+);
+sandbox.panelState.searchQuery = "alpha";
+assert.equal(
+  vm.runInContext("renderPanelSortControls().trim()", sandbox),
+  "",
+  "Sort controls should disappear when search narrows the current list below two items"
+);
+sandbox.panelState.searchQuery = "";
+sandbox.panelState.activeCategory = "bags";
+sandbox.panelState.items = [
+  { ...items[0], category: "tops" },
+  { ...items[1], category: "bags" },
+  { ...items[2], category: "tops" }
+];
+assert.equal(
+  vm.runInContext("renderPanelSortControls().trim()", sandbox),
+  "",
+  "Sort controls should disappear when the selected category has fewer than two items"
+);
+sandbox.panelState.activeCategory = "all";
+sandbox.panelState.items = items;
 
 function sortedTitles(sortField, sortDirection) {
   sandbox.panelState.sortField = sortField;
@@ -144,31 +278,27 @@ assert.deepEqual(sortedTitles("recent", "desc"), ["Alpha Bag", "Zip Hoodie", "Ca
 assert.deepEqual(sortedTitles("recent", "asc"), ["Cabin", "Zip Hoodie", "Alpha Bag"]);
 assert.deepEqual(sortedTitles("name", "asc"), ["Alpha Bag", "Cabin", "Zip Hoodie"]);
 assert.deepEqual(sortedTitles("name", "desc"), ["Zip Hoodie", "Cabin", "Alpha Bag"]);
+assert.deepEqual(sortedTitles("price", "asc"), ["Alpha Bag", "Zip Hoodie", "Cabin"]);
+assert.deepEqual(sortedTitles("price", "desc"), ["Cabin", "Zip Hoodie", "Alpha Bag"]);
 
 let renderedItems = 0;
+let reorderedItems = 0;
 let syncedBrandCount = 0;
-let blurredSortButton = false;
 const filterListeners = {};
 const shellListeners = {};
-const sortButton = {
-  disabled: false,
-  dataset: { panelSort: "name" },
-  closest: (selector) => (selector === "[data-panel-sort]" ? sortButton : null),
-  classList: {
-    remove: () => {},
-    toggle: () => {}
-  },
-  setAttribute: (name, value) => {
-    sortButton[name] = value;
-  },
-  removeAttribute: (name) => {
-    delete sortButton[name];
-  },
-  blur: () => {
-    blurredSortButton = true;
-    sandbox.document.activeElement = null;
-  },
+let renderedSortControl = "";
+const sortRoot = {
+  set outerHTML(value) {
+    renderedSortControl = value;
+  }
+};
+const sortTrigger = {
+  closest: (selector) => (selector === "[data-panel-sort-trigger]" ? sortTrigger : null),
   matches: () => false
+};
+const sortOption = {
+  dataset: { panelSortField: "name", panelSortDirection: "asc" },
+  closest: (selector) => (selector === "[data-panel-sort-option]" ? sortOption : null)
 };
 const filterRow = {
   classList: {
@@ -181,7 +311,11 @@ const filterRow = {
   addEventListener: (type, handler, options) => {
     filterListeners[type] = { handler, options };
   },
-  contains: (node) => node === sortButton || node === categoryShell,
+  contains: (node) => node === sortTrigger || node === sortOption || node === categoryShell || node === sortRoot,
+  querySelector: (selector) => (selector === "[data-panel-sort-root]" ? sortRoot : null),
+  insertAdjacentHTML: (_position, html) => {
+    renderedSortControl = html;
+  },
   querySelectorAll: (selector) =>
     selector === ".wp-filter-shell.is-remove-visible" ? [categoryShell, otherCategoryShell] : [],
   getBoundingClientRect: () => ({ left: 0, top: 0, right: 320, bottom: 72 })
@@ -221,23 +355,18 @@ const fakeRoot = {
     if (selector === ".wp-filters") {
       return filterRow;
     }
-    if (selector === ".wp-items") {
-      return { classList: { remove: () => {} } };
-    }
     return null;
   },
-  querySelectorAll: (selector) => (selector === "[data-panel-sort]" ? [sortButton] : [])
+  querySelectorAll: () => []
 };
 
-sandbox.panelScopedItems = (candidateItems) => candidateItems;
-sandbox.escapeHtml = (value) => value;
-sandbox.lucideArrowDownIcon = () => "";
-sandbox.lucideArrowUpIcon = () => "";
-sandbox.renderPanelItemsOnly = () => {
-  renderedItems += 1;
-};
+sandbox.renderPanelItemsOnly = () => { renderedItems += 1; };
+sandbox.reorderPanelItemsOnly = () => { reorderedItems += 1; return true; };
 sandbox.syncPanelBrandCountControl = () => {
   syncedBrandCount += 1;
+};
+sandbox.closePanelFilterMenu = () => {
+  sandbox.panelState.filterMenuOpen = false;
 };
 sandbox.syncPanelItemsTopOffset = () => {};
 sandbox.window = {
@@ -255,15 +384,14 @@ sandbox.panelState.sortDirection = "desc";
 sandbox.panelState.brandCloudOpen = true;
 sandbox.root = fakeRoot;
 
-assert.equal(vm.runInContext('panelSortButtonState("name").shortLabel', sandbox), "A-Z");
+assert.equal(vm.runInContext("panelCurrentSortOption().label", sandbox), "Date newest");
 
 vm.runInContext("bindPanelSortEvents(root)", sandbox);
 
 assert.equal(filterListeners.pointerover.options, undefined);
-assert.equal(filterListeners.pointerdown.options, true);
 assert.equal(filterListeners.click.options, true);
 filterListeners.pointerover.handler();
-assert.equal(filterRow.classList.visible, true, "Pointerover should lock controls before pointerdown");
+assert.equal(filterRow.classList.visible, true, "Pointerover should lock optional filter controls");
 filterListeners.mouseleave.handler({ clientX: 160, clientY: 120 });
 assert.equal(filterRow.classList.visible, false, "Leaving after pointerover should unlock controls");
 filterListeners.mouseenter.handler();
@@ -271,11 +399,11 @@ assert.equal(filterRow.classList.visible, true, "Entering filters should lock co
 shellListeners.pointermove.handler({ clientX: 160, clientY: 120 });
 assert.equal(filterRow.classList.visible, false, "Moving inside the panel but outside filters should unlock controls");
 filterListeners.mouseenter.handler();
-sortButton.matches = (selector) => selector === ":focus-visible";
-sandbox.document.activeElement = sortButton;
+sortTrigger.matches = (selector) => selector === ":focus-visible";
+sandbox.document.activeElement = sortTrigger;
 shellListeners.pointermove.handler({ clientX: 160, clientY: 120 });
 assert.equal(filterRow.classList.visible, true, "Keyboard focus should keep filter controls visible");
-sortButton.matches = () => false;
+sortTrigger.matches = () => false;
 sandbox.document.activeElement = null;
 filterListeners.mouseover.handler({ target: categoryTarget });
 assert.equal(categoryShell.classList.active, true, "Hovering a category should expand only that pill");
@@ -290,64 +418,59 @@ shellListeners.mouseleave.handler();
 assert.equal(filterRow.classList.visible, false, "Leaving the panel should unlock controls");
 
 filterListeners.mouseenter.handler();
-sandbox.document.activeElement = sortButton;
-let pointerPrevented = false;
-let pointerStopped = false;
-let pointerStoppedImmediate = false;
-const pointerEvent = {
-  target: sortButton,
-  button: 0,
-  isPrimary: true,
-  preventDefault: () => {
-    pointerPrevented = true;
-  },
-  stopPropagation: () => {
-    pointerStopped = true;
-  },
-  stopImmediatePropagation: () => {
-    pointerStoppedImmediate = true;
-  }
-};
-filterListeners.pointerdown.handler(pointerEvent);
-assert.equal(sandbox.panelState.sortField, "name");
-assert.equal(sandbox.panelState.sortDirection, "asc");
-assert.equal(sandbox.panelState.brandCloudOpen, false);
-assert.equal(vm.runInContext('panelSortButtonState("name").shortLabel', sandbox), "Z-A");
-assert.equal(renderedItems, 1);
-assert.equal(syncedBrandCount, 1);
-assert.equal(filterRow.classList.visible, true, "Sort pointerdown should keep filter controls visible");
-assert.equal(blurredSortButton, true, "Sort pointerdown should clear focus so de-hover can hide controls");
-filterListeners.focusout.handler();
-assert.equal(filterRow.classList.visible, true, "Focusout during sort pointerdown should not hide while hovered");
-assert.equal(pointerPrevented, true);
-assert.equal(pointerStopped, true);
-assert.equal(pointerStoppedImmediate, true);
-
-let clickPrevented = false;
-let clickStopped = false;
-let clickStoppedImmediate = false;
-const clickEvent = {
-  target: sortButton,
+sandbox.document.activeElement = sortTrigger;
+let triggerPrevented = false;
+let triggerStopped = false;
+let triggerStoppedImmediate = false;
+const triggerClick = {
+  target: sortTrigger,
   detail: 1,
   preventDefault: () => {
-    clickPrevented = true;
+    triggerPrevented = true;
   },
   stopPropagation: () => {
-    clickStopped = true;
+    triggerStopped = true;
   },
   stopImmediatePropagation: () => {
-    clickStoppedImmediate = true;
+    triggerStoppedImmediate = true;
   }
 };
-filterListeners.click.handler(clickEvent);
+filterListeners.click.handler(triggerClick);
+assert.equal(sandbox.panelState.sortMenuOpen, true);
+assert.match(renderedSortControl, /wp-sort-menu/);
+assert.match(renderedSortControl, />Sort</);
+assert.equal(reorderedItems, 0);
+assert.equal(triggerPrevented, true);
+assert.equal(triggerStopped, true);
+assert.equal(triggerStoppedImmediate, true);
+
+let optionPrevented = false;
+let optionStopped = false;
+let optionStoppedImmediate = false;
+const optionClick = {
+  target: sortOption,
+  preventDefault: () => {
+    optionPrevented = true;
+  },
+  stopPropagation: () => {
+    optionStopped = true;
+  },
+  stopImmediatePropagation: () => {
+    optionStoppedImmediate = true;
+  }
+};
+filterListeners.click.handler(optionClick);
 assert.equal(sandbox.panelState.sortField, "name");
 assert.equal(sandbox.panelState.sortDirection, "asc");
-assert.equal(renderedItems, 1);
+assert.equal(sandbox.panelState.sortMenuOpen, false);
+assert.equal(sandbox.panelState.brandCloudOpen, true);
+assert.equal(sandbox.panelState.brandCloudSortList, true);
+assert.equal(vm.runInContext("panelCurrentSortOption().label", sandbox), "Name A-Z");
+assert.equal(reorderedItems, 1);
+assert.equal(renderedItems, 0);
 assert.equal(syncedBrandCount, 1);
-assert.equal(clickPrevented, true);
-assert.equal(clickStopped, true);
-assert.equal(clickStoppedImmediate, true);
-filterListeners.mouseleave.handler({ clientX: 160, clientY: 120 });
-assert.equal(filterRow.classList.visible, false, "Leaving filters after sort pointerdown should hide controls");
+assert.equal(optionPrevented, true);
+assert.equal(optionStopped, true);
+assert.equal(optionStoppedImmediate, true);
 
 console.log("panel sort smoke passed");

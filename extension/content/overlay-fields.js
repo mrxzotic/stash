@@ -1,14 +1,15 @@
 function renderSavedOverlayFields(item) {
-  return savedOverlayFields(item).map((field) => `
+  const fields = savedOverlayFields(item);
+  return `
+    ${fields.map((field) => `
     <div class="wl-field is-${escapeAttribute(field.key)}">
       <dt>${escapeHtml(field.label)}</dt>
       <dd>
         <span class="wl-field-value">${field.html}</span>
-        <span class="wl-confidence" aria-label="${escapeAttribute(`${field.label} confidence ${field.confidence} percent`)}">${field.confidence}%</span>
-        ${renderFieldAlternatives(field)}
       </dd>
     </div>
-  `).join("");
+    `).join("")}
+  `;
 }
 
 function savedOverlayFields(item) {
@@ -42,30 +43,6 @@ function savedOverlayFields(item) {
       ...priceQuality
     }
   ];
-}
-
-function renderFieldAlternatives(field) {
-  if (!field.needsReview || !field.alternatives?.length) {
-    return "";
-  }
-
-  return `
-    <span class="wl-alternates">
-      ${field.alternatives.map((candidate, index) => `
-        <button class="wl-alt-button" type="button" data-field-alternative data-field="${escapeAttribute(field.field)}" data-index="${index}">
-          ${escapeHtml(candidateLabel(candidate))}
-        </button>
-      `).join("")}
-    </span>
-  `;
-}
-
-function candidateLabel(candidate) {
-  if (candidate.field === "price") {
-    return cleanText(candidate.originalText || candidate.value || formatOriginalPrice(candidate.amount, candidate.currency));
-  }
-
-  return cleanText(candidate.value);
 }
 
 function savedFieldQuality(field, item, fallbackValue) {
@@ -114,81 +91,6 @@ function savedBrandConfidence(item, value) {
   if (/^(?:source|shop|store)$/i.test(brand)) score -= 22;
 
   return clamp(Math.round(score), 0, 99);
-}
-
-async function applySavedOverlayAlternative(item, categories, field, index) {
-  const candidate = item.extraction?.fields?.[field]?.alternatives?.[Number(index)];
-  if (!candidate) {
-    return;
-  }
-
-  const updatedItem = await itemWithAppliedCandidate(item, field, candidate);
-  const nextItems = await upsertItem(updatedItem);
-  showSavedOverlay(updatedItem, nextItems, categories);
-}
-
-async function itemWithAppliedCandidate(item, field, candidate) {
-  const next = { ...item };
-
-  if (field === "brand") {
-    next.brand = cleanBrandName(candidate.value) || cleanText(candidate.value) || next.brand;
-  } else if (field === "title") {
-    next.title = cleanProductTitle(candidate.value, next.brand, next.url) || cleanText(candidate.value) || next.title;
-  } else if (field === "price") {
-    const price = normalizePrice({
-      amount: candidate.amount,
-      currency: candidate.currency,
-      text: candidate.originalText || candidate.value,
-      compareAtAmount: candidate.compareAtAmount,
-      compareAtText: candidate.compareAtText
-    });
-    const rubPrice = await convertPriceToRub(price);
-    next.price = {
-      ...(next.price || {}),
-      amount: price.amount,
-      currency: price.currency,
-      originalText: price.originalText,
-      compareAtAmount: price.compareAtAmount,
-      compareAtText: price.compareAtText,
-      isSale: price.isSale,
-      rubAmount: rubPrice.amount,
-      rubText: rubPrice.text,
-      rate: rubPrice.rate,
-      rateSource: rubPrice.source
-    };
-    next.priceText = price.originalText;
-    next.priceAmount = price.amount;
-    next.currency = price.currency;
-    next.compareAtPriceText = price.compareAtText;
-    next.compareAtPriceAmount = price.compareAtAmount;
-    next.isSale = price.isSale;
-    next.rubPriceText = rubPrice.text;
-    next.rubPriceAmount = rubPrice.amount;
-  }
-
-  next.extraction = extractionWithAcceptedCandidate(next.extraction, field, candidate);
-  return next;
-}
-
-function extractionWithAcceptedCandidate(extraction, field, candidate) {
-  const fields = { ...(extraction?.fields || {}) };
-  const current = fields[field] || {};
-  fields[field] = {
-    ...current,
-    value: candidate.value,
-    confidence: candidate.confidence,
-    source: candidate.source,
-    needsReview: false,
-    alternatives: current.alternatives || []
-  };
-
-  return {
-    ...(extraction || {}),
-    needsReview: Object.entries(fields).some(
-      ([key, value]) => key !== field && value?.needsReview
-    ),
-    fields
-  };
 }
 
 function savedNameConfidence(item, value) {

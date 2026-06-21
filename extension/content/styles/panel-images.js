@@ -93,6 +93,7 @@ function panelImageStyles() {
     .wp-image-slider-icon {
       width: 18px;
       height: 18px;
+      font-size: 18px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -141,6 +142,7 @@ function panelImageStyles() {
     .wp-image-delete-icon {
       width: 16px;
       height: 16px;
+      font-size: 16px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;

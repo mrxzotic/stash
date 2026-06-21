@@ -5,38 +5,44 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
   const dismiss = () => dismissSavedOverlay(root);
 
   clearOverlayTimers(root);
+  unbindSavedOverlayImageEvents(root);
   root.innerHTML = `
     <style>${overlayStyles()}</style>
-    <section class="wl-panel" aria-live="polite" style="--wl-dismiss-duration: ${SAVED_OVERLAY_DURATION_MS}ms">
-      <div class="wl-progress" aria-hidden="true"><span></span></div>
-      <button class="wl-close" type="button" aria-label="Close" title="Close" data-close-overlay>
-        ${lucideXIcon("wl-close-icon")}
-      </button>
+    <section class="wl-panel is-motion-reveal" aria-live="polite" style="--wl-dismiss-duration: ${SAVED_OVERLAY_DURATION_MS}ms">
+      ${renderSavedOverlaySkeleton()}
       <header class="wl-header">
-        <p class="wl-kicker">Saved</p>
-        <div class="wl-timer-row">
-          <p class="wl-countdown" data-countdown aria-hidden="true">Closes in ${Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000)}s</p>
-          <button class="wl-timer-button" type="button" data-toggle-timer aria-label="Pause timer" aria-pressed="false" title="Pause timer">
-            ${lucidePauseIcon("wl-timer-icon")}
+        <div class="wl-title-block">
+          <p class="wl-kicker">Saved</p>
+          <div class="wl-timer-line">
+            <p class="wl-countdown" data-countdown aria-hidden="true">Auto-close in ${Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000)}s</p>
+            <button class="wl-timer-button" type="button" data-toggle-timer aria-label="Pause auto-close" aria-pressed="false" title="Pause auto-close">
+              ${phosphorPauseIcon("wl-timer-icon")}
+            </button>
+          </div>
+        </div>
+        <div class="wl-controls">
+          <button class="wl-close" type="button" aria-label="Close" title="Close" data-close-overlay>
+            ${phosphorXIcon("wl-close-icon")}
           </button>
         </div>
+        <span class="wl-timer-track" aria-hidden="true"><span data-timer-progress></span></span>
       </header>
       <article class="wl-item">
-        <div class="wl-image">${item.imageUrl ? `<img src="${escapeAttribute(item.imageUrl)}" alt="${escapeAttribute(panelProductImageAlt(item))}" referrerpolicy="no-referrer">` : lucideImageIcon("wl-image-placeholder")}</div>
+        ${renderSavedOverlayImage(item)}
         <dl class="wl-fields">${renderSavedOverlayFields(item)}</dl>
       </article>
       <div class="wl-actions">
-        <button class="wl-edit-button" type="button" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-saved-item>
-          ${lucidePencilIcon("wl-button-icon")}
-          <span>Edit</span>
-        </button>
-        <button class="wl-open-button" type="button" aria-label="Open Stashed panel" data-open-stash>
-          ${lucideLinkIcon("wl-button-icon")}
-          <span>Open Stashed</span>
-        </button>
-        <button class="wl-cancel-button" type="button" aria-label="Undo save" data-cancel-addition>
-          <span>Undo</span>
-        </button>
+        <div class="wl-action-group is-left">
+          <button class="wl-cancel-button" type="button" aria-label="Undo save" data-cancel-addition>
+            <span>Undo</span>
+          </button>
+        </div>
+        <div class="wl-action-group is-right">
+          <button class="wl-open-button" type="button" aria-label="Open Stash panel" data-open-stash>
+            ${phosphorLinkIcon("wl-button-icon")}
+            <span>Open Stash</span>
+          </button>
+        </div>
       </div>
     </section>
   `;
@@ -49,53 +55,12 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
     dismissSavedOverlay(root);
     safelyRunPanelAction(() => openStashPanel());
   });
-  root.querySelector("[data-edit-saved-item]")?.addEventListener("click", () => {
-    safelyRunPanelAction(() => openSavedOverlayEditor(root, item));
-  });
   root.querySelector("[data-cancel-addition]")?.addEventListener("click", () => {
     safelyRunPanelAction(() => cancelSavedOverlayAddition(root, item));
   });
-  root.querySelector(".wl-fields")?.addEventListener("click", (event) => {
-    const button = event.target.closest?.("[data-field-alternative]");
-    if (!button) {
-      return;
-    }
-
-    safelyRunPanelAction(() =>
-      applySavedOverlayAlternative(item, categories, button.dataset.field, button.dataset.index)
-    );
-  });
+  bindSavedOverlayImageEvents(root, item);
   bindImageFallbacks(root);
   startSavedOverlayCountdown(root, SAVED_OVERLAY_DURATION_MS);
-}
-
-async function openSavedOverlayEditor(root, item) {
-  const itemId = item.id || productId(item.url);
-  dismissSavedOverlay(root);
-  await openStashPanel();
-  const savedItem = panelState.items
-    .map(normalizePanelItem)
-    .find((panelItem) => panelItem.id === itemId);
-
-  if (!savedItem) {
-    return;
-  }
-
-  panelState.editItemId = savedItem.id;
-  panelState.highlightedItemId = savedItem.id;
-  panelState.archivedOpen = false;
-  panelState.brandCloudOpen = false;
-  panelState.brandFilterKey = "";
-  panelState.brandFilterLabel = "";
-  panelState.searchOpen = false;
-  panelState.searchQuery = "";
-  panelState.categoryComposerOpen = false;
-  panelState.deleteCategoryId = "";
-  panelState.deleteItemId = "";
-  if (panelState.activeCategory !== "all" && panelState.activeCategory !== savedItem.category) {
-    panelState.activeCategory = savedItem.category;
-  }
-  renderStashPanel();
 }
 
 function showErrorOverlay(error) {
@@ -116,32 +81,58 @@ function showErrorOverlay(error) {
 }
 
 function startSavedOverlayCountdown(root, durationMs) {
-  const countdown = root.querySelector("[data-countdown]");
-  let countdownText = "";
-  const renderCountdown = () => {
-    const state = root.__stashCountdown;
-    if (!state || state.paused) {
-      return;
-    }
-
-    state.remainingMs = Math.max(0, state.endsAt - Date.now());
-    const remainingSeconds = Math.ceil(state.remainingMs / 1000);
-    const nextText = `Closes in ${remainingSeconds}s`;
-    if (countdown && nextText !== countdownText) {
-      countdown.textContent = nextText;
-      countdownText = nextText;
-    }
-  };
-
   root.__stashCountdown = {
     durationMs,
     endsAt: Date.now() + durationMs,
     paused: false,
     remainingMs: durationMs
   };
-  renderCountdown();
-  root.__stashTicker = window.setInterval(renderCountdown, 250);
-  root.__stashTimer = window.setTimeout(() => dismissSavedOverlay(root), durationMs);
+  scheduleSavedOverlayTimer(root);
+  root.__stashTicker = window.setInterval(() => updateSavedOverlayTimer(root), 250);
+}
+
+function scheduleSavedOverlayTimer(root) {
+  const state = root.__stashCountdown;
+  if (!state) {
+    return;
+  }
+
+  window.clearTimeout(root.__stashTimer);
+  root.__stashTimer = window.setTimeout(() => dismissSavedOverlay(root), state.remainingMs);
+  renderSavedOverlayTimer(root);
+}
+
+function updateSavedOverlayTimer(root) {
+  const state = root.__stashCountdown;
+  if (!state || state.paused) {
+    return;
+  }
+
+  state.remainingMs = Math.max(0, state.endsAt - Date.now());
+  renderSavedOverlayTimer(root);
+}
+
+function renderSavedOverlayTimer(root) {
+  const state = root.__stashCountdown;
+  if (!state) {
+    return;
+  }
+
+  const remainingSeconds = Math.ceil(state.remainingMs / 1000);
+  const countdown = root.querySelector("[data-countdown]");
+  if (countdown) {
+    countdown.textContent = state.paused
+      ? "Auto-close paused"
+      : `Auto-close in ${remainingSeconds}s`;
+  }
+
+  const progress = root.querySelector("[data-timer-progress]");
+  if (progress) {
+    const ratio = state.durationMs > 0
+      ? Math.max(0, Math.min(1, state.remainingMs / state.durationMs))
+      : 0;
+    progress.style.transform = `scaleX(${ratio})`;
+  }
 }
 
 function toggleSavedOverlayTimer(root) {
@@ -164,18 +155,14 @@ function pauseSavedOverlayTimer(root) {
   clearOverlayTimers(root);
   root.__stashCountdown = state;
   root.querySelector(".wl-panel")?.classList.add("is-timer-paused");
-
-  const countdown = root.querySelector("[data-countdown]");
-  if (countdown) {
-    countdown.textContent = "Paused";
-  }
+  renderSavedOverlayTimer(root);
 
   const button = root.querySelector("[data-toggle-timer]");
   if (button) {
     button.setAttribute("aria-pressed", "true");
-    button.setAttribute("aria-label", "Resume timer");
-    button.setAttribute("title", "Resume timer");
-    button.innerHTML = lucidePlayIcon("wl-timer-icon");
+    button.setAttribute("aria-label", "Resume auto-close");
+    button.setAttribute("title", "Resume auto-close");
+    button.innerHTML = phosphorPlayIcon("wl-timer-icon");
   }
 }
 
@@ -185,16 +172,20 @@ function resumeSavedOverlayTimer(root) {
     return;
   }
 
-  const durationMs = Math.max(0, state.remainingMs || state.durationMs || SAVED_OVERLAY_DURATION_MS);
+  state.remainingMs = Math.max(0, state.remainingMs || state.durationMs || SAVED_OVERLAY_DURATION_MS);
+  state.endsAt = Date.now() + state.remainingMs;
+  state.paused = false;
+  root.__stashCountdown = state;
   root.querySelector(".wl-panel")?.classList.remove("is-timer-paused");
   const button = root.querySelector("[data-toggle-timer]");
   if (button) {
     button.setAttribute("aria-pressed", "false");
-    button.setAttribute("aria-label", "Pause timer");
-    button.setAttribute("title", "Pause timer");
-    button.innerHTML = lucidePauseIcon("wl-timer-icon");
+    button.setAttribute("aria-label", "Pause auto-close");
+    button.setAttribute("title", "Pause auto-close");
+    button.innerHTML = phosphorPauseIcon("wl-timer-icon");
   }
-  startSavedOverlayCountdown(root, durationMs);
+  scheduleSavedOverlayTimer(root);
+  root.__stashTicker = window.setInterval(() => updateSavedOverlayTimer(root), 250);
 }
 
 async function cancelSavedOverlayAddition(root, item) {
@@ -220,6 +211,7 @@ async function cancelSavedOverlayAddition(root, item) {
 
 function dismissSavedOverlay(root) {
   clearOverlayTimers(root);
+  unbindSavedOverlayImageEvents(root);
   root.innerHTML = "";
 }
 
@@ -239,8 +231,13 @@ function getOverlayRoot() {
     host.style.inset = "0";
     host.style.zIndex = "2147483647";
     host.style.pointerEvents = "none";
+    host.style.overflow = "hidden";
+    host.style.isolation = "isolate";
     document.documentElement.appendChild(host);
   }
+
+  host.style.overflow = "hidden";
+  host.style.isolation = "isolate";
 
   if (!host.shadowRoot) {
     host.attachShadow({ mode: "open" });
