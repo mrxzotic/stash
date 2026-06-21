@@ -10,14 +10,14 @@ function renderEditItemDialog() {
 
   return `
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-edit-item></div>
-    <form class="wp-edit-dialog" role="dialog" aria-modal="true" aria-label="Edit saved item" data-edit-item-form>
+    <form class="wp-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-edit-item-title" data-panel-modal data-edit-item-form>
       <div class="wp-edit-head">
-        <h3>Edit item</h3>
+        <h3 id="wp-edit-item-title">Edit item</h3>
         <button class="wp-edit-close" type="button" aria-label="Cancel edit" data-cancel-edit-item>${lucideXIcon("wp-edit-close-icon")}</button>
       </div>
       <label class="wp-edit-field">
         <span>Brand</span>
-        <input name="brand" type="text" value="${escapeAttribute(item.brand)}" maxlength="80" autocomplete="off">
+        <input name="brand" type="text" value="${escapeAttribute(item.brand)}" maxlength="80" autocomplete="off" data-autofocus>
       </label>
       <label class="wp-edit-field">
         <span>Name</span>
@@ -109,6 +109,7 @@ function bindPanelEditEvents(root) {
 
     event.preventDefault();
     event.stopPropagation();
+    rememberPanelFocus(button);
     panelState.editItemId = button.dataset.editId;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
@@ -157,6 +158,7 @@ async function savePanelEditedItem(form) {
     title,
     brand,
     imageUrl: toAbsoluteUrl(imageUrl),
+    imageUrls: normalizeProductImageUrls(current.imageUrls, imageUrl, SAVED_IMAGE_URL_LIMIT),
     category: hasCategory(panelState.categories, category) ? category : current.category,
     price: editedStoredPrice(price, rubPrice),
     priceText: price.originalText,

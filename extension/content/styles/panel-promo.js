@@ -1,127 +1,110 @@
 function panelPromoStyles() {
   return `
-    .wp-brand-wrap {
+    .wp-brand-cluster {
+      height: 40px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       min-width: 0;
-    }
-
-    .wp-founder-peek {
-      width: 0;
-      height: 24px;
-      display: inline-grid;
-      place-items: center;
-      padding: 0;
-      border: 0;
-      border-radius: 999px;
-      background: transparent;
-      opacity: 0;
-      overflow: hidden;
-      pointer-events: none;
-      transform: translateX(-5px) scale(0.86);
-      transition:
-        width 160ms cubic-bezier(.16, 1, .3, 1),
-        opacity 130ms ease,
-        transform 170ms cubic-bezier(.16, 1, .3, 1);
-    }
-
-    .wp-brand-wrap:hover .wp-founder-peek {
-      width: 24px;
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateX(0) scale(1);
-    }
-
-    .wp-founder-peek img {
-      width: 24px;
-      height: 24px;
-      display: block;
-      border-radius: 999px;
-      object-fit: cover;
-      box-shadow: 0 0 0 1px rgba(8, 11, 16, 0.08);
-    }
-
-    .wp-founder-screen {
-      position: absolute;
-      inset: 0;
-      z-index: 8;
-      padding: 0;
-      border: 0;
-      background: var(--background);
-      cursor: default;
-      animation: wpFounderScreenIn 120ms ease both;
     }
 
     .wp-founder-modal {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      inset: 0;
       z-index: 9;
-      width: min(366px, calc(100% - 44px));
+      width: auto;
+      max-height: none;
+      min-height: 100%;
       display: grid;
-      gap: 8px;
-      padding: 0;
+      align-content: start;
+      gap: 0;
+      padding: 64px 48px 40px;
       border: 0;
-      background: transparent;
+      border-radius: inherit;
+      background: var(--background);
       box-shadow: none;
       color: var(--foreground);
       text-align: left;
-      transform: translate(-50%, -50%);
-      animation: wpFounderModalIn 170ms cubic-bezier(.16, 1, .3, 1) both;
+      overflow: auto;
+      scrollbar-width: none;
+      transform: translateZ(0);
+      animation: wpFounderViewIn 180ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-founder-close {
       position: absolute;
-      top: -12px;
-      right: -12px;
+      top: 20px;
+      right: 20px;
       z-index: 1;
       width: 32px;
       height: 32px;
       display: grid;
       place-items: center;
       padding: 0;
-      border: 1px solid rgba(8, 11, 16, 0.1);
-      background: #fff;
-      color: var(--muted);
+      border: 0;
+      background: transparent;
+      color: rgba(8, 11, 16, 0.42);
       border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(8, 11, 16, 0.1);
+      box-shadow: none;
+      transition:
+        background 140ms ease,
+        color 140ms ease,
+        transform 160ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-founder-close:hover,
     .wp-founder-close:focus-visible {
       color: var(--foreground);
-      border-color: rgba(8, 11, 16, 0.18);
-      background: #fff;
+      background: rgba(8, 11, 16, 0.055);
       outline: 0;
     }
 
-    .wp-founder-close-icon {
-      width: 15px;
-      height: 15px;
-      stroke: currentColor;
-      stroke-width: 2.2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+    .wp-founder-close:active {
+      transform: scale(0.94);
     }
 
-    .wp-founder-profile {
+    .wp-founder-close-icon { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2.15; stroke-linecap: round; stroke-linejoin: round; }
+
+    .wp-founder-app {
       width: 100%;
       min-width: 0;
       display: grid;
-      grid-template-columns: 72px minmax(0, 1fr);
+      grid-template-columns: 48px minmax(0, 1fr);
       align-items: center;
-      gap: 14px;
-      padding: 14px;
-      border: 1px solid rgba(8, 11, 16, 0.1);
-      border-radius: 8px;
-      background: #fff;
-      box-shadow: 0 18px 42px rgba(8, 11, 16, 0.1);
+      gap: 16px;
+      padding: 0 40px 24px 0;
     }
 
+    .wp-founder-app-logo {
+      width: 48px;
+      height: 48px;
+      display: block;
+      border-radius: 8px;
+      box-shadow:
+        0 0 0 1px rgba(8, 11, 16, 0.07),
+        0 10px 26px rgba(8, 11, 16, 0.08);
+    }
+
+    .wp-founder-app-copy {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .wp-founder-app-copy strong {
+      font-family: var(--ui-font);
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 680;
+      letter-spacing: 0;
+      opacity: 0.9;
+    }
+
+    .wp-founder-app-copy p { max-width: 220px; margin: 0; color: rgba(8, 11, 16, 0.56); font-size: 13px; line-height: 18px; font-weight: 560; }
+
     .wp-founder-photo {
-      width: 72px;
-      height: 72px;
+      width: 40px;
+      height: 40px;
       display: block;
       border-radius: 8px;
       object-fit: cover;
@@ -130,90 +113,156 @@ function panelPromoStyles() {
         0 10px 24px rgba(8, 11, 16, 0.12);
     }
 
-    .wp-founder-copy {
+    .wp-founder-version { color: rgba(8, 11, 16, 0.38); font-family: var(--ui-font); font-size: 11px; line-height: 1; font-weight: 560; letter-spacing: 0; }
+
+    .wp-founder-section {
+      min-width: 0;
       display: grid;
-      gap: 5px;
+      gap: 10px;
+      padding: 18px 0 0;
+      border-top: 1px solid rgba(8, 11, 16, 0.075);
+    }
+
+    .wp-founder-section-title { color: rgba(8, 11, 16, 0.42); font-size: 11px; line-height: 1; font-weight: 650; text-transform: none; }
+
+    .wp-founder-person {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
       min-width: 0;
     }
 
-    .wp-founder-copy strong {
-      font-size: 20px;
-      line-height: 1.1;
-      font-weight: 800;
+    .wp-founder-person strong { min-width: 0; color: var(--foreground); font-size: 15px; line-height: 20px; font-weight: 680; }
+
+    .wp-founder-backup {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      align-items: start;
+      column-gap: 16px;
+      row-gap: 12px;
+      padding: 18px 0 16px;
+      border-top: 1px solid rgba(8, 11, 16, 0.075);
     }
 
-    .wp-founder-copy span {
-      color: var(--muted);
-      font-family: var(--figure-font);
-      font-size: 12px;
-      line-height: 1.2;
-      font-weight: 680;
+    .wp-founder-backup-copy {
+      min-width: 0;
+      display: grid;
+      gap: 6px;
     }
 
-    .wp-founder-copy .wp-founder-version {
+    .wp-founder-backup-copy span {
       color: rgba(8, 11, 16, 0.42);
-      font-size: 10px;
-      font-weight: 760;
-      letter-spacing: 0;
-      text-transform: uppercase;
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 650;
+      text-transform: none;
     }
+
+    .wp-founder-backup-copy strong {
+      color: rgba(8, 11, 16, 0.78);
+      font-size: 13px;
+      line-height: 16px;
+      font-weight: 640;
+    }
+
+    .wp-founder-backup-copy small {
+      color: rgba(8, 11, 16, 0.46);
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 520;
+    }
+
+    .wp-founder-backup-actions {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .wp-founder-backup-action {
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 8px;
+      color: #0a84ff;
+      background: transparent;
+      font-size: 13px;
+      line-height: 16px;
+      font-weight: 650;
+      appearance: none;
+      transition:
+        background 140ms ease,
+        color 140ms ease,
+        transform 160ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .wp-founder-backup-action:hover,
+    .wp-founder-backup-action:focus-visible {
+      color: #0066cc;
+      background: rgba(10, 132, 255, 0.08);
+      outline: 0;
+    }
+
+    .wp-founder-backup-action:active {
+      transform: scale(0.98);
+    }
+
+    .wp-founder-action-icon {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 2.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .wp-founder-import-input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
     .wp-founder-links {
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
     }
 
     .wp-founder-link {
       min-width: 0;
-      min-height: 86px;
+      min-height: 40px;
       display: grid;
-      align-content: space-between;
-      gap: 12px;
-      padding: 12px;
-      border: 1px solid rgba(8, 11, 16, 0.1);
+      grid-template-columns: 24px 72px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      border: 0;
       border-radius: 8px;
-      color: rgba(8, 11, 16, 0.72);
-      background: #fff;
+      color: rgba(8, 11, 16, 0.68);
+      background: transparent;
       text-decoration: none;
       text-align: left;
       font-family: inherit;
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1;
-      font-weight: 720;
+      font-weight: 620;
       appearance: none;
-    }
-
-    .wp-founder-action {
-      width: 100%;
-      cursor: pointer;
+      transition:
+        color 140ms ease,
+        transform 160ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-founder-link:hover,
     .wp-founder-link:focus-visible {
       color: var(--foreground);
-      border-color: rgba(8, 11, 16, 0.18);
-      background: #fff;
       outline: 0;
-      box-shadow: 0 12px 30px rgba(8, 11, 16, 0.1);
-    }
-
-    .wp-founder-link:disabled {
-      cursor: default;
-      opacity: 0.44;
-    }
-
-    .wp-founder-link:disabled:hover {
-      color: rgba(8, 11, 16, 0.72);
-      border-color: rgba(8, 11, 16, 0.1);
-      background: #fff;
-      box-shadow: none;
     }
 
     .wp-founder-link-mark {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       display: grid;
       place-items: center;
       color: currentColor;
@@ -221,94 +270,103 @@ function panelPromoStyles() {
 
     .wp-founder-link-copy {
       min-width: 0;
-      display: grid;
-      gap: 3px;
+      display: contents;
     }
 
     .wp-founder-link-copy span {
-      color: rgba(8, 11, 16, 0.48);
-      font-size: 10px;
+      color: rgba(8, 11, 16, 0.42);
+      font-size: 11px;
       line-height: 1;
-      font-weight: 760;
-      text-transform: uppercase;
+      font-weight: 650;
+      text-transform: none;
     }
 
     .wp-founder-link-copy strong {
       min-width: 0;
       color: currentColor;
       font-size: 13px;
-      line-height: 1.18;
-      font-weight: 760;
+      line-height: 16px;
+      font-weight: 650;
       overflow-wrap: anywhere;
     }
 
-    .wp-founder-link-icon {
-      width: 18px;
-      height: 18px;
-      flex: 0 0 auto;
-      stroke: currentColor;
-      stroke-width: 2.1;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+    .wp-founder-x-icon { width: 16px; height: 16px; fill: currentColor; }
 
-    .wp-theme-graphite .wp-founder-peek img,
+    .wp-founder-link-icon { width: 16px; height: 16px; flex: 0 0 auto; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+
+    .wp-theme-graphite .wp-founder-app-logo,
     .wp-theme-graphite .wp-founder-photo {
       box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.12),
         0 12px 30px rgba(0, 0, 0, 0.26);
     }
 
-    .wp-theme-graphite .wp-founder-close,
-    .wp-theme-graphite .wp-founder-profile {
-      border-color: rgba(255, 255, 255, 0.1);
+    .wp-theme-graphite .wp-founder-modal {
       background: #16171a;
-      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+      box-shadow: none;
+    }
+
+    .wp-theme-graphite .wp-founder-section,
+    .wp-theme-graphite .wp-founder-backup {
+      border-top-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .wp-theme-graphite .wp-founder-close {
+      color: rgba(244, 244, 240, 0.44);
+      background: transparent;
+    }
+
+    .wp-theme-graphite .wp-founder-close:hover,
+    .wp-theme-graphite .wp-founder-close:focus-visible {
+      color: rgba(244, 244, 240, 0.94);
+      background: rgba(244, 244, 240, 0.08);
+    }
+
+    .wp-theme-graphite .wp-founder-app-copy p,
+    .wp-theme-graphite .wp-founder-version,
+    .wp-theme-graphite .wp-founder-section-title,
+    .wp-theme-graphite .wp-founder-backup-copy span,
+    .wp-theme-graphite .wp-founder-backup-copy small {
+      color: rgba(244, 244, 240, 0.46);
+    }
+
+    .wp-theme-graphite .wp-founder-backup-copy strong {
+      color: rgba(244, 244, 240, 0.7);
+    }
+
+    .wp-theme-graphite .wp-founder-backup-action {
+      color: #66b3ff;
+      background: transparent;
+    }
+
+    .wp-theme-graphite .wp-founder-backup-action:hover,
+    .wp-theme-graphite .wp-founder-backup-action:focus-visible {
+      color: #9dccff;
+      background: rgba(102, 179, 255, 0.12);
     }
 
     .wp-theme-graphite .wp-founder-link {
-      border-color: rgba(255, 255, 255, 0.1);
       color: rgba(244, 244, 240, 0.7);
-      background: #1d1f23;
+      background: transparent;
     }
 
     .wp-theme-graphite .wp-founder-link:hover,
     .wp-theme-graphite .wp-founder-link:focus-visible {
       color: rgba(244, 244, 240, 0.94);
-      border-color: rgba(255, 255, 255, 0.18);
-      background: #24272c;
-    }
-
-    .wp-theme-graphite .wp-founder-link:disabled:hover {
-      color: rgba(244, 244, 240, 0.7);
-      border-color: rgba(255, 255, 255, 0.1);
-      background: #1d1f23;
-      box-shadow: none;
     }
 
     .wp-theme-graphite .wp-founder-link-copy span {
-      color: rgba(244, 244, 240, 0.46);
-    }
-
-    .wp-theme-graphite .wp-founder-copy .wp-founder-version {
       color: rgba(244, 244, 240, 0.42);
     }
 
-    @keyframes wpFounderScreenIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes wpFounderModalIn {
+    @keyframes wpFounderViewIn {
       0% {
         opacity: 0;
-        transform: translate(-50%, calc(-50% + 8px)) scale(0.98);
-        filter: blur(5px);
+        transform: translateX(12px) translateZ(0);
       }
       100% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-        filter: blur(0);
+        transform: translateX(0) translateZ(0);
       }
     }
   `;

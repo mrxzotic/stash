@@ -34,7 +34,7 @@ async function getLocalStorageValue(keys) {
 function normalizeExtensionError(error) {
   if (/extension context invalidated/i.test(String(error?.message || error))) {
     removeStaleExtensionRoots();
-    return new Error("Stash was reloaded. Refresh this page and try again.");
+    return new Error("Stashed was reloaded. Refresh this page and try again.");
   }
   return error;
 }
@@ -50,7 +50,7 @@ function assertKnownStorageKeys(keys) {
 
   for (const key of keyList) {
     if (!ALLOWED_STORAGE_KEYS.has(key)) {
-      throw new Error("Unexpected Stash storage key.");
+      throw new Error("Unexpected Stashed storage key.");
     }
   }
 }
@@ -147,6 +147,7 @@ async function normalizeItem(product, category, categories) {
     rubPriceText: rubPrice.text,
     rubPriceAmount: rubPrice.amount,
     imageUrl: toAbsoluteUrl(product.imageUrl),
+    imageUrls: normalizeProductImageUrls(product.imageUrls, product.imageUrl, SAVED_IMAGE_URL_LIMIT),
     extraction: normalizeExtractionQuality(product.extraction),
     category: inferredCategory,
     createdAt: new Date().toISOString()

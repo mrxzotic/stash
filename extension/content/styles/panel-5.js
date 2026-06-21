@@ -47,13 +47,13 @@ function panelStylesChunk5() {
     }
 
     .wp-summary-brand-pill {
-      height: 28px;
+      height: var(--wp-pill-height);
       min-width: 0;
       max-width: min(190px, 42vw);
       display: inline-grid;
-      grid-template-columns: minmax(0, 1fr) 18px;
+      grid-template-columns: minmax(0, 1fr) 16px;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       padding: 0 6px 0 12px;
       border: 1px solid rgba(8, 11, 16, 0.84);
       border-radius: 999px;
@@ -72,8 +72,8 @@ function panelStylesChunk5() {
     }
 
     .wp-summary-brand-clear {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       display: grid;
       place-items: center;
       padding: 0;
@@ -229,12 +229,12 @@ function panelStylesChunk5() {
       gap: 8px;
     }
 
-    .wp-empty-tee {
-      width: 96px;
-      height: 96px;
+    .wp-empty-icon {
+      width: 56px;
+      height: 56px;
       margin-bottom: 4px;
-      stroke: rgba(16, 16, 16, 0.2);
-      stroke-width: 4;
+      stroke: rgba(16, 16, 16, 0.24);
+      stroke-width: 1.9;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
@@ -274,18 +274,6 @@ function panelStylesChunk5() {
         opacity: 1;
         transform: translateY(0) scale(1);
         filter: blur(0);
-      }
-    }
-
-    @keyframes wpPanelCloseIn {
-      from {
-        opacity: 0;
-        transform: translateY(4px) scale(.92);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
       }
     }
 

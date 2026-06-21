@@ -19,14 +19,11 @@ function renderStashPanel(options = {}) {
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
-    <button class="wp-panel-close${panelState.hasRenderedPanel ? " is-static" : ""}" type="button" aria-label="Close Stash" title="Close Stash" data-panel-close>
-      ${lucideXIcon("wp-lucide wp-panel-close-icon")}
-    </button>
-    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stash">
+    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}" role="dialog" aria-label="Stashed">
       ${renderPanelTopbarHtml(summaryItems)}
       ${renderFounderPromoDialog()}
 
-      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="Stash categories">
+      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="Stashed categories">
         ${renderCategoryFilters(filterCategories, panelArchivedCount(displayItems))}
       </nav>
       ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
@@ -42,8 +39,7 @@ function renderStashPanel(options = {}) {
 
   bindPanelEvents(root);
   syncPanelItemsTopOffset(root);
-  focusPanelSearch(root);
-  focusCategoryComposer(root);
+  syncPanelFocusAfterRender(root);
   animatePanelSummaryAfterRender(root, summaryItems, options.summaryAnimationFrom);
   refreshPanelSummaryRate();
   panelState.hasRenderedPanel = true;
@@ -114,10 +110,10 @@ function renderCategoryFilters(filterCategories, archivedCount = 0) {
 
   return `
     ${renderPanelSummaryLead()}
-    ${renderPanelSortControls()}
     ${renderCategory(allCategory)}
     ${restCategories.map(renderCategory).join("")}
     ${renderArchivedFilter(archivedCount)}
+    ${renderPanelSortControls()}
     <button class="wp-filter wp-filter-add${panelState.categoryComposerOpen ? " is-active" : ""}" type="button" aria-label="Add category" data-add-category>
       ${lucidePlusIcon("wp-filter-add-icon")}
     </button>
@@ -155,11 +151,11 @@ function renderDeleteCategoryDialog() {
 
   return `
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-category></div>
-    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-label="Delete category">
-      <h3>Delete ${escapeHtml(category.label)}?</h3>
+    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-delete-category-title" data-panel-modal>
+      <h3 id="wp-delete-category-title">Delete ${escapeHtml(category.label)}?</h3>
       <p>Items stay saved and move back to All.</p>
       <div class="wp-confirm-actions">
-        <button class="wp-confirm-cancel" type="button" data-cancel-delete-category>Cancel</button>
+        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-category>Cancel</button>
         <button class="wp-confirm-delete" type="button" data-confirm-delete-category="${escapeAttribute(category.id)}">Delete</button>
       </div>
     </section>
@@ -176,11 +172,11 @@ function renderDeleteItemDialog() {
 
   return `
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-item></div>
-    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-label="Delete item">
-      <h3>Delete ${escapeHtml(item.title)}?</h3>
-      <p>This removes it from Stash.</p>
+    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-delete-item-title" data-panel-modal>
+      <h3 id="wp-delete-item-title">Delete ${escapeHtml(item.title)}?</h3>
+      <p>This removes it from Stashed.</p>
       <div class="wp-confirm-actions">
-        <button class="wp-confirm-cancel" type="button" data-cancel-delete-item>Cancel</button>
+        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-item>Cancel</button>
         <button class="wp-confirm-delete" type="button" data-confirm-delete-item="${escapeAttribute(item.id)}">Delete</button>
       </div>
     </section>
@@ -189,13 +185,14 @@ function renderDeleteItemDialog() {
 
 function renderPanelSearchHtml() {
   const hasQuery = Boolean(panelState.searchQuery);
+  const actionLabel = hasQuery ? "Clear search" : "Close search";
 
   return `
     <div class="wp-inline-search" role="search">
       ${lucideSearchIcon("wp-inline-search-icon")}
       <label class="wp-inline-search-label" for="wp-panel-search-input">Search</label>
       <input id="wp-panel-search-input" data-search type="text" inputmode="search" placeholder="Search saved" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
-      <button class="wp-clear-search${hasQuery ? " is-visible" : ""}" type="button" aria-label="Clear search" data-clear-search ${hasQuery ? "" : "disabled"}>
+      <button class="wp-clear-search is-visible" type="button" aria-label="${escapeAttribute(actionLabel)}" title="${escapeAttribute(actionLabel)}" data-clear-search>
         ${lucideXIcon("wp-clear-search-icon")}
       </button>
     </div>
@@ -215,7 +212,7 @@ function renderPanelSummaryHtml(displayItems) {
         </button>
         ${renderCurrencyMenuHtml()}
       </div>
-      <button class="wp-icon-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
+      <button class="wp-icon-button wp-search-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
         ${lucideSearchIcon()}
       </button>
       <button class="wp-icon-button wp-view-button${panelState.compactView ? " is-toggle-active" : ""}" type="button" aria-label="${panelState.compactView ? "Compact view on. Switch to cards" : "Card view on. Switch to compact"}" aria-pressed="${panelState.compactView}" title="${panelState.compactView ? "Card view" : "Compact view"}" data-panel-compact-toggle>
@@ -251,17 +248,22 @@ function renderPanelItem(item) {
   const brand = formatBrandName(item.brand || item.source || sourceNameFromUrl(item.url));
   const priceHtml = renderSitePriceHtml(item, "wp");
   const isArchived = isPanelItemArchived(item);
+  const itemLabel = panelItemAccessibleName(item);
+  const imageUrls = panelCardImageUrls(item);
 
   return `
     <article class="wp-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}">
-      <a class="wp-media" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">
-        ${item.imageUrl ? `<span class="wp-image-frame is-wide"><img src="${escapeAttribute(item.imageUrl)}" alt="" referrerpolicy="no-referrer"></span>` : lucideImageIcon("wp-image-placeholder")}
+      <div class="wp-media" ${panelImageSliderAttributes(item)}>
+        <a class="wp-media-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(`Open ${itemLabel}`)}">
+          ${renderPanelCardImageFrame(item, { slider: false })}
+        </a>
+        ${imageUrls.length > 1 ? renderPanelImageSliderControls(imageUrls, item) : ""}
         ${isArchived
-          ? `<button class="wp-restore" type="button" title="Restore" aria-label="Restore" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
-             <button class="wp-remove" type="button" title="Delete" aria-label="Delete" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
-          : `<button class="wp-edit" type="button" title="Edit" aria-label="Edit" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
-             <button class="wp-archive" type="button" title="Archive" aria-label="Archive" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
-      </a>
+          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
+             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
+          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
+             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
+      </div>
       <div class="wp-item-copy">
         <div class="wp-brand-row">
           <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
@@ -364,19 +366,4 @@ function svgElementFromHtml(html) {
   const template = document.createElement("template");
   template.innerHTML = html.trim();
   return template.content.firstElementChild || document.createElement("span");
-}
-
-function renderPanelEmpty() {
-  const hasQuery = Boolean(panelState.searchQuery);
-  const isEmptyLibrary = !panelActiveItems(panelState.items).length && !hasQuery && !panelState.archivedOpen;
-
-  return `
-    <div class="wp-empty">
-      <div>
-        ${isEmptyLibrary ? contourTshirtIcon() : ""}
-        <strong>${panelState.archivedOpen ? "No archived items" : hasQuery ? "No matches" : "Save your first product"}</strong>
-        <span>${panelState.archivedOpen ? "Archived items will appear here." : hasQuery ? "Try another name, category, or source." : "Right-click a product card, image, link, or product page and choose Save to Stash."}</span>
-      </div>
-    </div>
-  `;
 }

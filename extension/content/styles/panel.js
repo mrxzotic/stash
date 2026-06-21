@@ -5,10 +5,12 @@ function panelStyles() {
     panelStylesChunk3(),
     panelStylesChunk4(),
     panelContentStyles(),
+    panelImageStyles(),
     panelCompactStyles(),
     panelStylesChunk5(),
     panelCurrencyStyles(),
     panelSortStyles(),
+    panelSaveCurrentStyles(),
     panelPromoStyles(),
     panelReleaseStyles()
   ].join("");

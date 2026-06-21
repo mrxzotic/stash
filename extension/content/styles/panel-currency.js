@@ -2,12 +2,16 @@ function panelCurrencyStyles() {
   return `
     .wp-currency-select {
       position: relative;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
       flex: 0 0 auto;
     }
 
     .wp-total {
-      gap: 6px;
-      padding: 0 10px 0 16px;
+      gap: 8px;
+      min-width: 104px;
+      padding: 0 12px 0 16px;
       cursor: pointer;
       transition:
         transform 180ms cubic-bezier(.16, 1, .3, 1),
@@ -46,8 +50,8 @@ function panelCurrencyStyles() {
     }
 
     .wp-total-chevron {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       opacity: 0.5;
       stroke: currentColor;
       stroke-width: 2.2;

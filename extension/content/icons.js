@@ -72,6 +72,22 @@ function lucideChevronDownIcon(className = "wp-lucide") {
   `;
 }
 
+function lucideChevronLeftIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m15 18-6-6 6-6"/>
+    </svg>
+  `;
+}
+
+function lucideChevronRightIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m9 18 6-6-6-6"/>
+    </svg>
+  `;
+}
+
 function lucideCheckIcon(className = "wp-lucide") {
   return `
     <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -94,6 +110,16 @@ function lucidePlusIcon(className = "wp-lucide") {
     <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 5v14"/>
       <path d="M5 12h14"/>
+    </svg>
+  `;
+}
+
+function lucideInfoIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 16v-4"/>
+      <path d="M12 8h.01"/>
     </svg>
   `;
 }
@@ -182,6 +208,24 @@ function lucideDownloadIcon(className = "wp-lucide") {
   `;
 }
 
+function lucideUploadIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 21V9"/>
+      <path d="m7 14 5-5 5 5"/>
+      <path d="M5 3h14"/>
+    </svg>
+  `;
+}
+
+function xSocialIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.47l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93Zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41Z"/>
+    </svg>
+  `;
+}
+
 function lucideAtSignIcon(className = "wp-lucide") {
   return `
     <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -249,13 +293,28 @@ function lucideImageIcon(className = "wp-lucide") {
   `;
 }
 
-function contourTshirtIcon() {
+function lucideImageOffIcon(className = "wp-lucide") {
   return `
-    <svg class="wp-empty-tee" viewBox="0 0 140 140" fill="none" aria-hidden="true">
-      <path d="M50 26 34 31 18 54l22 14 8-12v56h44V56l8 12 22-14-16-23-16-5c-4 9-11 14-20 14s-16-5-20-14Z"/>
-      <path d="M48 112h44"/>
-      <path d="M48 57c7 4 14 6 22 6s15-2 22-6"/>
-      <path d="M57 31c3 7 7 10 13 10s10-3 13-10"/>
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 3 21 21"/>
+      <path d="M3 7V5a2 2 0 0 1 .59-1.41"/>
+      <path d="M9 3h10a2 2 0 0 1 2 2v10"/>
+      <path d="M21 19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V11"/>
+      <path d="m6 21 6-6"/>
+      <circle cx="9" cy="9" r="2"/>
+    </svg>
+  `;
+}
+
+function lucidePackagePlusIcon(className = "wp-lucide") {
+  return `
+    <svg class="${escapeAttribute(className)}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M16 16h6"/>
+      <path d="M19 13v6"/>
+      <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/>
+      <path d="m7.5 4.27 9 5.15"/>
+      <path d="m3.29 7 8.71 5 8.71-5"/>
+      <path d="M12 22V12"/>
     </svg>
   `;
 }

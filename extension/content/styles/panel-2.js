@@ -3,8 +3,8 @@ function panelStylesChunk2() {
     .wp-summary {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      min-width: 64px;
+      gap: 8px;
+      min-width: 104px;
       flex: 1 1 auto;
       color: var(--foreground);
       font-size: var(--text-ui);
@@ -12,35 +12,9 @@ function panelStylesChunk2() {
       white-space: nowrap;
     }
 
-    .wp-brand-mark {
-      display: inline-grid;
-      place-items: center;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      color: var(--foreground);
-      font-size: var(--text-ui);
-      line-height: 1;
-      font-weight: 700;
-      letter-spacing: 0;
-      opacity: 0.4;
-      user-select: none;
-      cursor: pointer;
-    }
-
-    .wp-brand-mark:disabled {
-      cursor: default;
-    }
-
-    .wp-brand-mark:not(:disabled):hover,
-    .wp-brand-mark:not(:disabled):focus-visible {
-      opacity: 0.72;
-      outline: 0;
-    }
-
     .wp-count {
       position: relative;
-      height: 28px;
+      height: var(--wp-pill-height);
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -50,7 +24,7 @@ function panelStylesChunk2() {
       background: rgba(255, 255, 255, 0.36);
       color: rgba(8, 11, 16, 0.72);
       font-size: var(--text-control);
-      font-weight: 660;
+      font-weight: 650;
       line-height: 1;
       text-align: left;
       appearance: none;
@@ -102,6 +76,8 @@ function panelStylesChunk2() {
       border-color: rgba(8, 11, 16, 0.84);
       background: rgba(8, 11, 16, 0.84);
       font-weight: 720;
+      gap: 8px;
+      padding-right: 8px;
     }
 
     .wp-count.is-active::before {
@@ -119,8 +95,8 @@ function panelStylesChunk2() {
     .wp-count-clear-icon {
       position: relative;
       z-index: 1;
-      width: 13px;
-      height: 13px;
+      width: var(--wp-pill-icon-size);
+      height: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.4;
       stroke-linecap: round;
@@ -129,7 +105,7 @@ function panelStylesChunk2() {
     }
 
     .wp-total {
-      height: 32px;
+      height: 40px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -151,15 +127,19 @@ function panelStylesChunk2() {
 
     .wp-icon-button {
       position: relative;
-      width: 36px;
+      width: 40px;
       height: 40px;
       display: grid;
       place-items: center;
+      flex: 0 0 40px;
+      padding: 0;
       border: 0;
       border-radius: var(--radius);
       background: transparent;
       color: var(--foreground);
       box-shadow: none;
+      appearance: none;
+      line-height: 1;
       transition:
         background 140ms ease,
         color 140ms ease,
@@ -170,6 +150,15 @@ function panelStylesChunk2() {
     .wp-icon-button.is-active {
       color: var(--foreground);
       background: transparent;
+    }
+
+    .wp-icon-button.wp-search-button:hover,
+    .wp-icon-button.wp-search-button:focus-visible,
+    .wp-icon-button.wp-search-button[aria-expanded="true"] {
+      background:
+        linear-gradient(135deg, rgba(110, 194, 255, 0.15), rgba(255, 139, 222, 0.15) 52%, rgba(160, 255, 208, 0.15)),
+        rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 0 1px rgba(8, 11, 16, 0.06);
     }
 
     .wp-icon-button.is-toggle-active {
@@ -190,6 +179,15 @@ function panelStylesChunk2() {
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
     }
 
+    .wp-theme-graphite .wp-icon-button.wp-search-button:hover,
+    .wp-theme-graphite .wp-icon-button.wp-search-button:focus-visible,
+    .wp-theme-graphite .wp-icon-button.wp-search-button[aria-expanded="true"] {
+      background:
+        linear-gradient(135deg, rgba(126, 209, 255, 0.15), rgba(255, 154, 227, 0.15) 52%, rgba(168, 255, 214, 0.15)),
+        rgba(255, 255, 255, 0.06);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
     .wp-theme-graphite .wp-filter.is-active,
     .wp-theme-graphite .wp-count.is-active,
     .wp-theme-graphite .wp-summary-brand-pill {
@@ -204,6 +202,12 @@ function panelStylesChunk2() {
       border-color: rgba(255, 255, 255, 0.1);
       background: rgba(22, 23, 26, 0.94);
       box-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
+    }
+
+    .wp-theme-graphite .wp-inline-search {
+      background:
+        linear-gradient(135deg, rgba(126, 209, 255, 0.15), rgba(255, 154, 227, 0.15) 52%, rgba(168, 255, 214, 0.15)),
+        rgba(22, 23, 26, 0.94);
     }
 
     .wp-theme-graphite .wp-brand,
@@ -245,8 +249,8 @@ function panelStylesChunk2() {
     }
 
     .wp-lucide {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;

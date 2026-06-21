@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Stash",
-  "version": "0.1.154",
+  "name": "Stashed",
+  "version": "0.1.236",
   "description": "Save products from any shop into a compact local stash.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "background": {
@@ -12,7 +12,7 @@
     "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' http: https: data:"
   },
   "action": {
-    "default_title": "Stash",
+    "default_title": "Stashed",
     "default_icon": {
       "16": "icons/stash-cart-16.png",
       "32": "icons/stash-cart-32.png",
@@ -30,7 +30,12 @@
     {
       "resources": [
         "assets/alex-kornev.png",
-        "assets/source-aimeleondore.png"
+        "icons/stash-cart-48.png",
+        "assets/source-aimeleondore.png",
+        "fonts/inter-latin-var.woff2",
+        "fonts/ibm-plex-mono-latin-400.woff2",
+        "fonts/ibm-plex-mono-latin-600.woff2",
+        "fonts/ibm-plex-mono-latin-700.woff2"
       ],
       "matches": ["http://*/*", "https://*/*"]
     }

@@ -26,7 +26,7 @@ function findJsonLdProduct() {
     ? product.offers
     : [product.offers].filter(Boolean);
   const offer = offers.find((candidate) => offerMatchesCurrentUrl(candidate)) || offers[0] || {};
-  const image = Array.isArray(product.image) ? product.image[0] : product.image;
+  const imageUrls = normalizeProductImageUrls(product.image);
   const brand = jsonLdProductBrand(product);
 
   return compactObject({
@@ -38,7 +38,8 @@ function findJsonLdProduct() {
     currency: cleanText(offer.priceCurrency),
     compareAtPriceText: formatOriginalPrice(offer.highPrice || offer.priceSpecification?.price, offer.priceCurrency),
     compareAtPriceAmount: numericPrice(offer.highPrice || offer.priceSpecification?.price),
-    imageUrl: toAbsoluteUrl(image),
+    imageUrl: imageUrls[0] || "",
+    imageUrls,
     rawCategory: cleanText(product.category)
   });
 }
@@ -68,7 +69,7 @@ function findJsonLdProductInDocument(doc, productUrl) {
     ? product.offers
     : [product.offers].filter(Boolean);
   const offer = offers.find((candidate) => offerMatchesUrl(candidate, productUrl)) || offers[0] || {};
-  const image = Array.isArray(product.image) ? product.image[0] : product.image;
+  const imageUrls = normalizeProductImageUrlsFor(product.image, "", productUrl);
   const brand = jsonLdProductBrand(product);
 
   return compactObject({
@@ -80,7 +81,8 @@ function findJsonLdProductInDocument(doc, productUrl) {
     currency: cleanText(offer.priceCurrency),
     compareAtPriceText: formatOriginalPrice(offer.highPrice || offer.priceSpecification?.price, offer.priceCurrency),
     compareAtPriceAmount: numericPrice(offer.highPrice || offer.priceSpecification?.price),
-    imageUrl: toAbsoluteUrlFor(image, productUrl),
+    imageUrl: imageUrls[0] || "",
+    imageUrls,
     rawCategory: cleanText(product.category)
   });
 }

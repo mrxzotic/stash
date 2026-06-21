@@ -19,6 +19,7 @@ vm.createContext(sandbox);
   "extension/content/utils.js",
   "extension/content/media.js",
   "extension/content/text.js",
+  "extension/content/source-icons.js",
   "extension/content/extractors/context.js"
 ].forEach((file) => {
   vm.runInContext(fs.readFileSync(path.join(root, file), "utf8"), sandbox, {
