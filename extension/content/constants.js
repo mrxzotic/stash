@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-21-panel-size-revert-v1";
+var CONTENT_VERSION = "2026-06-21-archive-hitbox-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";

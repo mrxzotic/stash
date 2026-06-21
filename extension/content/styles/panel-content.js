@@ -301,7 +301,7 @@ function panelContentStyles() {
       background: transparent;
       cursor: pointer;
       opacity: 0;
-      pointer-events: none;
+      pointer-events: auto;
       transform: none;
       transition: opacity 140ms ease, color 140ms ease;
     }
