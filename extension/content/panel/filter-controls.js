@@ -49,7 +49,19 @@ function hasPanelFilterKeyboardFocus(filters) {
 function setPanelFilterControlsVisible(root, visible) {
   window.clearTimeout(root.__stashFilterControlsHideTimer);
   const filters = root.querySelector(".wp-filters");
-  filters?.classList.toggle("is-controls-visible", visible);
+  if (!filters) {
+    return;
+  }
+
+  const wasVisible = filters.classList.contains("is-controls-visible");
+  if (wasVisible === visible) {
+    if (!visible) {
+      setPanelFilterRemoveShell(filters, null);
+    }
+    return;
+  }
+
+  filters.classList.toggle("is-controls-visible", visible);
   if (!visible) {
     setPanelFilterRemoveShell(filters, null);
   }

@@ -1,21 +1,39 @@
 function renderPanelSortControls() {
-  const disabled = panelScopedItems(panelState.items).length < 2;
+  if (!panelShouldShowSortControls()) {
+    return "";
+  }
+
   return `
     <span class="wp-sort-controls" aria-label="Sort saved items">
-      ${renderPanelSortButton(PANEL_SORT_FIELD_NAME, disabled)}
-      ${renderPanelSortButton(PANEL_SORT_FIELD_RECENT, disabled)}
+      ${renderPanelSortButton(PANEL_SORT_FIELD_NAME)}
+      ${renderPanelSortButton(PANEL_SORT_FIELD_RECENT)}
     </span>
   `;
 }
 
-function renderPanelSortButton(field, disabled) {
+function renderPanelSortButton(field) {
   const state = panelSortButtonState(field);
   return `
-    <button class="wp-sort-button" type="button" aria-label="${escapeAttribute(state.label)}" title="${escapeAttribute(state.title)}" data-panel-sort="${escapeAttribute(field)}" ${disabled ? "disabled" : ""}>
+    <button class="wp-sort-button" type="button" aria-label="${escapeAttribute(state.label)}" title="${escapeAttribute(state.title)}" data-panel-sort="${escapeAttribute(field)}">
       <span class="wp-sort-label">${escapeHtml(state.shortLabel)}</span>
       ${state.icon}
     </button>
   `;
+}
+
+function panelVisibleItems(items = panelState.items) {
+  return panelScopedItems(items)
+    .filter(panelItemMatchesActiveCategory)
+    .filter(panelItemMatchesSearch)
+    .filter(panelItemMatchesBrandFilter);
+}
+
+function panelItemMatchesActiveCategory(item) {
+  return panelState.activeCategory === "all" || item.category === panelState.activeCategory;
+}
+
+function panelShouldShowSortControls(items = panelState.items) {
+  return panelVisibleItems(items).length >= 2;
 }
 
 function panelSortButtonState(field) {
@@ -28,8 +46,8 @@ function panelSortButtonState(field) {
       label: `Sort ${label.toLowerCase()}`,
       title: `Sort name ${ascending ? "A to Z" : "Z to A"}`,
       icon: ascending
-        ? lucideArrowDownIcon("wp-sort-arrow")
-        : lucideArrowUpIcon("wp-sort-arrow")
+        ? phosphorArrowDownIcon("wp-sort-arrow")
+        : phosphorArrowUpIcon("wp-sort-arrow")
     };
   }
 
@@ -40,8 +58,8 @@ function panelSortButtonState(field) {
     label: `Sort ${label.toLowerCase()}`,
     title: `Sort ${newestFirst ? "newest first" : "oldest first"}`,
     icon: newestFirst
-      ? lucideArrowDownIcon("wp-sort-arrow")
-      : lucideArrowUpIcon("wp-sort-arrow")
+      ? phosphorArrowDownIcon("wp-sort-arrow")
+      : phosphorArrowUpIcon("wp-sort-arrow")
   };
 }
 
@@ -137,6 +155,11 @@ function didHandlePanelSortPointerClick(root, field) {
 }
 
 function applyPanelSort(field, root) {
+  if (!panelShouldShowSortControls()) {
+    syncPanelSortControls(root);
+    return;
+  }
+
   const next = panelNextSortState(field);
   panelState.sortField = next.sortField;
   panelState.sortDirection = next.sortDirection;
@@ -149,11 +172,27 @@ function applyPanelSort(field, root) {
 }
 
 function syncPanelSortControls(root) {
-  const disabled = panelScopedItems(panelState.items).length < 2;
+  const filters = root.querySelector(".wp-filters");
+  const currentControls = filters?.querySelector?.(".wp-sort-controls");
+  const shouldShow = panelShouldShowSortControls();
+  if (!shouldShow) {
+    if (currentControls) {
+      currentControls.remove();
+      syncPanelSortControlLayout(root);
+    }
+    return;
+  }
+
+  if (!currentControls) {
+    const addButton = filters?.querySelector?.("[data-add-category]");
+    addButton?.insertAdjacentHTML?.("beforebegin", renderPanelSortControls());
+    syncPanelSortControlLayout(root);
+  }
+
   root.querySelectorAll("[data-panel-sort]").forEach((button) => {
     const field = button.dataset.panelSort;
     const state = panelSortButtonState(field);
-    button.disabled = disabled;
+    button.disabled = false;
     button.classList.remove("is-active");
     button.setAttribute("aria-label", state.label);
     button.removeAttribute("aria-pressed");
@@ -166,9 +205,10 @@ function syncPanelSortControls(root) {
 }
 
 function syncPanelSortControlLayout(root) {
+  syncPanelItemsTopOffset(root, { defer: false });
   window.requestAnimationFrame(() => {
-    syncPanelItemsTopOffset(root);
-    window.setTimeout(() => syncPanelItemsTopOffset(root), 220);
+    syncPanelItemsTopOffset(root, { defer: false });
+    window.setTimeout(() => syncPanelItemsTopOffset(root, { defer: false }), 160);
   });
 }
 

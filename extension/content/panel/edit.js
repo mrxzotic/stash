@@ -13,7 +13,7 @@ function renderEditItemDialog() {
     <form class="wp-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-edit-item-title" data-panel-modal data-edit-item-form>
       <div class="wp-edit-head">
         <h3 id="wp-edit-item-title">Edit item</h3>
-        <button class="wp-edit-close" type="button" aria-label="Cancel edit" data-cancel-edit-item>${lucideXIcon("wp-edit-close-icon")}</button>
+        <button class="wp-edit-close" type="button" aria-label="Cancel edit" data-cancel-edit-item>${phosphorXIcon("wp-edit-close-icon")}</button>
       </div>
       <label class="wp-edit-field">
         <span>Brand</span>

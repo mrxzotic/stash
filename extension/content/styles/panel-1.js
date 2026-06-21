@@ -143,9 +143,9 @@ function panelStylesChunk1() {
       right: 0;
       z-index: 2;
       pointer-events: none;
-      background-repeat: repeat, no-repeat, no-repeat, no-repeat;
-      background-size: 72px 72px, 110% 84%, 96% 78%, 100% 100%;
-      background-blend-mode: soft-light, normal, normal, normal;
+      background-repeat: no-repeat, no-repeat, no-repeat;
+      background-size: 110% 84%, 96% 78%, 100% 100%;
+      background-blend-mode: normal, normal, normal;
       -webkit-backdrop-filter: blur(16px) saturate(1.08);
       backdrop-filter: blur(16px) saturate(1.08);
       transform: translateZ(0);
@@ -158,7 +158,6 @@ function panelStylesChunk1() {
       top: 0;
       height: 228px;
       background-image:
-        url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='72'%20height='72'%20viewBox='0%200%2072%2072'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.78'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type='table'%20tableValues='0%20.18'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect%20width='72'%20height='72'%20filter='url(%23n)'%20opacity='.25'/%3E%3C/svg%3E"),
         radial-gradient(ellipse at 26% 0%, var(--shell-edge-mesh-a) 0%, color-mix(in srgb, var(--shell-edge-mesh-a) 42%, transparent) 42%, transparent 72%),
         radial-gradient(ellipse at 82% 18%, var(--shell-edge-mesh-b) 0%, transparent 66%),
         linear-gradient(
@@ -189,7 +188,6 @@ function panelStylesChunk1() {
       bottom: 0;
       height: 112px;
       background-image:
-        url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='72'%20height='72'%20viewBox='0%200%2072%2072'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.78'%20numOctaves='2'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type='table'%20tableValues='0%20.18'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect%20width='72'%20height='72'%20filter='url(%23n)'%20opacity='.25'/%3E%3C/svg%3E"),
         radial-gradient(ellipse at 70% 100%, var(--shell-edge-mesh-a) 0%, color-mix(in srgb, var(--shell-edge-mesh-a) 38%, transparent) 40%, transparent 72%),
         radial-gradient(ellipse at 18% 84%, var(--shell-edge-mesh-b) 0%, transparent 64%),
         linear-gradient(

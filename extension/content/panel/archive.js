@@ -20,6 +20,10 @@ function panelScopedItems(items = panelState.items) {
     : panelActiveItems(items);
 }
 
+function panelSummaryItems(items = panelState.items) {
+  return panelScopedItems(items);
+}
+
 function panelArchivedCount(items = panelState.items) {
   return panelArchivedItems(items).length;
 }

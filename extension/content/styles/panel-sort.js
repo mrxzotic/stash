@@ -81,6 +81,7 @@ function panelSortStyles() {
     .wp-sort-arrow {
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
+      font-size: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.35;
       stroke-linecap: round;

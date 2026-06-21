@@ -1,10 +1,17 @@
 function panelCurrencyStyles() {
   return `
+    .wp-actions {
+      flex: 1 1 auto;
+      min-width: 0;
+      justify-content: flex-end;
+    }
+
     .wp-currency-select {
       position: relative;
       height: 40px;
       display: inline-flex;
       align-items: center;
+      justify-content: flex-end;
       flex: 0 0 auto;
     }
 
@@ -12,6 +19,7 @@ function panelCurrencyStyles() {
       gap: 8px;
       min-width: 104px;
       padding: 0 12px 0 16px;
+      justify-content: flex-end;
       cursor: pointer;
       transition:
         transform 180ms cubic-bezier(.16, 1, .3, 1),
@@ -38,6 +46,8 @@ function panelCurrencyStyles() {
     .wp-total-value {
       display: inline-block;
       min-width: 0;
+      text-align: right;
+      transform-origin: right center;
       will-change: transform, filter;
     }
 
@@ -52,6 +62,7 @@ function panelCurrencyStyles() {
     .wp-total-chevron {
       width: 16px;
       height: 16px;
+      font-size: 16px;
       opacity: 0.5;
       stroke: currentColor;
       stroke-width: 2.2;
@@ -147,6 +158,8 @@ function panelCurrencyStyles() {
     .wp-currency-check-icon {
       width: 14px;
       height: 14px;
+      color: var(--foreground);
+      font-size: 14px;
       stroke: var(--foreground);
       stroke-width: 2.4;
       stroke-linecap: round;
@@ -158,6 +171,42 @@ function panelCurrencyStyles() {
       font-family: var(--figure-font);
       font-variant-numeric: tabular-nums;
       font-weight: 700;
+    }
+
+    .wp-theme-graphite .wp-currency-menu {
+      border-color: rgba(255, 255, 255, 0.12);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(92, 172, 255, 0.12), transparent 38%),
+        radial-gradient(circle at 86% 14%, rgba(166, 126, 255, 0.1), transparent 42%),
+        linear-gradient(180deg, rgba(34, 36, 42, 0.96), rgba(20, 21, 25, 0.98)),
+        rgba(20, 21, 25, 0.98);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 20px 46px rgba(0, 0, 0, 0.42);
+    }
+
+    .wp-theme-graphite .wp-currency-option {
+      color: rgba(244, 244, 240, 0.82);
+    }
+
+    .wp-theme-graphite .wp-currency-option:hover,
+    .wp-theme-graphite .wp-currency-option:focus-visible {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 250, 0.96);
+    }
+
+    .wp-theme-graphite .wp-currency-option.is-selected {
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 250, 0.98);
+    }
+
+    .wp-theme-graphite .wp-currency-symbol {
+      color: rgba(244, 244, 240, 0.58);
+    }
+
+    .wp-theme-graphite .wp-currency-check-icon {
+      color: rgba(255, 255, 250, 0.92);
+      stroke: currentColor;
     }
 
     @keyframes wpCurrencyMenuIn {

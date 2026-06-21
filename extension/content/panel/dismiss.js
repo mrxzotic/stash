@@ -11,8 +11,10 @@ function bindPanelDismissEvents(root) {
   }
 
   unbindPanelDismissEvents();
+  const insideListener = () => cancelPendingPanelDismiss(root);
   const listener = (event) => handlePanelDocumentPointerDown(root, event);
-  window.__stashPanelDismiss = { root, listener };
+  window.__stashPanelDismiss = { root, listener, insideListener, outsideTimer: 0 };
+  root.addEventListener("pointerdown", insideListener, true);
   document.addEventListener("pointerdown", listener, true);
 }
 
@@ -23,7 +25,19 @@ function unbindPanelDismissEvents(root) {
   }
 
   document.removeEventListener("pointerdown", current.listener, true);
+  current.root?.removeEventListener?.("pointerdown", current.insideListener, true);
+  window.clearTimeout(current.outsideTimer);
   window.__stashPanelDismiss = null;
+}
+
+function cancelPendingPanelDismiss(root) {
+  const current = window.__stashPanelDismiss;
+  if (!current || current.root !== root || !current.outsideTimer) {
+    return;
+  }
+
+  window.clearTimeout(current.outsideTimer);
+  current.outsideTimer = 0;
 }
 
 function handlePanelDocumentPointerDown(root, event) {
@@ -48,5 +62,22 @@ function handlePanelDocumentPointerDown(root, event) {
     return;
   }
 
-  closeStashPanel();
+  schedulePanelOutsideDismiss(root);
+}
+
+function schedulePanelOutsideDismiss(root) {
+  const current = window.__stashPanelDismiss;
+  if (!current || current.root !== root) {
+    return;
+  }
+
+  window.clearTimeout(current.outsideTimer);
+  current.outsideTimer = window.setTimeout(() => {
+    if (window.__stashPanelDismiss !== current || !panelState.open) {
+      return;
+    }
+
+    current.outsideTimer = 0;
+    closeStashPanel();
+  }, 0);
 }

@@ -12,6 +12,9 @@ function panelStyles() {
     panelSortStyles(),
     panelSaveCurrentStyles(),
     panelPromoStyles(),
-    panelReleaseStyles()
+    panelReleaseStyles(),
+    panelRebuildMotionStyles(),
+    panelSaveMotionStyles(),
+    panelInteractionMotionStyles()
   ].join("");
 }

@@ -174,6 +174,8 @@ function panelStylesChunk3() {
     .wp-select-check {
       width: 14px;
       height: 14px;
+      color: var(--foreground);
+      font-size: 14px;
       stroke: var(--foreground);
       stroke-width: 2.4;
       stroke-linecap: round;
@@ -271,6 +273,7 @@ function panelStylesChunk3() {
     .wp-background-check-icon {
       width: 12px;
       height: 12px;
+      font-size: 12px;
       stroke: currentColor;
       stroke-width: 3;
       stroke-linecap: round;

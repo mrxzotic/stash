@@ -40,7 +40,10 @@ function isNonProductPriceMatch(text, index) {
   const before = cleanText(String(text || "").slice(Math.max(0, index - 90), index));
   return (
     firstPriceTokenIndex(before) < 0 &&
-    /\b(?:free\s+shipping|shipping|delivery|returns?|orders?)\b/i.test(before)
+    (
+      /\b(?:free\s+shipping|shipping|delivery|returns?|orders?)\b/i.test(before) ||
+      /(?:бесплатная\s+доставка|доставка|возврат|заказ(?:е|ы)?)/i.test(before)
+    )
   );
 }
 

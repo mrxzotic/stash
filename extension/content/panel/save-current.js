@@ -1,7 +1,7 @@
 function renderPanelSaveCurrentTrigger() {
   return `
     <button class="wp-brand-save" type="button" aria-label="Save current item" title="Save current item" data-panel-save-current>
-      ${lucidePlusIcon("wp-brand-save-icon")}
+      ${phosphorPlusIcon("wp-brand-save-icon")}
     </button>
   `;
 }

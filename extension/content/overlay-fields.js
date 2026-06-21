@@ -1,14 +1,16 @@
 function renderSavedOverlayFields(item) {
-  return savedOverlayFields(item).map((field) => `
+  const fields = savedOverlayFields(item);
+  return `
+    ${fields.map((field) => `
     <div class="wl-field is-${escapeAttribute(field.key)}">
       <dt>${escapeHtml(field.label)}</dt>
       <dd>
         <span class="wl-field-value">${field.html}</span>
-        <span class="wl-confidence" aria-label="${escapeAttribute(`${field.label} confidence ${field.confidence} percent`)}">${field.confidence}%</span>
         ${renderFieldAlternatives(field)}
       </dd>
     </div>
-  `).join("");
+    `).join("")}
+  `;
 }
 
 function savedOverlayFields(item) {

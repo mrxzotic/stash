@@ -3,7 +3,7 @@ function renderFounderPromoTrigger() {
     <span class="wp-brand-cluster">
       ${renderPanelSaveCurrentTrigger()}
       <button class="wp-topbar-info" type="button" aria-label="About Stashed" aria-expanded="${panelState.founderPromoOpen}" title="About Stashed" data-founder-promo-trigger>
-        ${lucideInfoIcon("wp-topbar-info-icon")}
+        ${phosphorInfoIcon("wp-topbar-info-icon")}
       </button>
     </span>
   `;
@@ -18,7 +18,7 @@ function renderFounderPromoDialog() {
   return `
     <section class="wp-founder-modal wp-popover" role="dialog" aria-modal="true" aria-labelledby="wp-founder-app-title" data-panel-modal>
       <button class="wp-founder-close" type="button" aria-label="Close" title="Close" data-founder-promo-close>
-        ${lucideXIcon("wp-founder-close-icon")}
+        ${phosphorXIcon("wp-founder-close-icon")}
       </button>
       ${renderFounderAppIntro(version)}
       ${renderFounderBackupActions()}
@@ -31,7 +31,7 @@ function renderFounderPromoDialog() {
 function renderFounderAppIntro(version) {
   return `
     <div class="wp-founder-app">
-      <img class="wp-founder-app-logo" src="${escapeAttribute(stashLogoUrl())}" alt="Stashed">
+      <img class="wp-founder-app-logo" src="${escapeAttribute(stashedLogoUrl())}" alt="Stashed">
       <div class="wp-founder-app-copy">
         <strong id="wp-founder-app-title">Stashed</strong>
         <p>Save products from any shop into a compact local wishlist.</p>
@@ -46,7 +46,7 @@ function renderFounderStashLinks() {
     <div class="wp-founder-section" aria-label="Product links">
       <span class="wp-founder-section-title">Product</span>
       <div class="wp-founder-links">
-        ${renderFounderContact("Site", "getstash.app", "https://getstash.app", lucideGlobeIcon("wp-founder-link-icon"))}
+        ${renderFounderContact("Site", "getstash.app", "https://getstash.app", phosphorGlobeIcon("wp-founder-link-icon"))}
       </div>
     </div>
   `;
@@ -61,10 +61,10 @@ function renderFounderPrivateContacts() {
         <strong>Alex Kornev</strong>
       </div>
       <div class="wp-founder-links">
-        ${renderFounderContact("X", "@zoticx", "https://x.com/zoticx", xSocialIcon("wp-founder-x-icon"))}
-        ${renderFounderContact("Telegram", "t.me/zoticx", "https://t.me/zoticx", lucideSendIcon("wp-founder-link-icon"))}
-        ${renderFounderContact("Email", "a.kornev@me.com", "mailto:a.kornev@me.com", lucideMailIcon("wp-founder-link-icon"))}
-        ${renderFounderContact("GitHub", "github.com/mrxzotic", "https://github.com/mrxzotic", lucideGithubIcon("wp-founder-link-icon"))}
+        ${renderFounderContact("X", "@zoticx", "https://x.com/zoticx", phosphorXLogoIcon("wp-founder-link-icon"))}
+        ${renderFounderContact("Telegram", "t.me/zoticx", "https://t.me/zoticx", phosphorSendIcon("wp-founder-link-icon"))}
+        ${renderFounderContact("Email", "a.kornev@me.com", "mailto:a.kornev@me.com", phosphorMailIcon("wp-founder-link-icon"))}
+        ${renderFounderContact("GitHub", "github.com/mrxzotic", "https://github.com/mrxzotic", phosphorGithubLogoIcon("wp-founder-link-icon"))}
       </div>
     </div>
   `;
@@ -92,11 +92,11 @@ function renderFounderBackupActions() {
       </div>
       <div class="wp-founder-backup-actions">
         <button class="wp-founder-backup-action" type="button" aria-label="Export Stashed JSON" title="Export Stashed JSON" data-export-backup>
-          ${lucideDownloadIcon("wp-founder-action-icon")}
+          ${phosphorDownloadIcon("wp-founder-action-icon")}
           <span>Export JSON</span>
         </button>
         <button class="wp-founder-backup-action" type="button" aria-label="Import Stashed JSON" title="Import Stashed JSON" data-import-backup>
-          ${lucideUploadIcon("wp-founder-action-icon")}
+          ${phosphorUploadIcon("wp-founder-action-icon")}
           <span>Import JSON</span>
         </button>
       </div>
@@ -107,19 +107,7 @@ function renderFounderBackupActions() {
 
 function bindPanelFounderPromoEvents(root) {
   root.querySelectorAll("[data-founder-promo-trigger]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (!panelState.founderPromoOpen) {
-        rememberPanelFocus(button);
-      }
-      panelState.founderPromoOpen = !panelState.founderPromoOpen;
-      panelState.categoryComposerOpen = false;
-      panelState.deleteCategoryId = "";
-      panelState.deleteItemId = "";
-      panelState.editItemId = "";
-      renderStashPanel();
-    });
+    bindPanelFounderPromoTrigger(button);
   });
 
   root.querySelectorAll("[data-founder-promo-close]").forEach((button) => {
@@ -132,6 +120,27 @@ function bindPanelFounderPromoEvents(root) {
   });
 }
 
+function bindPanelFounderPromoTrigger(button) {
+  if (!button || button.__stashFounderPromoBound) {
+    return;
+  }
+
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!panelState.founderPromoOpen) {
+      rememberPanelFocus(button);
+    }
+    panelState.founderPromoOpen = !panelState.founderPromoOpen;
+    panelState.categoryComposerOpen = false;
+    panelState.deleteCategoryId = "";
+    panelState.deleteItemId = "";
+    panelState.editItemId = "";
+    renderStashPanel();
+  });
+  button.__stashFounderPromoBound = true;
+}
+
 function founderPhotoUrl() {
   try {
     return chrome.runtime.getURL("assets/alex-kornev.png");
@@ -140,9 +149,9 @@ function founderPhotoUrl() {
   }
 }
 
-function stashLogoUrl() {
+function stashedLogoUrl() {
   try {
-    return chrome.runtime.getURL("icons/stash-cart-48.png");
+    return chrome.runtime.getURL("icons/stashed-lock-48.png");
   } catch {
     return "";
   }

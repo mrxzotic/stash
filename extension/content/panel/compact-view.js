@@ -26,7 +26,7 @@ function renderPanelCompactItem(item, index = 0) {
   const itemLabel = panelItemAccessibleName(item);
 
   return `
-    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}">
+    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}" data-panel-item-id="${escapeAttribute(item.id)}">
       <span class="wp-compact-index" aria-label="Item ${index + 1}">#${index + 1}</span>
       <a class="wp-compact-thumb ${compactThumbFocusClass(item)}" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(`Open ${itemLabel}`)}">
         ${renderPanelCardImageFrame(item, { slider: false })}
@@ -38,10 +38,10 @@ function renderPanelCompactItem(item, index = 0) {
       ${priceHtml ? `<div class="wp-price-row wp-compact-price">${priceHtml}</div>` : ""}
       <div class="wp-compact-actions">
         ${isArchived
-          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${lucideUndoIcon("wp-card-action-icon")}</button>
-             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${lucideXIcon("wp-card-action-icon")}</button>`
-          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${lucidePencilIcon("wp-card-action-icon")}</button>
-             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${lucideTrashIcon("wp-card-action-icon")}</button>`}
+          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
+             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>`
+          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
+             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${phosphorTrashIcon("wp-card-action-icon")}</button>`}
       </div>
     </article>
   `;
@@ -76,7 +76,7 @@ function syncPanelTopbarPreferenceControls(root = document.getElementById("stash
     compactButton.setAttribute("aria-pressed", String(panelState.compactView));
     compactButton.setAttribute("aria-label", panelState.compactView ? "Compact view on. Switch to cards" : "Card view on. Switch to compact");
     compactButton.setAttribute("title", panelState.compactView ? "Card view" : "Compact view");
-    compactButton.innerHTML = panelState.compactView ? lucideGridIcon() : lucideListIcon();
+    compactButton.innerHTML = panelState.compactView ? phosphorGridIcon() : phosphorListIcon();
   }
 
   const themeButton = root.querySelector("[data-panel-theme-toggle]");
@@ -86,7 +86,7 @@ function syncPanelTopbarPreferenceControls(root = document.getElementById("stash
     themeButton.setAttribute("aria-pressed", String(isGraphite));
     themeButton.setAttribute("aria-label", isGraphite ? "Graphite mode on. Switch to light" : "Graphite mode off. Switch to graphite");
     themeButton.setAttribute("title", isGraphite ? "Light mode" : "Graphite mode");
-    themeButton.innerHTML = isGraphite ? lucideSunIcon() : lucideMoonIcon();
+    themeButton.innerHTML = isGraphite ? phosphorSunIcon() : phosphorMoonIcon();
   }
 }
 
@@ -106,7 +106,7 @@ function renderPanelSummaryLead() {
       <span class="wp-summary-brand-pill is-active" aria-label="${escapeAttribute(`Brand filter active: ${label}`)}">
         <span class="wp-summary-brand-label">${escapeHtml(label)}</span>
         <button class="wp-summary-brand-clear" type="button" aria-label="Clear ${escapeAttribute(label)} brand filter" data-clear-brand-filter>
-          ${lucideXIcon("wp-filter-remove-icon")}
+          ${phosphorXIcon("wp-filter-remove-icon")}
         </button>
       </span>
     </span>
@@ -117,7 +117,7 @@ function renderPanelCountContents(itemCount) {
   const label = panelState.brandCloudOpen ? "Brands" : panelItemCountLabel(itemCount);
   return `
     <span class="wp-count-label">${escapeHtml(label)}</span>
-    ${panelState.brandCloudOpen ? lucideXIcon("wp-count-clear-icon") : ""}
+    ${panelState.brandCloudOpen ? phosphorXIcon("wp-count-clear-icon") : ""}
   `;
 }
 
@@ -206,7 +206,10 @@ function bindPanelPreferenceEvents(root) {
     event.stopPropagation();
     panelState.settingsOpen = false;
     safelyRunPanelAction(async () => {
-      await savePanelSettings({ compactView: !panelState.compactView });
+      await savePanelSettings(
+        { compactView: !panelState.compactView },
+        { rerender: false, syncViewMode: true, rebuildMotion: "view" }
+      );
     });
   });
 
@@ -215,8 +218,10 @@ function bindPanelPreferenceEvents(root) {
     event.stopPropagation();
     panelState.settingsOpen = false;
     safelyRunPanelAction(async () => {
-      await savePanelSettings({ backgroundTheme: toggledGraphiteThemeId() }, { rerender: false });
-      syncPanelTopbarPreferenceControls(root);
+      await savePanelSettings(
+        { backgroundTheme: toggledGraphiteThemeId() },
+        { rerender: false, rebuildMotion: "theme" }
+      );
     });
   });
 }

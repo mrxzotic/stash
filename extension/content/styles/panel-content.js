@@ -276,10 +276,37 @@ function panelContentStyles() {
       width: 42px;
       height: 42px;
       color: rgba(16, 16, 16, 0.2);
+      font-size: 42px;
       stroke: currentColor;
       stroke-width: 1.8;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    .wp-image-missing {
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 120px;
+      padding: 24px;
+      color: rgba(16, 16, 16, 0.42);
+      text-align: center;
+    }
+
+    .wp-image-missing-logo {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      opacity: 0.34;
+    }
+
+    .wp-image-missing-text {
+      max-width: 120px;
+      font-size: var(--text-caption);
+      line-height: 1.2;
+      font-weight: 720;
+      text-transform: uppercase;
     }
 
     .wp-item:hover .wp-image-frame > img {

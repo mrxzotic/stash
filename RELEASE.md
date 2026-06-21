@@ -23,6 +23,9 @@ The extension intentionally does not request persistent `host_permissions` or ma
 - RUB summary conversion can request `https://open.er-api.com/v6/latest/<currency>` and caches numeric rates locally.
 - Rendered product images use `referrerpolicy="no-referrer"`.
 - Stashed does not call a remote favicon proxy or render passive third-party favicon lookups.
+- The Chrome Web Store privacy URL should match `PRIVACY.md`.
+- Third-party icon attribution is recorded in `THIRD_PARTY_NOTICES.md`.
+- Web-accessible resources use dynamic extension URLs to reduce extension fingerprinting.
 
 ## Pre-submit checklist
 

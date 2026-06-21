@@ -29,6 +29,8 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 
 Stashed has no backend, accounts, telemetry, or hidden collection. Saved items stay in local browser storage.
 
+The publishable privacy policy is in [PRIVACY.md](PRIVACY.md).
+
 Stashed uses `activeTab`, `contextMenus`, `scripting`, and `storage`. It does not request persistent all-site host access. Content scripts are injected only after the user clicks the extension action or chooses **Save to Stashed** from the context menu on an HTTP/HTTPS page.
 
 Current network behavior is limited to user-triggered save/open flows:
@@ -87,3 +89,5 @@ Stashed is approaching a v0.1 public release. It currently focuses on local savi
 ## License
 
 MIT
+
+Third-party notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

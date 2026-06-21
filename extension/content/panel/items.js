@@ -65,7 +65,7 @@ function convertToRubSync(amount, currency) {
 
 function panelSummaryTextForItems(items) {
   return formatPanelSummaryTotal(
-    panelActiveItems(items),
+    panelSummaryItems(items),
     panelState.summaryCurrency
   );
 }
@@ -90,7 +90,7 @@ function renderPanelSummaryOnly(options = {}) {
   const count = root?.querySelector(".wp-count");
   if (!total) return;
 
-  const displayItems = panelActiveItems(panelState.items);
+  const displayItems = panelSummaryItems(panelState.items);
   if (count) syncPanelBrandCountControl(root);
   setPanelTotalText(total, formatPanelSummaryTotal(displayItems, panelState.summaryCurrency), options);
 }
@@ -229,7 +229,7 @@ function syncPanelCurrencyControl(root) {
     button.setAttribute("aria-checked", String(isSelected));
     const checkSlot = button.querySelector(".wp-currency-check");
     if (checkSlot) {
-      checkSlot.innerHTML = isSelected ? lucideCheckIcon("wp-currency-check-icon") : "";
+      checkSlot.innerHTML = isSelected ? phosphorCheckIcon("wp-currency-check-icon") : "";
     }
   });
 
@@ -245,7 +245,7 @@ function syncPanelBackgroundChoices(root) {
     button.setAttribute("aria-checked", String(isSelected));
     const check = button.querySelector(".wp-background-check");
     if (check) {
-      check.innerHTML = isSelected ? lucideCheckIcon("wp-background-check-icon") : "";
+      check.innerHTML = isSelected ? phosphorCheckIcon("wp-background-check-icon") : "";
     }
   });
 }
@@ -280,7 +280,7 @@ function syncPanelSelectControl(root, { selector, datasetKey, value, label, meta
     button.setAttribute("aria-checked", String(isSelected));
     const checkSlot = button.querySelector(".wp-select-check-slot");
     if (checkSlot) {
-      checkSlot.innerHTML = isSelected ? lucideCheckIcon("wp-select-check") : "";
+      checkSlot.innerHTML = isSelected ? phosphorCheckIcon("wp-select-check") : "";
     }
   });
 

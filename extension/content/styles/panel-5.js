@@ -213,14 +213,17 @@ function panelStylesChunk5() {
     }
 
     .wp-empty {
+      position: absolute;
+      inset: 0 24px 48px;
       grid-column: 1 / -1;
-      min-height: 430px;
+      min-height: 0;
       display: grid;
       place-items: center;
       color: rgba(16, 16, 16, 0.46);
       text-align: center;
       font-size: var(--text-body);
       line-height: 1.4;
+      pointer-events: none;
     }
 
     .wp-empty > div {
@@ -229,14 +232,13 @@ function panelStylesChunk5() {
       gap: 8px;
     }
 
-    .wp-empty-icon {
-      width: 56px;
-      height: 56px;
+    .wp-empty-logo {
+      width: 44px;
+      height: 44px;
       margin-bottom: 4px;
-      stroke: rgba(16, 16, 16, 0.24);
-      stroke-width: 1.9;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      display: block;
+      object-fit: contain;
+      opacity: 0.72;
     }
 
     .wp-empty strong {

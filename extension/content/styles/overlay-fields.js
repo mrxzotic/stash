@@ -9,15 +9,15 @@ function overlayFieldStyles() {
 
     .wl-field {
       display: grid;
-      grid-template-columns: 46px minmax(0, 1fr);
-      gap: 10px;
+      grid-template-columns: 58px minmax(0, 1fr);
+      gap: 12px;
       align-items: baseline;
       min-width: 0;
     }
 
     .wl-field dt {
       color: rgba(8, 11, 16, 0.46);
-      font-size: 10px;
+      font-size: var(--text-micro);
       line-height: 1.2;
       font-weight: 760;
       letter-spacing: 0;
@@ -25,12 +25,9 @@ function overlayFieldStyles() {
     }
 
     .wl-field dd {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
+      display: block;
       margin: 0;
       min-width: 0;
-      align-items: baseline;
     }
 
     .wl-field-value {
@@ -52,15 +49,6 @@ function overlayFieldStyles() {
       white-space: normal;
     }
 
-    .wl-confidence {
-      color: rgba(8, 11, 16, 0.42);
-      font-family: var(--figure-font);
-      font-size: 11px;
-      line-height: 1.2;
-      font-weight: 680;
-      font-variant-numeric: tabular-nums;
-    }
-
     .wl-alternates {
       grid-column: 1 / -1;
       display: flex;
@@ -77,7 +65,7 @@ function overlayFieldStyles() {
       border-radius: 8px;
       color: rgba(8, 11, 16, 0.72);
       background: rgba(255, 255, 255, 0.46);
-      font-size: 11px;
+      font-size: var(--text-caption);
       line-height: 1;
       font-weight: 700;
       letter-spacing: 0;
@@ -103,7 +91,7 @@ function overlayFieldStyles() {
       color: rgba(8, 11, 16, 0.5);
       font-family: var(--figure-font);
       font-variant-numeric: tabular-nums;
-      font-size: var(--text-body);
+      font-size: var(--text-control);
       line-height: 1.2;
       font-weight: 680;
       white-space: nowrap;
@@ -119,13 +107,25 @@ function overlayFieldStyles() {
     }
 
     .wl-actions {
-      justify-self: center;
-      display: inline-flex;
+      width: 100%;
+      display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       flex-wrap: wrap;
       gap: 8px;
       min-width: 0;
+    }
+
+    .wl-action-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .wl-action-group.is-right {
+      justify-content: flex-end;
+      flex: 1 1 auto;
     }
 
     .wl-edit-button,
@@ -143,23 +143,21 @@ function overlayFieldStyles() {
     }
 
     .wl-edit-button {
-      justify-self: center;
-      gap: 7px;
-      padding: 0 12px;
-      margin-top: 2px;
-      border: 0;
-      color: #fff;
-      background: #050505;
-    }
-
-    .wl-open-button {
-      justify-self: center;
       gap: 7px;
       padding: 0 12px;
       margin-top: 2px;
       border: 1px solid rgba(8, 11, 16, 0.1);
       color: rgba(8, 11, 16, 0.76);
-      background: transparent;
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .wl-open-button {
+      gap: 7px;
+      padding: 0 14px;
+      margin-top: 2px;
+      border: 0;
+      color: #fff;
+      background: #050505;
     }
 
     .wl-cancel-button {
@@ -170,11 +168,15 @@ function overlayFieldStyles() {
       background: transparent;
     }
 
-    .wl-open-button:hover,
+    .wl-edit-button:hover,
     .wl-cancel-button:hover {
       color: #101010;
       background: rgba(8, 11, 16, 0.05);
       border-color: rgba(8, 11, 16, 0.16);
+    }
+
+    .wl-open-button:hover {
+      background: rgba(5, 5, 5, 0.86);
     }
 
     .wl-button-icon {

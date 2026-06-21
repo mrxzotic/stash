@@ -17,22 +17,17 @@ function bestProductImageUrl(context, image, scope, productUrl = "") {
 }
 
 function bestProductImageUrls(context, image, scope, limit = Number.POSITIVE_INFINITY, productUrl = "") {
-  return productImageUrlsFromCandidates(
-    productImageCandidates(context, image, scope, productUrl),
-    limit
-  );
+  return productImageUrlsFromCandidates(productImageCandidates(context, image, scope, productUrl), limit);
 }
 
 function productImageCandidates(context, image, scope, productUrl = "") {
   const candidates = [];
-
   if (context.srcUrl && !image) {
     candidates.push({
       url: context.srcUrl,
       score: 12000 + productImageUrlContextScore(context.srcUrl, productUrl)
     });
   }
-
   candidates.push(...imageCandidatesFromElement(
     image,
     7000 + imageRoleScore(image) + imageProductContextScore(image, productUrl)
@@ -50,7 +45,11 @@ function productImageCandidates(context, image, scope, productUrl = "") {
       )
     );
   });
-
+  Array.from(scope?.querySelectorAll?.("source") || []).forEach((source, index) => {
+    const sourceText = ["srcset", "src", "data-srcset", "data-src"].map((attribute) => source.getAttribute(attribute)).join(" ");
+    const sourceScore = Math.max(0, 4200 - index * 600) + productImageUrlContextScore(sourceText, productUrl);
+    candidates.push(...imageCandidatesFromPictureSource(source, sourceScore));
+  });
   return candidates;
 }
 
@@ -74,7 +73,9 @@ function imageRoleScore(image) {
 }
 
 function imageProductContextScore(image, productUrl) {
-  return productImageUrlContextScore(image?.currentSrc || image?.src || "", productUrl) +
+  const source = image?.currentSrc || image?.src || "";
+  const hasLazySource = ["data-srcset", "data-original-srcset", "data-src", "data-original", "data-image", "data-master", "data-lazy-src", "data-zoom-src"].some((attribute) => image?.getAttribute?.(attribute));
+  return (hasLazySource && looksLikeSiteFallbackImage(source) ? 0 : productImageUrlContextScore(source, productUrl)) +
     productImageUrlContextScore(image?.srcset || "", productUrl);
 }
 
@@ -101,7 +102,10 @@ function productImageContextTokens(productUrl) {
     const url = new URL(productUrl || "", location.href);
     const sku = (url.pathname.split("/").filter(Boolean).at(-1) || "")
       .replace(/\.(?:html?|aspx|php)$/i, "");
-    const tokens = [sku, sku.replace(/[-_][a-z0-9]{2,}$/i, "")];
+    const parentSku = sku.replace(/[-_][a-z0-9]{2,}$/i, "");
+    const tokens = parentSku !== sku && !/^[a-z]*\d[a-z\d]*$/i.test(parentSku)
+      ? [sku, parentSku]
+      : [sku];
     return tokens
       .map(normalizeComparableText)
       .filter((token, index, list) => token.length >= 4 && list.indexOf(token) === index);
@@ -150,7 +154,7 @@ function bestProductImageUrlsFromSources(sources, productUrl, limit = Number.POS
     .flatMap((source, index) =>
       normalizeProductImageUrls(source?.imageUrls, source?.imageUrl).map((url, imageIndex) => ({
         url,
-        score: productImageUrlScore(url, index) - imageIndex
+        score: productImageUrlScore(url, index) + productImageUrlContextScore(url, productUrl) - imageIndex
       }))
     )
     .filter((candidate) => isUsableProductImageUrl(candidate.url));
@@ -213,7 +217,7 @@ function flattenImageUrlValues(value) {
 function shouldRankProductImageSources(productUrl) {
   try {
     const url = new URL(productUrl || location.href, location.href);
-    return /(^|\.)on\.com$/i.test(url.hostname);
+    return /(^|\.)on\.com$/i.test(url.hostname) || isAllSaintsProductUrl(url.href);
   } catch {
     return false;
   }
@@ -226,6 +230,15 @@ function needsOnProductImageUpgrade(product) {
 function isOnProductUrl(value) {
   try {
     return /(^|\.)on\.com$/i.test(new URL(value || location.href, location.href).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isAllSaintsProductUrl(value) {
+  try {
+    const url = new URL(value || location.href, location.href);
+    return /(^|\.)allsaints\.com$/i.test(url.hostname) && /\/[a-z0-9]+-[a-z0-9]+\.html$/i.test(url.pathname);
   } catch {
     return false;
   }
@@ -310,7 +323,7 @@ function imageCandidatesFromElement(image, baseScore = 0) {
       candidates.push(
         ...parseSrcset(value).map((candidate) => ({
           ...candidate,
-          score: candidate.score + baseScore + 1500
+          score: candidate.score + baseScore + 5000
         }))
       );
     } else {
@@ -369,7 +382,6 @@ function isUsableProductImageUrl(value) {
   return !looksLikeSiteFallbackImage(text) &&
     !/(?:blank|placeholder|transparent|spacer|sprite|pixel|loader|loading|logo|favicon|icon)\.(?:gif|png|svg|webp|jpg|jpeg)(?:[?#]|$)/i.test(text);
 }
-
 function looksLikeSiteFallbackImage(value) {
   return /(?:fallback[-_/]?image|default[-_/]?image|site[-_/]?image|brand[-_/]?image|\/static\/fallback|AcneStudios\.png)(?:[?#/]|$)/i.test(
     cleanText(value)
@@ -378,7 +390,7 @@ function looksLikeSiteFallbackImage(value) {
 
 function parseSrcset(srcset) {
   return String(srcset || "")
-    .split(",")
+    .replace(/(\s(?:\d+(?:\.\d+)?[wx]|\d+h))\s*,\s*/g, "$1\n").split("\n")
     .map((part) => {
       const [url, descriptor] = part.trim().split(/\s+/);
       const score = Number.parseFloat(descriptor) || 0;

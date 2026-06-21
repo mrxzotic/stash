@@ -41,6 +41,7 @@ async function enrichProduct(product) {
 function hasCompletePageProduct(product) {
   return Boolean(
     product?.fromProductPage &&
+      !variantIdFromUrl(product.url) &&
       product.title &&
       product.imageUrl &&
       (product.priceText || Number.isFinite(product.priceAmount))
@@ -272,12 +273,24 @@ function variantIdFromUrl(productUrl) {
 }
 
 function shopifyTitle(product, productUrl, selectedVariant) {
-  const handleTitle = productTitleFromProductUrl(productUrl);
-  if (selectedVariant && handleTitle) {
-    return handleTitle;
+  const title = cleanText(product?.title);
+  if (selectedVariant) {
+    return shopifyVariantSkuTitle(title, selectedVariant) || title || productTitleFromProductUrl(productUrl);
   }
 
-  return product.title || handleTitle;
+  return title || productTitleFromProductUrl(productUrl);
+}
+
+function shopifyVariantSkuTitle(title, variant) {
+  const parts = cleanText(variant?.sku).split("-").filter(Boolean);
+  const modelParts = /^(?:xxs|xs|s|m|l|xl|2xl|3xl|4xl|os|o\/s)$/i.test(parts.at(-1))
+    ? parts.slice(0, -1)
+    : parts;
+  const model = modelParts.join("-");
+  const parent = modelParts[0];
+  if (!title || !parent || model === parent) return "";
+  const pattern = new RegExp(`(^|\\s)${parent.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|\\s)`, "i");
+  return pattern.test(title) ? title.replace(pattern, `$1${model}`) : "";
 }
 
 function productTitleFromProductUrl(productUrl) {

@@ -17,13 +17,8 @@ assert.match(compactSource, /#\$\{index \+ 1\}/, "Compact item index should use 
 assert.match(compactSource, /wp-compact-actions/, "Compact row actions should be grouped");
 assert.match(
   compactSource,
-  /savePanelSettings\(\{\s*compactView: !panelState\.compactView\s*\}\)/,
-  "Compact toggle should save and fully rerender the requested view mode"
-);
-assert.doesNotMatch(
-  compactSource,
-  /syncViewMode:\s*true/,
-  "Compact toggle should not rely on partial view-mode sync"
+  /savePanelSettings\(\s*\{\s*compactView: !panelState\.compactView\s*\},[\s\S]*?syncViewMode:\s*true/,
+  "Compact toggle should save and synchronize the requested view mode"
 );
 assert.match(
   compactStyles,

@@ -339,16 +339,27 @@ async function savePanelSettings(nextSettings, options = {}) {
   if (options.rerender === false) {
     const shouldAnimateSummary =
       options.animateSummary || previousCurrency !== settings.summaryCurrency;
-    syncPanelSettingsControls();
-    if (options.syncViewMode) {
-      syncPanelViewMode();
+    const syncSettingsUi = () => {
+      syncPanelSettingsControls();
+      if (options.syncViewMode) {
+        syncPanelViewMode();
+      }
+      renderPanelSummaryOnly({
+        animate: shouldAnimateSummary
+      });
+      refreshPanelSummaryRate({
+        animateSummary: shouldAnimateSummary
+      });
+    };
+    if (options.rebuildMotion) {
+      syncPanelWithRebuildMotion(
+        document.getElementById("stash-panel-root")?.shadowRoot,
+        options.rebuildMotion,
+        syncSettingsUi
+      );
+    } else {
+      syncSettingsUi();
     }
-    renderPanelSummaryOnly({
-      animate: shouldAnimateSummary
-    });
-    refreshPanelSummaryRate({
-      animateSummary: shouldAnimateSummary
-    });
     await setLocalStorageValue(SETTINGS_STORAGE_KEY, settings);
     return;
   }

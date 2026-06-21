@@ -63,7 +63,7 @@ function panelPromoStyles() {
       transform: scale(0.94);
     }
 
-    .wp-founder-close-icon { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2.15; stroke-linecap: round; stroke-linejoin: round; }
+    .wp-founder-close-icon { width: 15px; height: 15px; font-size: 15px; }
 
     .wp-founder-app {
       width: 100%;
@@ -79,10 +79,8 @@ function panelPromoStyles() {
       width: 48px;
       height: 48px;
       display: block;
-      border-radius: 8px;
-      box-shadow:
-        0 0 0 1px rgba(8, 11, 16, 0.07),
-        0 10px 26px rgba(8, 11, 16, 0.08);
+      object-fit: contain;
+      filter: drop-shadow(0 10px 22px rgba(8, 11, 16, 0.1));
     }
 
     .wp-founder-app-copy {
@@ -215,6 +213,7 @@ function panelPromoStyles() {
     .wp-founder-action-icon {
       width: 15px;
       height: 15px;
+      font-size: 15px;
       stroke: currentColor;
       stroke-width: 2.1;
       stroke-linecap: round;
@@ -290,11 +289,12 @@ function panelPromoStyles() {
       overflow-wrap: anywhere;
     }
 
-    .wp-founder-x-icon { width: 16px; height: 16px; fill: currentColor; }
+    .wp-founder-link-icon { width: 16px; height: 16px; flex: 0 0 auto; font-size: 16px; }
 
-    .wp-founder-link-icon { width: 16px; height: 16px; flex: 0 0 auto; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+    .wp-theme-graphite .wp-founder-app-logo {
+      filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.3));
+    }
 
-    .wp-theme-graphite .wp-founder-app-logo,
     .wp-theme-graphite .wp-founder-photo {
       box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.12),

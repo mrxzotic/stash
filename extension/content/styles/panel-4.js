@@ -71,6 +71,7 @@ function panelStylesChunk4() {
       width: 20px;
       height: 20px;
       color: rgba(8, 11, 16, 0.78);
+      font-size: 20px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -144,6 +145,7 @@ function panelStylesChunk4() {
     .wp-clear-search-icon {
       width: 16px;
       height: 16px;
+      font-size: 16px;
       stroke: currentColor;
       stroke-width: 2.2;
       stroke-linecap: round;
@@ -260,6 +262,7 @@ function panelStylesChunk4() {
     .wp-filter-remove-icon {
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
+      font-size: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.35;
       stroke-linecap: round;
@@ -312,6 +315,7 @@ function panelStylesChunk4() {
     .wp-filter-add-icon {
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
+      font-size: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.7;
       stroke-linecap: round;
@@ -379,6 +383,7 @@ function panelStylesChunk4() {
     .wp-category-cancel-icon {
       width: 16px;
       height: 16px;
+      font-size: 16px;
       stroke: currentColor;
       stroke-width: 2.4;
       stroke-linecap: round;

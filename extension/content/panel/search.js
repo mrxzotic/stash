@@ -4,7 +4,8 @@ function bindPanelSearchEvents(root) {
     event.stopPropagation();
     panelState.searchOpen = true;
     panelState.settingsOpen = false;
-    renderStashPanel();
+    renderPanelTopbarOnly(root, "search");
+    window.requestAnimationFrame(() => focusPanelElement(root.querySelector("[data-search]")));
   });
 
   root.querySelector("[data-search]")?.addEventListener("input", (event) => {
@@ -29,15 +30,19 @@ function handlePanelSearchEscape(root) {
 function clearOrClosePanelSearch(root) {
   if (!panelState.searchQuery) {
     panelState.searchOpen = false;
-    renderStashPanel();
+    renderPanelTopbarOnly(root, "search");
+    window.requestAnimationFrame(() => focusPanelElement(root.querySelector("[data-panel-search]")));
     return;
   }
 
-  panelState.searchQuery = "";
+  syncPanelWithRebuildMotion(root, "search", () => {
+    panelState.searchQuery = "";
+    const input = root.querySelector("[data-search]");
+    if (input) input.value = "";
+    syncSearchClearButton(root);
+    renderPanelItemsOnly(root);
+  });
   const input = root.querySelector("[data-search]");
-  if (input) input.value = "";
-  syncSearchClearButton(root);
-  renderPanelItemsOnly(root);
   window.requestAnimationFrame(() => focusPanelElement(input));
 }
 

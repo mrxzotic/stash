@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-21-archive-hitbox-v1";
+var CONTENT_VERSION = "2026-06-21-sort-threshold-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -168,6 +168,9 @@ var panelState = {
   backgroundTheme: DEFAULT_SETTINGS.backgroundTheme,
   compactView: DEFAULT_SETTINGS.compactView,
   hasRenderedPanel: false,
+  rebuildMotion: "",
+  rebuildMotionTimer: 0,
   highlightedItemId: "",
+  displacedItemId: "",
   highlightTimer: 0
 };

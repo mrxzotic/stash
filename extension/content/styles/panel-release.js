@@ -89,6 +89,7 @@ function panelReleaseStyles() {
     .wp-card-action-icon {
       width: 17px;
       height: 17px;
+      font-size: 17px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -238,6 +239,7 @@ function panelReleaseStyles() {
     .wp-edit-close-icon {
       width: 18px;
       height: 18px;
+      font-size: 18px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;

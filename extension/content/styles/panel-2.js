@@ -97,6 +97,7 @@ function panelStylesChunk2() {
       z-index: 1;
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
+      font-size: var(--wp-pill-icon-size);
       stroke: currentColor;
       stroke-width: 2.4;
       stroke-linecap: round;
@@ -248,13 +249,10 @@ function panelStylesChunk2() {
       background: rgba(255, 255, 255, 0.16);
     }
 
-    .wp-lucide {
+    .wp-phosphor {
       width: 20px;
       height: 20px;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      font-size: 20px;
     }
 
     .wp-remove-category::before,

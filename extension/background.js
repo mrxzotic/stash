@@ -1,7 +1,9 @@
 const MENU_ROOT_ID = "stash-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
-const CONTENT_SCRIPT_VERSION = "2026-06-21-archive-hitbox-v1";
+const COMMAND_SAVE_CURRENT = "save-to-stashed";
+const COMMAND_TOGGLE_PANEL = "toggle-stashed";
+const CONTENT_SCRIPT_VERSION = "2026-06-21-sort-threshold-v1";
 const MESSAGE_PING = "STASH_PING_V2";
 const MESSAGE_SAVE = "STASH_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
@@ -18,6 +20,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/panel/images.js",
   "content/panel/save-current.js",
   "content/panel/empty.js",
+  "content/panel/motion.js",
   "content/panel/render.js",
   "content/panel/search.js",
   "content/panel/events.js",
@@ -40,6 +43,8 @@ const CONTENT_SCRIPT_FILES = [
   "content/extractors/context.js",
   "content/storage.js",
   "content/overlay-fields.js",
+  "content/overlay-images.js",
+  "content/overlay-motion.js",
   "content/overlays.js",
   "content/styles/panel-1.js",
   "content/styles/panel-2.js",
@@ -54,8 +59,13 @@ const CONTENT_SCRIPT_FILES = [
   "content/styles/panel-save-current.js",
   "content/styles/panel-promo.js",
   "content/styles/panel-release.js",
+  "content/styles/panel-rebuild-motion.js",
+  "content/styles/panel-save-motion.js",
+  "content/styles/panel-interaction-motion.js",
   "content/styles/panel.js",
   "content/styles/overlay-fields.js",
+  "content/styles/overlay-images.js",
+  "content/styles/overlay-motion.js",
   "content/styles/overlay.js",
   "content/pricing/dom.js",
   "content/storage-settings.js",
@@ -84,6 +94,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 chrome.action.onClicked.addListener((tab) => {
   void handleActionClick(tab);
+});
+
+chrome.commands.onCommand.addListener((command, tab) => {
+  void handleKeyboardCommand(command, tab);
 });
 
 async function rebuildContextMenus() {
@@ -130,7 +144,7 @@ function contextMenusCreate(options) {
 }
 
 async function handleActionClick(tab) {
-  if (!tab?.id || !isSupportedUrl(tab.url)) {
+  if (!hasSupportedTabId(tab) || !isSupportedUrl(tab.url)) {
     return;
   }
 
@@ -149,10 +163,39 @@ async function handleActionClick(tab) {
 }
 
 async function handleSaveClick(info, tab) {
-  if (!tab?.id || info.menuItemId !== MENU_ROOT_ID) {
+  if (!hasSupportedTabId(tab) || info.menuItemId !== MENU_ROOT_ID) {
     return;
   }
 
+  await saveTabToStashed(tab, {
+    pageUrl: info.pageUrl,
+    linkUrl: info.linkUrl,
+    srcUrl: info.srcUrl,
+    selectionText: info.selectionText
+  });
+}
+
+async function handleKeyboardCommand(command, tab) {
+  if (command !== COMMAND_SAVE_CURRENT && command !== COMMAND_TOGGLE_PANEL) {
+    return;
+  }
+
+  const activeTab = hasSupportedTabId(tab) ? tab : await getActiveTab();
+  if (!hasSupportedTabId(activeTab) || !isSupportedUrl(activeTab.url)) {
+    return;
+  }
+
+  if (command === COMMAND_TOGGLE_PANEL) {
+    await handleActionClick(activeTab);
+    return;
+  }
+
+  await saveTabToStashed(activeTab, {
+    pageUrl: activeTab.url
+  });
+}
+
+async function saveTabToStashed(tab, context) {
   if (!(await ensureContentScript(tab.id))) {
     return;
   }
@@ -162,20 +205,27 @@ async function handleSaveClick(info, tab) {
       type: MESSAGE_SAVE,
       contentVersion: CONTENT_SCRIPT_VERSION,
       category: "auto",
-      context: {
-        pageUrl: info.pageUrl,
-        linkUrl: info.linkUrl,
-        srcUrl: info.srcUrl,
-        selectionText: info.selectionText
-      }
+      context
     });
   } catch (error) {
     console.warn("Stashed could not save this page", error);
   }
 }
 
+async function getActiveTab() {
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  });
+  return tab || null;
+}
+
 function isSupportedUrl(url) {
   return /^https?:\/\//i.test(String(url || ""));
+}
+
+function hasSupportedTabId(tab) {
+  return Number.isInteger(tab?.id) && tab.id >= 0;
 }
 
 async function ensureContentScript(tabId) {

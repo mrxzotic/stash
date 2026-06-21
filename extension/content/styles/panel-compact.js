@@ -78,6 +78,23 @@ function panelCompactStyles() {
       object-position: center bottom;
     }
 
+    .wp-compact-thumb .wp-image-missing {
+      min-height: 0;
+      height: 100%;
+      padding: 8px;
+      gap: 4px;
+    }
+
+    .wp-compact-thumb .wp-image-missing-logo {
+      width: 24px;
+      height: 24px;
+    }
+
+    .wp-compact-thumb .wp-image-missing-text {
+      max-width: 48px;
+      font-size: var(--text-micro);
+    }
+
     .wp-compact-thumb.is-object-bottom .wp-image-frame > img {
       object-fit: contain;
       object-position: center bottom;

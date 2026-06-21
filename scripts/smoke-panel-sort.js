@@ -11,7 +11,10 @@ const sandbox = {
   PANEL_SORT_DESC: "desc",
   panelState: {
     sortField: "recent",
-    sortDirection: "desc"
+    sortDirection: "desc",
+    activeCategory: "all",
+    searchQuery: "",
+    brandFilterKey: ""
   },
   normalizeComparableText: (value) => String(value || "").toLowerCase().trim()
 };
@@ -116,6 +119,8 @@ assert.match(
   /panelFilterStaticRemoveWidth[\s\S]*?const hoverGrowth = 16;[\s\S]*?isPanelFilterLastInVisualRow/,
   "Row-end category remove affordance should guard against hover wrap"
 );
+assert.match(sortSource, /function panelShouldShowSortControls[\s\S]*?panelVisibleItems\(items\)\.length >= 2/, "Sort controls should only render for two or more currently visible items");
+assert.match(sortSource, /currentControls\.remove\(\);[\s\S]*?insertAdjacentHTML\?\.\("beforebegin", renderPanelSortControls\(\)\)/, "Sort controls should be removed or reinserted as live result counts change");
 assert.match(
   filterStylesSource,
   /\.wp-filter-remove\s*\{[\s\S]*?right: 8px;[\s\S]*?z-index: 2;/,
@@ -132,6 +137,47 @@ const items = [
   { title: "Alpha Bag", brand: "Loewe", createdAt: "2026-06-20T10:00:00.000Z" },
   { title: "Zip Hoodie", brand: "LIME", createdAt: "2026-06-19T10:00:00.000Z" }
 ];
+
+sandbox.panelScopedItems = (candidateItems) => candidateItems;
+sandbox.panelItemMatchesSearch = (item) => {
+  const query = String(sandbox.panelState.searchQuery || "").toLowerCase().trim();
+  return !query || `${item.title} ${item.brand}`.toLowerCase().includes(query);
+};
+sandbox.panelItemMatchesBrandFilter = (item) =>
+  !sandbox.panelState.brandFilterKey || item.brand === sandbox.panelState.brandFilterKey;
+sandbox.escapeHtml = (value) => value;
+sandbox.escapeAttribute = (value) => value;
+sandbox.phosphorArrowDownIcon = () => "";
+sandbox.phosphorArrowUpIcon = () => "";
+
+sandbox.panelState.items = [items[0]];
+assert.equal(vm.runInContext("renderPanelSortControls().trim()", sandbox), "");
+sandbox.panelState.items = items.slice(0, 2);
+assert.match(
+  vm.runInContext("renderPanelSortControls()", sandbox),
+  /wp-sort-controls/,
+  "Sort controls should render when the current list has at least two items"
+);
+sandbox.panelState.searchQuery = "alpha";
+assert.equal(
+  vm.runInContext("renderPanelSortControls().trim()", sandbox),
+  "",
+  "Sort controls should disappear when search narrows the current list below two items"
+);
+sandbox.panelState.searchQuery = "";
+sandbox.panelState.activeCategory = "bags";
+sandbox.panelState.items = [
+  { ...items[0], category: "tops" },
+  { ...items[1], category: "bags" },
+  { ...items[2], category: "tops" }
+];
+assert.equal(
+  vm.runInContext("renderPanelSortControls().trim()", sandbox),
+  "",
+  "Sort controls should disappear when the selected category has fewer than two items"
+);
+sandbox.panelState.activeCategory = "all";
+sandbox.panelState.items = items;
 
 function sortedTitles(sortField, sortDirection) {
   sandbox.panelState.sortField = sortField;
@@ -229,10 +275,6 @@ const fakeRoot = {
   querySelectorAll: (selector) => (selector === "[data-panel-sort]" ? [sortButton] : [])
 };
 
-sandbox.panelScopedItems = (candidateItems) => candidateItems;
-sandbox.escapeHtml = (value) => value;
-sandbox.lucideArrowDownIcon = () => "";
-sandbox.lucideArrowUpIcon = () => "";
 sandbox.renderPanelItemsOnly = () => {
   renderedItems += 1;
 };
