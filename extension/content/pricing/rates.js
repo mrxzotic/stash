@@ -100,34 +100,178 @@ function formatOriginalPrice(value, currency) {
   return `${formattedAmount} ${symbol}`;
 }
 
-function renderSitePriceHtml(item, namespace) {
+function panelPriceDisplayModel(item, targetCurrency = panelState.summaryCurrency) {
   const currency = item.price?.currency || item.currency;
+  const nativeCurrency = cleanText(currency).toUpperCase();
+  const target = isSummaryCurrency(targetCurrency)
+    ? cleanText(targetCurrency).toUpperCase()
+    : DEFAULT_SETTINGS.summaryCurrency;
+  const isNativeTarget = Boolean(nativeCurrency && nativeCurrency === target);
+  const currentAmount = numericPrice(item.price?.amount ?? item.priceAmount);
+  const compareAtAmount = numericPrice(item.price?.compareAtAmount ?? item.compareAtPriceAmount);
   const currentText = formatOriginalPrice(
-    item.price?.amount ?? item.priceAmount,
+    currentAmount,
     currency
   ) || item.price?.originalText || item.priceText;
   const compareAtText = formatOriginalPrice(
-    item.price?.compareAtAmount ?? item.compareAtPriceAmount,
+    compareAtAmount,
     currency
   ) || item.price?.compareAtText || item.compareAtPriceText;
+  const rubAmount = numericPrice(item.price?.rubAmount ?? item.rubPriceAmount);
+  const convertedAmount = convertRubToDisplayAmount(rubAmount, target);
+  const primaryText = isNativeTarget && currentText
+    ? currentText
+    : Number.isFinite(convertedAmount)
+    ? formatSummaryCurrency(convertedAmount, target)
+    : currentText;
+  const compareRubAmount = comparableCompareAtRubAmount({
+    compareAtAmount,
+    currentAmount,
+    nativeCurrency,
+    rubAmount
+  });
+  const convertedCompareAt = convertRubToDisplayAmount(compareRubAmount, target);
+  const primaryCompareAtText = isNativeTarget && compareAtText
+    ? compareAtText
+    : Number.isFinite(convertedCompareAt)
+    ? formatSummaryCurrency(convertedCompareAt, target)
+    : compareAtText;
   const isSale =
     item.price?.isSale &&
-    currentText &&
-    compareAtText &&
-    cleanText(currentText) !== cleanText(compareAtText);
+    primaryText &&
+    primaryCompareAtText &&
+    cleanText(primaryText) !== cleanText(primaryCompareAtText);
+
+  return {
+    currentText,
+    compareAtText,
+    isConverted: !isNativeTarget && Number.isFinite(convertedAmount),
+    isSale,
+    nativeCurrency,
+    primaryCompareAtText,
+    primaryText,
+    targetCurrency: target
+  };
+}
+
+function convertRubToDisplayAmount(rubAmount, targetCurrency) {
+  if (!Number.isFinite(rubAmount)) {
+    return undefined;
+  }
+
+  const rate = panelDisplayCurrencyRubRate(targetCurrency);
+  return Number.isFinite(rate) && rate > 0 ? rubAmount / rate : undefined;
+}
+
+function panelDisplayCurrencyRubRate(currency) {
+  const code = isSummaryCurrency(currency)
+    ? cleanText(currency).toUpperCase()
+    : DEFAULT_SETTINGS.summaryCurrency;
+  if (code === "RUB") {
+    return 1;
+  }
+
+  return panelState.summaryRate?.currency === code && Number.isFinite(panelState.summaryRate.value)
+    ? panelState.summaryRate.value
+    : DEFAULT_RUB_RATES[code];
+}
+
+function comparableCompareAtRubAmount({ compareAtAmount, currentAmount, nativeCurrency, rubAmount }) {
+  if (!Number.isFinite(compareAtAmount)) {
+    return undefined;
+  }
+
+  if (Number.isFinite(rubAmount) && Number.isFinite(currentAmount) && currentAmount > 0) {
+    return Math.round(rubAmount * (compareAtAmount / currentAmount));
+  }
+
+  if (nativeCurrency === "RUB") {
+    return Math.round(compareAtAmount);
+  }
+
+  const rate = DEFAULT_RUB_RATES[nativeCurrency];
+  return Number.isFinite(rate) && rate > 0 ? Math.round(compareAtAmount * rate) : undefined;
+}
+
+function renderSitePriceHtml(item, namespace) {
+  const display = panelPriceDisplayModel(item);
+  const isOverlay = namespace === "wl";
   const baseClass = namespace === "wl" ? "wl-site-price" : "wp-site-price";
   const compareClass = namespace === "wl" ? "wl-compare-price" : "wp-compare-price";
+  const stackClass = namespace === "wl" ? "wl-price-stack" : "wp-price-stack";
+  const lineClass = namespace === "wl" ? "wl-price-line" : "wp-price-line";
+  const nativeClass = namespace === "wl" ? "wl-native-price" : "wp-native-price";
+  const nativeLine = renderNativePriceHtml(display, nativeClass, isOverlay);
+  const inlineNativeLine = isOverlay ? "" : nativeLine;
+  const stackedNativeLine = isOverlay ? nativeLine : "";
 
-  if (!currentText) {
+  if (!display.primaryText) {
     return "";
   }
 
-  if (isSale) {
+  if (display.isSale) {
     return `
-      <span class="${baseClass} is-sale">${escapeHtml(currentText)}</span>
-      <span class="${compareClass}">(<s>${escapeHtml(compareAtText)}</s>)</span>
+      <span class="${stackClass}">
+        <span class="${lineClass}">
+          <span class="${baseClass} is-sale">${escapeHtml(display.primaryText)}</span>
+          <span class="${compareClass}">(<s>${escapeHtml(display.primaryCompareAtText)}</s>)</span>
+          ${inlineNativeLine}
+        </span>
+        ${stackedNativeLine}
+      </span>
     `;
   }
 
-  return `<span class="${baseClass}">${escapeHtml(currentText)}</span>`;
+  return `
+    <span class="${stackClass}">
+      <span class="${lineClass}">
+        <span class="${baseClass}">${escapeHtml(display.primaryText)}</span>
+        ${inlineNativeLine}
+      </span>
+      ${stackedNativeLine}
+    </span>
+  `;
+}
+
+function shouldRenderNativePrice(display) {
+  return Boolean(
+    display.currentText &&
+    display.nativeCurrency &&
+    display.nativeCurrency !== display.targetCurrency &&
+    cleanText(display.currentText) !== cleanText(display.primaryText)
+  );
+}
+
+function renderNativePriceHtml(display, nativeClass, isOverlay) {
+  if (!shouldRenderNativePrice(display)) {
+    return "";
+  }
+
+  if (
+    isOverlay &&
+    display.isSale &&
+    display.compareAtText &&
+    cleanText(display.currentText) !== cleanText(display.compareAtText)
+  ) {
+    return `
+      <span class="${nativeClass}">
+        <span>${escapeHtml(display.currentText)}</span>
+        <span>(<s>${escapeHtml(display.compareAtText)}</s>)</span>
+      </span>
+    `;
+  }
+
+  return `<span class="${nativeClass}">${renderNativePriceText(display)}</span>`;
+}
+
+function renderNativePriceText(display) {
+  if (
+    display.isSale &&
+    display.compareAtText &&
+    cleanText(display.currentText) !== cleanText(display.compareAtText)
+  ) {
+    return `${escapeHtml(display.currentText)} (${escapeHtml(display.compareAtText)})`;
+  }
+
+  return escapeHtml(display.currentText);
 }

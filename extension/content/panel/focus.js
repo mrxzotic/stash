@@ -123,10 +123,14 @@ function panelFocusSelector(element) {
     "data-remove-category-prompt",
     "data-founder-promo-trigger",
     "data-panel-search",
+    "data-panel-overflow-trigger",
     "data-panel-compact-toggle",
     "data-panel-theme-toggle",
     "data-archive-view-toggle",
-    "data-brand-cloud-toggle"
+    "data-brand-cloud-toggle",
+    "data-filter-menu-trigger",
+    "data-panel-filter-reset",
+    "data-category"
   ];
   const attr = attrs.find((name) => element.hasAttribute(name));
   if (!attr) {

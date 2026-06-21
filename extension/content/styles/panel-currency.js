@@ -1,18 +1,30 @@
 function panelCurrencyStyles() {
   return `
     .wp-actions {
-      flex: 1 1 auto;
+      flex: 0 0 auto;
       min-width: 0;
       justify-content: flex-end;
     }
 
     .wp-currency-select {
       position: relative;
+      z-index: 0;
       height: 40px;
       display: inline-flex;
       align-items: center;
       justify-content: flex-end;
       flex: 0 0 auto;
+    }
+
+    .wp-currency-select.is-open {
+      z-index: 16;
+    }
+
+    .wp-summary-capsule .wp-currency-select {
+      width: auto;
+      min-width: 0;
+      height: 100%;
+      flex: 0 1 auto;
     }
 
     .wp-total {
@@ -28,6 +40,22 @@ function panelCurrencyStyles() {
         filter 180ms ease;
     }
 
+    .wp-summary-capsule .wp-total {
+      width: auto;
+      min-width: 120px;
+      max-width: 144px;
+      height: 32px;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px 0 16px;
+      border: 0;
+      border-radius: 999px;
+      background:
+        var(--wp-chrome-iridescent),
+        rgba(255, 255, 255, 0.7);
+      box-shadow: none;
+    }
+
     .wp-total:hover,
     .wp-currency-select.is-open .wp-total {
       transform: translateY(-1px);
@@ -35,6 +63,14 @@ function panelCurrencyStyles() {
       box-shadow:
         0 1px 0 rgba(255, 255, 255, 0.8) inset,
         0 10px 24px rgba(15, 23, 42, 0.08);
+      filter: saturate(1.08);
+    }
+
+    .wp-summary-capsule .wp-total:hover,
+    .wp-summary-capsule .wp-currency-select.is-open .wp-total {
+      transform: none;
+      border-color: transparent;
+      box-shadow: none;
       filter: saturate(1.08);
     }
 
@@ -51,12 +87,32 @@ function panelCurrencyStyles() {
       will-change: transform, filter;
     }
 
+    .wp-summary-capsule .wp-total-value {
+      max-width: 96px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .wp-total-value.is-counting {
       animation: wpCurrencyCount 1100ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-total.is-recounting {
       animation: wpCurrencyPillCount 1400ms cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .wp-price-row.is-price-recounting .wp-site-price,
+    .wp-price-row.is-price-recounting .wp-compare-price,
+    .wp-price-row.is-price-recounting .wp-native-price {
+      animation: wpCardPriceCount 720ms cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .wp-price-row.is-price-recounting .wp-compare-price {
+      animation-delay: 35ms;
+    }
+
+    .wp-price-row.is-price-recounting .wp-native-price {
+      animation-delay: 60ms;
     }
 
     .wp-total-chevron {
@@ -78,6 +134,13 @@ function panelCurrencyStyles() {
       transform: rotate(180deg);
     }
 
+    .wp-summary-capsule .wp-total-chevron {
+      width: 14px;
+      height: 14px;
+      font-size: 14px;
+      opacity: 0.56;
+    }
+
     .wp-currency-menu {
       position: absolute;
       top: calc(100% + 8px);
@@ -87,12 +150,12 @@ function panelCurrencyStyles() {
       display: grid;
       gap: 4px;
       padding: 6px;
-      border: 1px solid rgba(60, 60, 67, 0.12);
+      border: 1px solid var(--wp-popover-border);
       border-radius: var(--radius);
-      background: #fff;
-      box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.9) inset,
-        0 18px 40px rgba(15, 23, 42, 0.16);
+      background: var(--wp-popover-bg);
+      -webkit-backdrop-filter: var(--wp-popover-blur);
+      backdrop-filter: var(--wp-popover-blur);
+      box-shadow: var(--wp-popover-shadow);
       transform-origin: 100% 0;
       animation: wpCurrencyMenuIn 180ms cubic-bezier(.16, 1, .3, 1) both;
     }
@@ -174,15 +237,17 @@ function panelCurrencyStyles() {
     }
 
     .wp-theme-graphite .wp-currency-menu {
-      border-color: rgba(255, 255, 255, 0.12);
+      border-color: var(--wp-popover-border);
       background:
-        radial-gradient(circle at 18% 0%, rgba(92, 172, 255, 0.12), transparent 38%),
-        radial-gradient(circle at 86% 14%, rgba(166, 126, 255, 0.1), transparent 42%),
-        linear-gradient(180deg, rgba(34, 36, 42, 0.96), rgba(20, 21, 25, 0.98)),
-        rgba(20, 21, 25, 0.98);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.08),
-        0 20px 46px rgba(0, 0, 0, 0.42);
+        var(--wp-chrome-iridescent),
+        var(--wp-popover-bg);
+      box-shadow: var(--wp-popover-shadow);
+    }
+
+    .wp-theme-graphite .wp-summary-capsule .wp-total {
+      background:
+        var(--wp-chrome-iridescent),
+        rgba(16, 17, 20, 0.72);
     }
 
     .wp-theme-graphite .wp-currency-option {
@@ -247,6 +312,26 @@ function panelCurrencyStyles() {
       100% {
         opacity: 1;
         transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes wpCardPriceCount {
+      0% {
+        opacity: 0.22;
+        transform: translateY(5px);
+        filter: blur(3px);
+      }
+
+      58% {
+        opacity: 1;
+        transform: translateY(-1px);
+        filter: blur(0);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
         filter: blur(0);
       }
     }

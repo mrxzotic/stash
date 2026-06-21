@@ -31,6 +31,18 @@ function panelStylesChunk1() {
       --shell-edge-mesh-a: rgba(255, 255, 255, 0.54);
       --shell-edge-mesh-b: rgba(232, 226, 214, 0.22);
       --shell-shadow: rgba(0, 0, 0, 0.2);
+      --wp-chrome-bg: rgba(255, 255, 255, 0.82);
+      --wp-chrome-bg-hover: rgba(255, 255, 255, 0.92);
+      --wp-chrome-border: rgba(60, 60, 67, 0.14);
+      --wp-chrome-shadow: 0 1px 0 rgba(255, 255, 255, 0.72) inset, 0 8px 24px rgba(15, 23, 42, 0.06);
+      --wp-chrome-blur: blur(24px) saturate(1.22);
+      --wp-chrome-iridescent: linear-gradient(135deg, rgba(110, 194, 255, 0.14), rgba(255, 139, 222, 0.13) 52%, rgba(160, 255, 208, 0.12));
+      --wp-card-bg: var(--card);
+      --wp-card-blur: blur(14px) saturate(1.08);
+      --wp-popover-bg: rgba(255, 255, 255, 0.96);
+      --wp-popover-border: rgba(60, 60, 67, 0.16);
+      --wp-popover-shadow: 0 1px 0 rgba(255, 255, 255, 0.86) inset, 0 22px 54px rgba(15, 23, 42, 0.16);
+      --wp-popover-blur: blur(28px) saturate(1.18);
       --panel-top: 44px;
       --panel-right: 24px;
       --panel-vertical-space: 68px;
@@ -95,6 +107,9 @@ function panelStylesChunk1() {
       --shell-edge-mesh-a: rgba(255, 255, 255, 0.58);
       --shell-edge-mesh-b: rgba(236, 236, 236, 0.22);
       --shell-shadow: rgba(0, 0, 0, 0.18);
+      --wp-chrome-bg: rgba(255, 255, 255, 0.86);
+      --wp-chrome-bg-hover: rgba(255, 255, 255, 0.96);
+      --wp-popover-bg: rgba(255, 255, 255, 0.97);
     }
 
     .wp-theme-ice {
@@ -112,6 +127,11 @@ function panelStylesChunk1() {
       --shell-edge-mesh-a: rgba(255, 255, 255, 0.5);
       --shell-edge-mesh-b: rgba(210, 231, 250, 0.2);
       --shell-shadow: rgba(20, 34, 52, 0.2);
+      --wp-chrome-bg: rgba(250, 253, 255, 0.82);
+      --wp-chrome-bg-hover: rgba(255, 255, 255, 0.94);
+      --wp-chrome-border: rgba(128, 150, 173, 0.24);
+      --wp-chrome-iridescent: linear-gradient(135deg, rgba(103, 191, 255, 0.16), rgba(171, 147, 255, 0.12) 52%, rgba(147, 255, 218, 0.12));
+      --wp-popover-bg: rgba(250, 253, 255, 0.96);
     }
 
     .wp-theme-graphite {
@@ -133,6 +153,21 @@ function panelStylesChunk1() {
       --shell-shadow: rgba(0, 0, 0, 0.44);
       --primary: #f4f4f0;
       --primary-foreground: #080b10;
+      --wp-chrome-bg: rgba(31, 32, 37, 0.9);
+      --wp-chrome-bg-hover: rgba(39, 41, 47, 0.94);
+      --wp-chrome-border: rgba(255, 255, 255, 0.13);
+      --wp-chrome-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 12px 30px rgba(0, 0, 0, 0.26);
+      --wp-chrome-blur: blur(26px) saturate(1.18);
+      --wp-chrome-iridescent:
+        radial-gradient(circle at 12% 18%, rgba(78, 188, 255, 0.2), transparent 34%),
+        radial-gradient(circle at 74% 0%, rgba(158, 116, 255, 0.18), transparent 38%),
+        radial-gradient(circle at 92% 96%, rgba(255, 94, 182, 0.13), transparent 42%),
+        linear-gradient(135deg, rgba(70, 142, 255, 0.1), rgba(142, 92, 255, 0.09) 48%, rgba(255, 114, 191, 0.08));
+      --wp-card-bg: rgba(255, 255, 255, 0.06);
+      --wp-popover-bg: rgba(20, 21, 25, 0.97);
+      --wp-popover-border: rgba(255, 255, 255, 0.14);
+      --wp-popover-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 24px 58px rgba(0, 0, 0, 0.44);
+      --wp-popover-blur: blur(30px) saturate(1.16);
     }
 
     .wp-shell::before,
@@ -246,7 +281,7 @@ function panelStylesChunk1() {
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      gap: 16px;
+      gap: 8px;
       margin-bottom: 16px;
       font-size: var(--text-ui);
     }

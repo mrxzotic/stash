@@ -54,22 +54,22 @@ function panelInteractionMotionStyles() {
       backface-visibility: hidden;
     }
 
-    .wp-item:not(.is-layout-moving):not(.is-layout-settling) {
+    .wp-item:not(.is-layout-moving):not(.is-layout-settling):not(.is-layout-hover-muted) {
       transform: translate3d(0, 0, 0);
     }
 
-    .wp-item:not(.is-layout-moving):not(.is-layout-settling):hover,
-    .wp-item:not(.is-layout-moving):not(.is-layout-settling):focus-within {
+    .wp-item:not(.is-layout-moving):not(.is-layout-settling):not(.is-layout-hover-muted):hover,
+    .wp-item:not(.is-layout-moving):not(.is-layout-settling):not(.is-layout-hover-muted):focus-within {
       transform: translate3d(0, -3px, 0);
     }
 
-    .wp-item:not(.is-layout-moving):not(.is-layout-settling):active {
+    .wp-item:not(.is-layout-moving):not(.is-layout-settling):not(.is-layout-hover-muted):active {
       transform: translate3d(0, -1px, 0);
     }
 
-    .wp-compact-item:not(.is-layout-moving):not(.is-layout-settling):hover,
-    .wp-compact-item:not(.is-layout-moving):not(.is-layout-settling):focus-within,
-    .wp-compact-item:not(.is-layout-moving):not(.is-layout-settling):active {
+    .wp-compact-item:not(.is-layout-moving):not(.is-layout-settling):not(.is-layout-hover-muted):hover,
+    .wp-compact-item:not(.is-layout-moving):not(.is-layout-settling):not(.is-layout-hover-muted):focus-within,
+    .wp-compact-item:not(.is-layout-moving):not(.is-layout-settling):not(.is-layout-hover-muted):active {
       transform: translate3d(0, 0, 0);
     }
 
@@ -85,7 +85,8 @@ function panelInteractionMotionStyles() {
     .wp-brand-save,
     .wp-topbar-info,
     .wp-total,
-    .wp-sort-button,
+    .wp-sort-trigger,
+    .wp-sort-option,
     .wp-clear-search {
       transition-timing-function: cubic-bezier(.22, 1, .36, 1);
       will-change: transform;
@@ -144,14 +145,16 @@ function panelInteractionMotionStyles() {
         visibility 0s linear 240ms;
     }
 
-    .wp-sort-controls {
+    .wp-sort-controls,
+    .wp-sort-menu {
       transition:
         opacity 240ms cubic-bezier(.22, 1, .36, 1),
         transform 300ms cubic-bezier(.22, 1, .36, 1),
         visibility 0s linear 240ms;
     }
 
-    .wp-sort-button,
+    .wp-sort-trigger,
+    .wp-sort-option,
     .wp-icon-button,
     .wp-brand-save,
     .wp-topbar-info,
@@ -192,7 +195,9 @@ function panelInteractionMotionStyles() {
       .wp-filter-remove,
       .wp-filter-add,
       .wp-sort-controls,
-      .wp-sort-button,
+      .wp-sort-menu,
+      .wp-sort-trigger,
+      .wp-sort-option,
       .wp-icon-button,
       .wp-brand-save,
       .wp-topbar-info,

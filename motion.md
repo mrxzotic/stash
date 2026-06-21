@@ -94,27 +94,25 @@ Files:
 - `extension/content/panel/compact-view.js`
 - `extension/content/panel/events.js`
 
-This covers interaction rebuilds while Stashed is already open: search open/close, card/list mode changes, and light/graphite theme changes.
+This covers interaction rebuilds while Stashed is already open: card/list mode changes and light/graphite theme changes.
 
 Contract:
 
 - Use `renderPanelTopbarOnly(root, "search")` when the search topbar has to replace the summary topbar.
-- Use `syncPanelWithRebuildMotion(root, "search", update)` when search clears or rebuilds only the visible list.
 - Use `savePanelSettings(..., { rerender: false, syncViewMode: true, rebuildMotion: "view" })` for card/list changes.
 - Use `savePanelSettings(..., { rerender: false, rebuildMotion: "theme" })` for light/graphite changes.
 - Do not full-render the shell just to open or close search.
+- Do not use rebuild motion for search. Search open/close is a topbar-only swap and must not move the item list.
 - Do not full-render the shell just to toggle list mode or theme.
 - Do not animate every search keystroke. Live search input should update results directly and stay quiet.
 - `panelState.rebuildMotion` is transient and must clear after the reveal window.
 
 Timing contract:
 
-1. Search topbar rebuild uses `wpPanelSearchRebuild` for about `460ms`.
-2. Search list breathe uses `wpPanelListBreathe` for about `420ms`.
-3. Card/list rebuild uses `wpPanelViewRebuild` for about `500ms`.
-4. Card/list items use `wpPanelItemRebuild` for about `430ms` with a small stagger.
-5. Theme changes use `wpPanelThemeShift`, `wpPanelThemeWash`, and `wpPanelThemeContent` for about `480-520ms`.
-6. Rebuild classes clear after `620ms`.
+1. Card/list rebuild uses `wpPanelViewRebuild` for about `500ms`.
+2. Card/list items use `wpPanelItemRebuild` for about `430ms` with a small stagger.
+3. Theme changes use `wpPanelThemeShift`, `wpPanelThemeWash`, and `wpPanelThemeContent` for about `480-520ms`.
+4. Rebuild classes clear after `620ms`.
 
 ## Panel Card Layout Motion
 
@@ -122,6 +120,7 @@ Files:
 
 - `extension/content/panel/motion.js`
 - `extension/content/panel/render.js`
+- `extension/content/panel/reorder.js`
 - `extension/content/panel/compact-view.js`
 - `extension/content/styles/panel-rebuild-motion.js`
 
@@ -129,13 +128,26 @@ This covers existing cards when rows are added, removed, filtered, sorted, archi
 
 Contract:
 
-- Every rendered card and compact row must carry `data-panel-item-id`.
-- Before a list render, capture existing card positions with `capturePanelItemLayout(root)`.
+- Every rendered card and compact row must carry `data-panel-item-id` and `data-panel-motion-id`.
+- Brand cloud buttons must carry `data-panel-motion-id="brand:*"` so cloud/list transitions use the same FLIP path.
+- Before a list render, capture existing card or brand positions with `capturePanelItemLayout(root)`.
 - After the list render, call `animatePanelItemLayout(root, previousRects)`.
+- Card mode renders two stable `.wp-item-column` containers so variable-height cards stack tightly instead of sharing CSS grid row heights.
+- Pure sort changes should move existing card nodes between the stable columns, or update CSS visual order for compact/brand nodes, instead of replacing list HTML or recreating card nodes, then run the same layout motion.
+- Brand sort changes must keep `brandCloudOpen` true, set the brand cloud into sorted-list mode, update CSS order on existing brand buttons, and stay centered instead of using the card-list offset.
 - Existing cards glide from their old position to their new position using `is-layout-moving` then `is-layout-settling`.
+- Sort/card layout motion has a hard stop: when the card's `transform` transition ends, detach the listener and park the card in `is-layout-positioned`.
+- Do not remove the final zero transform or drop compositor state on transition end. That end cleanup repaints every sorted card as a visible flash.
+- Existing card-node sort movement must add `is-reordering` to the list so normal entrance animations do not restart when nodes move between columns.
+- Card entrance can be staggered on panel open/filter rerender, but not during existing-node sort movement.
+- If a moved card finishes under the pointer, keep `is-layout-hover-muted` until pointer leave so hover lift does not fire as the final end-state twitch.
+- Do not schedule fallback timers, cooling timers, delayed class removals, or post-sort visual cleanup. Any delayed cleanup reads as a late flicker.
+- Layout movement animates translate only. Do not animate filter or scale at the settle boundary; either can cause a one-frame flash.
+- Hover glow must stay suppressed through move, settle, and hover-muted states.
+- Cleanup must wait for the card's `transform` transition end. No timeout fallback.
 - New cards use the saved-card reveal and skeleton, not the layout movement.
 - Cards with `is-shifted-right` keep the explicit save displacement animation instead of also receiving layout FLIP.
-- Brand cloud view skips card layout movement.
+- Brand cloud view participates in layout movement for brand buttons; only new saved cards and displaced cards skip FLIP.
 - Reduced motion skips card layout movement.
 
 ## Panel Interaction Polish
@@ -144,6 +156,8 @@ Files:
 
 - `extension/content/styles/panel-interaction-motion.js`
 - `extension/content/panel/filter-controls.js`
+- `extension/content/panel/prices.js`
+- `extension/content/pricing/rates.js`
 
 This covers persistent interaction feel after the panel is already open.
 
@@ -152,15 +166,41 @@ Contract:
 - Hover must not call `renderStashPanel()` or replace panel HTML.
 - Hover-driven filter controls should not write layout state when visibility did not change.
 - Item hover transforms should stay on composited layers and must not override `is-layout-moving` or `is-layout-settling`.
+- The card-list top offset must be measured from visible filter children, not the full filter container, so hidden controls cannot create phantom rows.
+- When optional third-row controls become visible, update only the card-list top offset so cards reserve space without a panel rerender.
+- Category filters live in one non-wrapping horizontal rail. Do not let the category taxonomy wrap into multiple rows.
+- The active category should be scrolled into view after render rather than pinned with layout-affecting sticky behavior.
+- Sort is separate from filtering: one stable sort trigger plus a menu of explicit choices, not hover-revealed sort chips inside the category rail.
 - Graphite search uses its own iridescent palette: cool cyan, violet, and rose over dark glass.
 - Do not reuse the light-mode mint/pink wash directly in graphite search.
 - Graphite currency menus must be dark glass, not a light popover with graphite text.
 - Currency option labels, selected rows, and symbols must stay readable in graphite mode.
 - Count, filter, sort, icon, save, info, currency, and clear-search pills use the same smooth hover curve: `cubic-bezier(.22, 1, .36, 1)`.
-- Hidden category remove can animate width when it does not change row height.
-- Layout-affecting width must not animate for add category or sort controls. Reserve their final row space immediately, then animate only opacity/transform.
+- Hover must not call render paths or write card HTML.
+- Hover affordance sizing must stay local to the control itself. Do not run JS layout syncing or whole-panel render paths just because hover controls appear.
+- Sort controls must not use native `title` tooltips. They appear after hover delay and read as a one-frame flicker; use `aria-label` only.
+- Sort menu open/close should update only the sort control DOM; it must not rerender cards or the full shell.
 - Hover lift stays subtle: around `-1px`, with no layout shift.
 - Reduced motion removes these hover/reveal transitions.
+
+## Currency And Material Motion
+
+Files:
+
+- `extension/content/pricing/rates.js`
+- `extension/content/panel/prices.js`
+- `extension/content/styles/panel-1.js`
+- `extension/content/styles/panel-currency.js`
+
+Contract:
+
+- Card and overlay prices render on one baseline: converted home-currency primary price first, compare-at beside it, native price muted beside that only when the native currency differs from the selected global currency.
+- If the native product currency equals the selected global currency, do not round-trip the amount through stored RUB. Show the native price once.
+- Currency changes must update visible card prices in place with the price recount animation. Do not full-render the shell just to change currency.
+- Price recount motion is local to `.wp-price-row`; it must not move the card, resize rows, or trigger saved-card skeletons.
+- Use three material levels: chrome for topbar, filters, search, sort, and currency controls; airy cards for product content; strongest popover material for currency menus and dialogs.
+- Frost chrome through shared tokens, not one-off control colors: `--wp-chrome-*`, `--wp-card-*`, and `--wp-popover-*`.
+- Graphite chrome and popovers must remain dark, readable, and heavily frosted. Do not show light popovers in graphite mode.
 
 ## Open-Panel Save Motion
 

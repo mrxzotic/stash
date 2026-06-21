@@ -38,8 +38,8 @@ assert.doesNotMatch(promoStyles, /\.wp-founder-app-logo\s*\{[^}]*box-shadow:/, "
 assert.match(promoStyles, /\.wp-founder-person/, "Founder popup should render a founder profile row");
 assert.match(promoStyles, /\.wp-founder-modal\s*\{[\s\S]*?inset: 0;/, "Founder popup should occupy the panel surface");
 assert.match(promoStyles, /padding: 64px 48px 40px;/, "Founder popup should use 8px-grid full-view padding");
-assert.match(promoStyles, /\.wp-founder-link\s*\{[\s\S]*?min-height: 40px;/, "Founder link rows should fit the 8px grid");
-assert.match(promoStyles, /\.wp-founder-links\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\);/, "Founder links should be one readable list");
+assert.match(promoStyles, /\.wp-founder-contact-icon\s*\{[\s\S]*?width: 32px;[\s\S]*?height: 32px;/, "Founder contact icons should fit the 8px grid");
+assert.match(promoStyles, /\.wp-founder-contact-icons\s*\{[\s\S]*?display: flex;/, "Founder contact links should render as icon-only controls");
 assert.match(promoStyles, /\.wp-founder-backup-actions/, "Founder popup should include labeled backup actions");
 assert.doesNotMatch(promoStyles, /wpFounderBackdropIn/, "Founder popup should not keep backdrop animation styles");
 assert.match(promoStyles, /\.wp-founder-modal\s*\{[\s\S]*?background: var\(--background\);/, "Founder popup should use the panel surface");

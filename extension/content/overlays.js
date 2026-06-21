@@ -13,12 +13,14 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
       <header class="wl-header">
         <div class="wl-title-block">
           <p class="wl-kicker">Saved</p>
-          <p class="wl-countdown" data-countdown aria-hidden="true">Auto-close in ${Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000)}s</p>
+          <div class="wl-timer-line">
+            <p class="wl-countdown" data-countdown aria-hidden="true">Auto-close in ${Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000)}s</p>
+            <button class="wl-timer-button" type="button" data-toggle-timer aria-label="Pause auto-close" aria-pressed="false" title="Pause auto-close">
+              ${phosphorPauseIcon("wl-timer-icon")}
+            </button>
+          </div>
         </div>
         <div class="wl-controls">
-          <button class="wl-timer-button" type="button" data-toggle-timer aria-label="Pause timer" aria-pressed="false" title="Pause timer">
-            ${phosphorPauseIcon("wl-timer-icon")}
-          </button>
           <button class="wl-close" type="button" aria-label="Close" title="Close" data-close-overlay>
             ${phosphorXIcon("wl-close-icon")}
           </button>
@@ -36,13 +38,9 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
           </button>
         </div>
         <div class="wl-action-group is-right">
-          <button class="wl-edit-button" type="button" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-saved-item>
-            ${phosphorPencilIcon("wl-button-icon")}
-            <span>Edit</span>
-          </button>
-          <button class="wl-open-button" type="button" aria-label="Open Stashed panel" data-open-stash>
+          <button class="wl-open-button" type="button" aria-label="Open Stash panel" data-open-stash>
             ${phosphorLinkIcon("wl-button-icon")}
-            <span>Open Stashed</span>
+            <span>Open Stash</span>
           </button>
         </div>
       </div>
@@ -57,54 +55,12 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
     dismissSavedOverlay(root);
     safelyRunPanelAction(() => openStashPanel());
   });
-  root.querySelector("[data-edit-saved-item]")?.addEventListener("click", () => {
-    safelyRunPanelAction(() => openSavedOverlayEditor(root, item));
-  });
   root.querySelector("[data-cancel-addition]")?.addEventListener("click", () => {
     safelyRunPanelAction(() => cancelSavedOverlayAddition(root, item));
-  });
-  root.querySelector(".wl-fields")?.addEventListener("click", (event) => {
-    const button = event.target.closest?.("[data-field-alternative]");
-    if (!button) {
-      return;
-    }
-
-    safelyRunPanelAction(() =>
-      applySavedOverlayAlternative(item, categories, button.dataset.field, button.dataset.index)
-    );
   });
   bindSavedOverlayImageEvents(root, item);
   bindImageFallbacks(root);
   startSavedOverlayCountdown(root, SAVED_OVERLAY_DURATION_MS);
-}
-
-async function openSavedOverlayEditor(root, item) {
-  const itemId = item.id || productId(item.url);
-  dismissSavedOverlay(root);
-  await openStashPanel();
-  const savedItem = panelState.items
-    .map(normalizePanelItem)
-    .find((panelItem) => panelItem.id === itemId);
-
-  if (!savedItem) {
-    return;
-  }
-
-  panelState.editItemId = savedItem.id;
-  panelState.highlightedItemId = savedItem.id;
-  panelState.archivedOpen = false;
-  panelState.brandCloudOpen = false;
-  panelState.brandFilterKey = "";
-  panelState.brandFilterLabel = "";
-  panelState.searchOpen = false;
-  panelState.searchQuery = "";
-  panelState.categoryComposerOpen = false;
-  panelState.deleteCategoryId = "";
-  panelState.deleteItemId = "";
-  if (panelState.activeCategory !== "all" && panelState.activeCategory !== savedItem.category) {
-    panelState.activeCategory = savedItem.category;
-  }
-  renderStashPanel();
 }
 
 function showErrorOverlay(error) {
@@ -204,8 +160,8 @@ function pauseSavedOverlayTimer(root) {
   const button = root.querySelector("[data-toggle-timer]");
   if (button) {
     button.setAttribute("aria-pressed", "true");
-    button.setAttribute("aria-label", "Resume timer");
-    button.setAttribute("title", "Resume timer");
+    button.setAttribute("aria-label", "Resume auto-close");
+    button.setAttribute("title", "Resume auto-close");
     button.innerHTML = phosphorPlayIcon("wl-timer-icon");
   }
 }
@@ -224,8 +180,8 @@ function resumeSavedOverlayTimer(root) {
   const button = root.querySelector("[data-toggle-timer]");
   if (button) {
     button.setAttribute("aria-pressed", "false");
-    button.setAttribute("aria-label", "Pause timer");
-    button.setAttribute("title", "Pause timer");
+    button.setAttribute("aria-label", "Pause auto-close");
+    button.setAttribute("title", "Pause auto-close");
     button.innerHTML = phosphorPauseIcon("wl-timer-icon");
   }
   scheduleSavedOverlayTimer(root);
@@ -275,8 +231,13 @@ function getOverlayRoot() {
     host.style.inset = "0";
     host.style.zIndex = "2147483647";
     host.style.pointerEvents = "none";
+    host.style.overflow = "hidden";
+    host.style.isolation = "isolate";
     document.documentElement.appendChild(host);
   }
+
+  host.style.overflow = "hidden";
+  host.style.isolation = "isolate";
 
   if (!host.shadowRoot) {
     host.attachShadow({ mode: "open" });

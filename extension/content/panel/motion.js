@@ -1,7 +1,7 @@
 var PANEL_REBUILD_MOTION_MS = 620;
 
 function panelRebuildMotionKind(kind) {
-  return ["search", "view", "theme"].includes(kind) ? kind : "";
+  return ["view", "theme"].includes(kind) ? kind : "";
 }
 
 function panelRebuildMotionClass(kind) {
@@ -17,21 +17,34 @@ function renderStashPanelWithMotion(kind, options = {}) {
 function renderPanelTopbarOnly(root, kind = "search") {
   const topbar = root?.querySelector(".wp-topbar");
   if (!topbar) {
+    if (kind === "search") {
+      renderStashPanel();
+      return;
+    }
     renderStashPanelWithMotion(kind);
     return;
   }
 
-  syncPanelWithRebuildMotion(root, kind, () => {
+  const updateTopbar = () => {
     topbar.className = `wp-topbar${panelState.searchOpen ? " is-searching" : ""}`;
     topbar.innerHTML = panelState.searchOpen
       ? renderPanelSearchHtml()
       : renderPanelSummaryHtml(panelSummaryItems(panelState.items));
     bindPanelTopbarEvents(root);
-  });
+  };
+
+  if (kind === "search") {
+    clearPanelRebuildMotion(root);
+    updateTopbar();
+    return;
+  }
+
+  syncPanelWithRebuildMotion(root, kind, updateTopbar);
 }
 
 function bindPanelTopbarEvents(root) {
   bindPanelSearchEvents(root);
+  bindPanelOverflowEvents(root);
   bindPanelCurrencyEvents(root);
   bindPanelPreferenceEvents(root);
   bindPanelSaveCurrentEvents(root);
@@ -77,13 +90,13 @@ function clearPanelRebuildMotion(root) {
     return;
   }
 
-  shell.classList.remove("is-rebuilding", "is-search-rebuild", "is-view-rebuild", "is-theme-rebuild");
+  shell.classList.remove("is-rebuilding", "is-view-rebuild", "is-theme-rebuild");
 }
 
 function capturePanelItemLayout(root) {
   const rects = new Map();
-  root?.querySelectorAll?.("[data-panel-item-id]").forEach((element) => {
-    const id = element.dataset.panelItemId;
+  root?.querySelectorAll?.("[data-panel-motion-id]").forEach((element) => {
+    const id = element.dataset.panelMotionId;
     const rect = element.getBoundingClientRect();
     if (id && rect.width && rect.height) {
       rects.set(id, {
@@ -98,15 +111,14 @@ function capturePanelItemLayout(root) {
 function animatePanelItemLayout(root, previousRects) {
   if (
     !previousRects?.size ||
-    root?.querySelector(".wp-items")?.classList.contains("is-brand-cloud") ||
     window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
   ) {
     return;
   }
 
   window.requestAnimationFrame(() => {
-    root.querySelectorAll("[data-panel-item-id]").forEach((element) => {
-      animatePanelItemFromPreviousRect(element, previousRects.get(element.dataset.panelItemId));
+    root.querySelectorAll("[data-panel-motion-id]").forEach((element) => {
+      animatePanelItemFromPreviousRect(element, previousRects.get(element.dataset.panelMotionId));
     });
   });
 }
@@ -123,27 +135,82 @@ function animatePanelItemFromPreviousRect(element, previousRect) {
     return;
   }
 
+  clearPanelMovedItemCleanup(element);
   element.classList.remove("is-layout-settling");
   element.classList.add("is-layout-moving");
   element.style.setProperty("--wp-layout-dx", `${dx.toFixed(2)}px`);
   element.style.setProperty("--wp-layout-dy", `${dy.toFixed(2)}px`);
-  element.style.setProperty("--wp-layout-scale", ".998");
   element.getBoundingClientRect();
   window.requestAnimationFrame(() => settlePanelMovedItem(element));
 }
 
 function settlePanelMovedItem(element) {
+  clearPanelMovedItemCleanup(element);
   element.classList.remove("is-layout-moving");
   element.classList.add("is-layout-settling");
   element.style.setProperty("--wp-layout-dx", "0px");
   element.style.setProperty("--wp-layout-dy", "0px");
-  element.style.setProperty("--wp-layout-scale", "1");
-  window.setTimeout(() => {
-    element.classList.remove("is-layout-settling");
-    element.style.removeProperty("--wp-layout-dx");
-    element.style.removeProperty("--wp-layout-dy");
-    element.style.removeProperty("--wp-layout-scale");
-  }, 620);
+  const finish = (event) => {
+    if (!event || (event.target === element && event.propertyName === "transform")) {
+      finishPanelMovedItem(element);
+    }
+  };
+  element.__stashLayoutMotionEnd = finish;
+  element.addEventListener("transitionend", finish);
+}
+
+function finishPanelMovedItem(element) {
+  if (!element.classList.contains("is-layout-settling")) {
+    return;
+  }
+
+  const isHovered = panelElementHasPointerHover(element);
+  if (element.__stashLayoutMotionEnd) {
+    element.removeEventListener("transitionend", element.__stashLayoutMotionEnd);
+    element.__stashLayoutMotionEnd = null;
+  }
+
+  element.classList.remove("is-layout-settling");
+  element.classList.add("is-layout-positioned");
+  element.style.setProperty("--wp-layout-dx", "0px");
+  element.style.setProperty("--wp-layout-dy", "0px");
+  if (isHovered) {
+    mutePanelLayoutHoverUntilExit(element);
+  }
+}
+
+function clearPanelMovedItemCleanup(element) {
+  element.classList.remove("is-layout-resting");
+  element.classList.remove("is-layout-positioned");
+  if (element.__stashLayoutMotionEnd) {
+    element.removeEventListener("transitionend", element.__stashLayoutMotionEnd);
+    element.__stashLayoutMotionEnd = null;
+  }
+  clearPanelLayoutHoverMute(element);
+}
+
+function mutePanelLayoutHoverUntilExit(element) {
+  clearPanelLayoutHoverMute(element);
+  element.classList.add("is-layout-hover-muted");
+  const finish = () => clearPanelLayoutHoverMute(element);
+  element.__stashLayoutHoverMuteEnd = finish;
+  element.addEventListener("pointerleave", finish, { once: true });
+}
+
+function clearPanelLayoutHoverMute(element) {
+  element.classList.remove("is-layout-hover-muted");
+  if (element.__stashLayoutHoverMuteEnd) {
+    element.removeEventListener("pointerleave", element.__stashLayoutHoverMuteEnd);
+    element.__stashLayoutHoverMuteEnd = null;
+  }
+}
+
+function panelElementHasPointerHover(element) {
+  try {
+    return Boolean(element.matches?.(":hover"));
+  } catch (_) {
+    return false;
+  }
 }
 
 function renderPanelNewItemSkeleton() {

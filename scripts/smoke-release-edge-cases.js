@@ -139,6 +139,7 @@ function smokePanelThreeHundredItems() {
       "extension/content/panel/archive.js",
       "extension/content/panel/sort.js",
       "extension/content/panel/empty.js",
+      "extension/content/panel/reorder.js",
       "extension/content/panel/render.js"
     ]
   );

@@ -3,7 +3,7 @@ const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const COMMAND_SAVE_CURRENT = "save-to-stashed";
 const COMMAND_TOGGLE_PANEL = "toggle-stashed";
-const CONTENT_SCRIPT_VERSION = "2026-06-21-sort-threshold-v1";
+const CONTENT_SCRIPT_VERSION = "2026-06-22-release-readiness-v1";
 const MESSAGE_PING = "STASH_PING_V2";
 const MESSAGE_SAVE = "STASH_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
@@ -21,10 +21,14 @@ const CONTENT_SCRIPT_FILES = [
   "content/panel/save-current.js",
   "content/panel/empty.js",
   "content/panel/motion.js",
+  "content/panel/filters.js",
   "content/panel/render.js",
+  "content/panel/reorder.js",
   "content/panel/search.js",
+  "content/panel/filter-events.js",
   "content/panel/events.js",
   "content/panel/items.js",
+  "content/panel/prices.js",
   "content/panel/edit.js",
   "content/panel/export.js",
   "content/icons.js",
@@ -48,17 +52,21 @@ const CONTENT_SCRIPT_FILES = [
   "content/overlays.js",
   "content/styles/panel-1.js",
   "content/styles/panel-2.js",
+  "content/styles/panel-overflow.js",
   "content/styles/panel-3.js",
   "content/styles/panel-4.js",
+  "content/styles/panel-search.js",
   "content/styles/panel-content.js",
   "content/styles/panel-images.js",
   "content/styles/panel-compact.js",
   "content/styles/panel-5.js",
   "content/styles/panel-currency.js",
+  "content/styles/panel-filter-menu.js",
   "content/styles/panel-sort.js",
   "content/styles/panel-save-current.js",
   "content/styles/panel-promo.js",
   "content/styles/panel-release.js",
+  "content/styles/panel-edit.js",
   "content/styles/panel-rebuild-motion.js",
   "content/styles/panel-save-motion.js",
   "content/styles/panel-interaction-motion.js",

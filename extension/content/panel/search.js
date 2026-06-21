@@ -35,14 +35,11 @@ function clearOrClosePanelSearch(root) {
     return;
   }
 
-  syncPanelWithRebuildMotion(root, "search", () => {
-    panelState.searchQuery = "";
-    const input = root.querySelector("[data-search]");
-    if (input) input.value = "";
-    syncSearchClearButton(root);
-    renderPanelItemsOnly(root);
-  });
+  panelState.searchQuery = "";
   const input = root.querySelector("[data-search]");
+  if (input) input.value = "";
+  syncSearchClearButton(root);
+  renderPanelItemsOnly(root);
   window.requestAnimationFrame(() => focusPanelElement(input));
 }
 

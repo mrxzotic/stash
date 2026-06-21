@@ -6,6 +6,7 @@ function bindPanelEvents(root) {
 
   bindImageFallbacks(root);
   bindPanelSearchEvents(root);
+  bindPanelOverflowEvents(root);
   bindPanelCurrencyEvents(root);
   bindPanelBrandCloudEvents(root);
   bindPanelEditEvents(root);
@@ -16,51 +17,7 @@ function bindPanelEvents(root) {
   bindPanelSaveCurrentEvents(root);
   bindPanelImageSliderEvents(root);
   bindPanelDismissEvents(root);
-
-  root.querySelector(".wp-filters")?.addEventListener("click", (event) => {
-    if (event.target.closest("[data-panel-sort]")) {
-      return;
-    }
-
-    const addButton = event.target.closest("[data-add-category]");
-    if (addButton) {
-      event.preventDefault();
-      panelState.categoryComposerOpen = !panelState.categoryComposerOpen;
-      panelState.settingsOpen = false;
-      closePanelArchivedView();
-      panelState.deleteCategoryId = "";
-      panelState.deleteItemId = "";
-      renderStashPanel();
-      return;
-    }
-
-    const removeButton = event.target.closest("[data-remove-category-prompt]");
-    if (removeButton) {
-      event.preventDefault();
-      event.stopPropagation();
-      rememberPanelFocus(removeButton);
-      panelState.categoryComposerOpen = false;
-      closePanelArchivedView();
-      panelState.deleteCategoryId = removeButton.dataset.removeCategoryPrompt;
-      panelState.deleteItemId = "";
-      renderStashPanel();
-      return;
-    }
-
-    const button = event.target.closest("[data-category]");
-    if (!button) {
-      return;
-    }
-    if (!panelState.searchQuery) {
-      panelState.searchOpen = false;
-    }
-    panelState.categoryComposerOpen = false;
-    closePanelArchivedView();
-    panelState.deleteCategoryId = "";
-    panelState.deleteItemId = "";
-    panelState.activeCategory = button.dataset.category;
-    renderStashPanel();
-  });
+  bindPanelFilterEvents(root);
   root.querySelector(".wp-items")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-remove-id]");
     if (!button) {
@@ -160,6 +117,18 @@ function bindPanelEvents(root) {
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
+        if (panelState.sortMenuOpen) {
+          closePanelSortMenu(root);
+          return;
+        }
+        if (panelState.filterMenuOpen) {
+          closePanelFilterMenu(root);
+          return;
+        }
+        if (panelState.settingsOpen) {
+          closePanelOverflowMenu(root);
+          return;
+        }
         if (handlePanelSearchEscape(root)) {
           return;
         }
@@ -205,12 +174,24 @@ function bindPanelEvents(root) {
 
       if (panelState.searchOpen && !panelState.searchQuery) {
         panelState.searchOpen = false;
-        renderStashPanel();
+        renderPanelTopbarOnly(root, "search");
         return;
       }
 
       if (!target.closest?.("[data-currency-root]")) {
         closePanelCurrencySelect(root);
+      }
+
+      if (!target.closest?.("[data-panel-sort-root]")) {
+        closePanelSortMenu(root);
+      }
+
+      if (!target.closest?.("[data-filter-menu-trigger]") && !target.closest?.("[data-filter-menu]")) {
+        closePanelFilterMenu(root);
+      }
+
+      if (!target.closest?.("[data-panel-overflow-root]")) {
+        closePanelOverflowMenu(root);
       }
 
       if (target.closest?.(".wp-popover")) {
@@ -226,11 +207,52 @@ function bindPanelEvents(root) {
   }
 }
 
+function bindPanelOverflowEvents(root) {
+  root.querySelector("[data-panel-overflow-trigger]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    closePanelFilterMenu(root);
+    closePanelSortMenu(root);
+    closePanelCurrencySelect(root);
+    togglePanelOverflowMenu(root);
+  });
+}
+
+function togglePanelOverflowMenu(root) {
+  panelState.settingsOpen = !panelState.settingsOpen;
+  syncPanelOverflowMenu(root);
+}
+
+function closePanelOverflowMenu(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+  if (!panelState.settingsOpen) {
+    return;
+  }
+
+  panelState.settingsOpen = false;
+  syncPanelOverflowMenu(root);
+}
+
+function syncPanelOverflowMenu(root) {
+  const overflow = root?.querySelector?.("[data-panel-overflow-root]");
+  const trigger = root?.querySelector?.("[data-panel-overflow-trigger]");
+  const menu = root?.querySelector?.("[data-panel-overflow-menu]");
+  if (!overflow || !trigger || !menu) {
+    return;
+  }
+
+  overflow.classList.toggle("is-open", panelState.settingsOpen);
+  trigger.classList.toggle("is-active", panelState.settingsOpen);
+  trigger.setAttribute("aria-expanded", String(panelState.settingsOpen));
+  menu.hidden = !panelState.settingsOpen;
+}
+
 function bindPanelCurrencyEvents(root) {
   root.querySelector("[data-currency-trigger]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    panelState.settingsOpen = false;
+    closePanelOverflowMenu(root);
+    closePanelSortMenu(root);
+    closePanelFilterMenu(root);
     togglePanelCurrencySelect(event.currentTarget);
   });
 
@@ -347,6 +369,11 @@ async function savePanelSettings(nextSettings, options = {}) {
       renderPanelSummaryOnly({
         animate: shouldAnimateSummary
       });
+      if (shouldAnimateSummary) {
+        renderPanelPricesOnly({
+          animate: true
+        });
+      }
       refreshPanelSummaryRate({
         animateSummary: shouldAnimateSummary
       });

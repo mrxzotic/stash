@@ -3,7 +3,7 @@ function panelCompactStyles() {
     .wp-items.is-compact {
       grid-template-columns: 1fr;
       row-gap: 0;
-      padding-top: var(--wp-items-padding-top, 154px);
+      padding-top: var(--wp-items-padding-top, 144px);
     }
 
     .wp-compact-list {
@@ -15,7 +15,7 @@ function panelCompactStyles() {
     .wp-compact-item {
       min-height: 72px;
       display: grid;
-      grid-template-columns: 32px 56px minmax(0, 1fr) minmax(72px, max-content) 56px;
+      grid-template-columns: 32px 56px minmax(0, 1fr) 104px 56px;
       gap: 8px;
       align-items: center;
       padding: 8px 0;
@@ -111,6 +111,10 @@ function panelCompactStyles() {
       align-self: center;
     }
 
+    .wp-compact-item .wp-compact-copy .wp-item-title {
+      -webkit-line-clamp: 1;
+    }
+
     .wp-compact-index {
       align-self: center;
       padding-top: 0;
@@ -148,17 +152,48 @@ function panelCompactStyles() {
     }
 
     .wp-compact-price {
+      width: 104px;
+      min-width: 0;
       align-self: center;
-      justify-self: end;
-      justify-content: flex-end;
-      text-align: right;
+      justify-self: stretch;
+      justify-content: flex-start;
+      text-align: left;
       white-space: nowrap;
+    }
+
+    .wp-compact-price.is-empty {
+      visibility: hidden;
+    }
+
+    .wp-compact-price .wp-price-stack {
+      width: 100%;
+      display: grid;
+      justify-items: start;
+      gap: 2px;
+    }
+
+    .wp-compact-price .wp-price-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: flex-start;
+      gap: 2px 4px;
+      overflow: visible;
+    }
+
+    .wp-compact-price .wp-native-price {
+      flex-basis: 100%;
     }
 
     .wp-compact-price .wp-site-price,
     .wp-compact-price .wp-compare-price {
       color: rgba(8, 11, 16, 0.46);
       font-weight: 680;
+    }
+
+    .wp-compact-price .wp-price-line .wp-site-price {
+      color: rgba(8, 11, 16, 0.78);
+      font-weight: 760;
     }
 
     .wp-compact-price .wp-site-price.is-sale {
@@ -168,6 +203,10 @@ function panelCompactStyles() {
     .wp-theme-graphite .wp-compact-price .wp-site-price,
     .wp-theme-graphite .wp-compact-price .wp-compare-price {
       color: rgba(244, 244, 240, 0.52);
+    }
+
+    .wp-theme-graphite .wp-compact-price .wp-price-line .wp-site-price {
+      color: rgba(244, 244, 240, 0.88);
     }
   `;
 }

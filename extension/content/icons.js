@@ -13,6 +13,7 @@ var PHOSPHOR_LIGHT_ICON_FILES = {
   check: "check",
   x: "x",
   plus: "plus",
+  archive: "archive",
   info: "info",
   pause: "pause",
   play: "play",
@@ -32,6 +33,7 @@ var PHOSPHOR_LIGHT_ICON_FILES = {
   percent: "percent",
   image: "image-square",
   imageOff: "image-broken",
+  tag: "tag",
   shoppingBag: "shopping-bag",
   xLogo: "x-logo",
   githubLogo: "github-logo"
@@ -123,6 +125,10 @@ function phosphorPlusIcon(className = "wp-phosphor") {
   return phosphorIcon("plus", className);
 }
 
+function phosphorArchiveIcon(className = "wp-phosphor") {
+  return phosphorIcon("archive", className);
+}
+
 function phosphorInfoIcon(className = "wp-phosphor") {
   return phosphorIcon("info", className);
 }
@@ -197,6 +203,10 @@ function phosphorImageIcon(className = "wp-phosphor") {
 
 function phosphorImageOffIcon(className = "wp-phosphor") {
   return phosphorIcon("imageOff", className);
+}
+
+function phosphorTagIcon(className = "wp-phosphor") {
+  return phosphorIcon("tag", className);
 }
 
 function phosphorShoppingBagIcon(className = "wp-phosphor") {

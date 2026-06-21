@@ -69,11 +69,14 @@ function togglePanelArchivedView() {
   const willOpen = !panelState.archivedOpen;
   panelState.archivedOpen = willOpen;
   panelState.brandCloudOpen = false;
+  panelState.brandCloudSortList = false;
   panelState.brandFilterKey = "";
   panelState.brandFilterLabel = "";
   panelState.searchOpen = false;
   panelState.searchQuery = "";
   panelState.activeCategory = "all";
+  panelState.filterMenuOpen = false;
+  panelState.sortMenuOpen = false;
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";

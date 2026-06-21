@@ -65,7 +65,7 @@ function convertToRubSync(amount, currency) {
 
 function panelSummaryTextForItems(items) {
   return formatPanelSummaryTotal(
-    panelSummaryItems(items),
+    panelTopbarValueItems(panelSummaryItems(items)),
     panelState.summaryCurrency
   );
 }
@@ -92,7 +92,7 @@ function renderPanelSummaryOnly(options = {}) {
 
   const displayItems = panelSummaryItems(panelState.items);
   if (count) syncPanelBrandCountControl(root);
-  setPanelTotalText(total, formatPanelSummaryTotal(displayItems, panelState.summaryCurrency), options);
+  setPanelTotalText(total, formatPanelSummaryTotal(panelTopbarValueItems(displayItems), panelState.summaryCurrency), options);
 }
 
 function syncPanelSettingsControls() {
@@ -321,6 +321,9 @@ function refreshPanelSummaryRate(options = {}) {
         animate: options.animateSummary,
         skipWhileAnimating: true
       });
+      renderPanelPricesOnly({
+        animate: options.animateSummary
+      });
     })
     .catch(() => {
       const fallbackRate = DEFAULT_RUB_RATES[currency];
@@ -333,6 +336,9 @@ function refreshPanelSummaryRate(options = {}) {
       renderPanelSummaryOnly({
         animate: options.animateSummary,
         skipWhileAnimating: true
+      });
+      renderPanelPricesOnly({
+        animate: options.animateSummary
       });
     })
     .finally(() => {

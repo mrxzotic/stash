@@ -7,9 +7,13 @@ function overlayImageStyles() {
       width: 100%;
       min-height: 0;
       margin-bottom: 0;
-      background: transparent;
-      border: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 245, 242, 0.9));
+      border: 1px solid rgba(8, 11, 16, 0.08);
       border-radius: 8px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.88),
+        inset 0 -1px 0 rgba(8, 11, 16, 0.03);
       overflow: hidden;
       -webkit-clip-path: inset(0 round 8px);
       clip-path: inset(0 round 8px);
@@ -23,6 +27,7 @@ function overlayImageStyles() {
       height: 100%;
       min-width: 0;
       min-height: 0;
+      padding: 8px;
     }
 
     .wl-image img {

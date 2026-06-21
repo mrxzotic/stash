@@ -22,7 +22,6 @@ function renderFounderPromoDialog() {
       </button>
       ${renderFounderAppIntro(version)}
       ${renderFounderBackupActions()}
-      ${renderFounderStashLinks()}
       ${renderFounderPrivateContacts()}
     </section>
   `;
@@ -35,18 +34,10 @@ function renderFounderAppIntro(version) {
       <div class="wp-founder-app-copy">
         <strong id="wp-founder-app-title">Stashed</strong>
         <p>Save products from any shop into a compact local wishlist.</p>
-        ${version ? `<span class="wp-founder-version">${escapeHtml(version)}</span>` : ""}
-      </div>
-    </div>
-  `;
-}
-
-function renderFounderStashLinks() {
-  return `
-    <div class="wp-founder-section" aria-label="Product links">
-      <span class="wp-founder-section-title">Product</span>
-      <div class="wp-founder-links">
-        ${renderFounderContact("Site", "getstash.app", "https://getstash.app", phosphorGlobeIcon("wp-founder-link-icon"))}
+        <span class="wp-founder-meta">
+          ${version ? `<span class="wp-founder-version">${escapeHtml(version)}</span>` : ""}
+          <a class="wp-founder-site" href="https://getstash.app" target="_blank" rel="noreferrer">getstash.app</a>
+        </span>
       </div>
     </div>
   `;
@@ -58,26 +49,26 @@ function renderFounderPrivateContacts() {
       <span class="wp-founder-section-title">Founder</span>
       <div class="wp-founder-person">
         <img class="wp-founder-photo" src="${escapeAttribute(founderPhotoUrl())}" alt="Alex Kornev">
-        <strong>Alex Kornev</strong>
+        <span class="wp-founder-person-copy">
+          <strong>Alex Kornev</strong>
+          <span class="wp-founder-handle">@zoticx</span>
+        </span>
       </div>
-      <div class="wp-founder-links">
-        ${renderFounderContact("X", "@zoticx", "https://x.com/zoticx", phosphorXLogoIcon("wp-founder-link-icon"))}
-        ${renderFounderContact("Telegram", "t.me/zoticx", "https://t.me/zoticx", phosphorSendIcon("wp-founder-link-icon"))}
-        ${renderFounderContact("Email", "a.kornev@me.com", "mailto:a.kornev@me.com", phosphorMailIcon("wp-founder-link-icon"))}
-        ${renderFounderContact("GitHub", "github.com/mrxzotic", "https://github.com/mrxzotic", phosphorGithubLogoIcon("wp-founder-link-icon"))}
+      <div class="wp-founder-contact-icons" aria-label="Founder contact links">
+        ${renderFounderContactIcon("X", "@zoticx", "https://x.com/zoticx", phosphorXLogoIcon("wp-founder-link-icon"))}
+        ${renderFounderContactIcon("Telegram", "t.me/zoticx", "https://t.me/zoticx", phosphorSendIcon("wp-founder-link-icon"))}
+        ${renderFounderContactIcon("Email", "a.kornev@me.com", "mailto:a.kornev@me.com", phosphorMailIcon("wp-founder-link-icon"))}
+        ${renderFounderContactIcon("GitHub", "github.com/mrxzotic", "https://github.com/mrxzotic", phosphorGithubLogoIcon("wp-founder-link-icon"))}
       </div>
     </div>
   `;
 }
 
-function renderFounderContact(label, value, href, icon) {
+function renderFounderContactIcon(label, value, href, icon) {
+  const description = `${label}: ${value}`;
   return `
-    <a class="wp-founder-link" href="${escapeAttribute(href)}" target="${href.startsWith("mailto:") ? "_self" : "_blank"}" rel="noreferrer">
-      <span class="wp-founder-link-mark">${icon}</span>
-      <span class="wp-founder-link-copy">
-        <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(value)}</strong>
-      </span>
+    <a class="wp-founder-contact-icon" href="${escapeAttribute(href)}" target="${href.startsWith("mailto:") ? "_self" : "_blank"}" rel="noreferrer" aria-label="${escapeAttribute(description)}" title="${escapeAttribute(description)}">
+      ${icon}
     </a>
   `;
 }
@@ -131,6 +122,7 @@ function bindPanelFounderPromoTrigger(button) {
     if (!panelState.founderPromoOpen) {
       rememberPanelFocus(button);
     }
+    panelState.settingsOpen = false;
     panelState.founderPromoOpen = !panelState.founderPromoOpen;
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";

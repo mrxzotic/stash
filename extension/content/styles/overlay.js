@@ -107,7 +107,7 @@ function overlayStyles() {
       gap: 12px;
       padding: 18px;
       color: #101010;
-      background: rgba(252, 252, 250, 0.9);
+      background: #fcfcfa;
       border: 1px solid rgba(10, 10, 10, 0.08);
       border-radius: 8px;
       box-shadow:
@@ -202,9 +202,16 @@ function overlayStyles() {
 
     .wl-title-block {
       display: grid;
-      gap: 5px;
+      gap: 6px;
       min-width: 0;
       padding-top: 1px;
+    }
+
+    .wl-timer-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
     }
 
     .wl-kicker {
@@ -256,8 +263,8 @@ function overlayStyles() {
     }
 
     .wl-timer-button {
-      width: 32px;
-      height: 32px;
+      width: 22px;
+      height: 22px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -275,9 +282,9 @@ function overlayStyles() {
     }
 
     .wl-timer-icon {
-      width: 15px;
-      height: 15px;
-      font-size: 15px;
+      width: 12px;
+      height: 12px;
+      font-size: 12px;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;

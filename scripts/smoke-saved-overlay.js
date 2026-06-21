@@ -30,17 +30,19 @@ assert.doesNotMatch(overlaySource, /class="wl-progress"/, "Saved overlay timer s
 assert.match(overlaySource, /wl-timer-track[\s\S]*?data-timer-progress/, "Saved overlay timer should live inside the card header");
 assert.doesNotMatch(fieldSource, /wl-confidence-summary|>Confidence</, "Saved overlay should not show extraction confidence");
 assert.doesNotMatch(fieldStyles, /\.wl-confidence/, "Saved overlay should not style visible confidence controls");
+assert.doesNotMatch(fieldSource, /data-field-alternative|wl-alternates/, "Saved overlay should not show review choices while auto-closing");
+assert.doesNotMatch(fieldStyles, /\.wl-alt-button|\.wl-alternates/, "Saved overlay should not style review choices");
 assert.match(overlaySource, /wl-action-group is-left[\s\S]*?data-cancel-addition/, "Undo should be separated on the left");
-assert.match(overlaySource, /wl-action-group is-right[\s\S]*?data-edit-saved-item[\s\S]*?data-open-stash/, "Edit and Open Stashed should be grouped on the right");
+assert.match(overlaySource, /wl-timer-line[\s\S]*?data-toggle-timer/, "Pause should be paired with the auto-close copy");
+assert.match(overlaySource, /wl-action-group is-right[\s\S]*?data-open-stash/, "Open Stash should be grouped on the right");
+assert.doesNotMatch(overlaySource, /data-edit-saved-item|wl-edit-button|>Edit</, "Saved overlay should not show an edit decision while auto-closing");
 assert.match(fieldStyles, /\.wl-actions\s*\{[\s\S]*?justify-content: space-between;/, "Saved overlay actions should not be centered");
-assert.match(fieldStyles, /\.wl-open-button\s*\{[\s\S]*?background: #050505;/, "Open Stashed should be the primary CTA");
-assert.match(fieldStyles, /\.wl-edit-button\s*\{[\s\S]*?border: 1px solid rgba\(8, 11, 16, 0\.1\);/, "Edit should be a secondary action");
+assert.match(fieldStyles, /\.wl-open-button\s*\{[\s\S]*?background: #050505;/, "Open Stash should be the primary CTA");
 assert.doesNotMatch(overlaySource, /lucide[A-Z]/, "Saved overlay should not use lucide icons");
 assert.doesNotMatch(overlayImageSource, /lucide[A-Z]/, "Saved overlay image controls should not use lucide icons");
 for (const icon of [
   "phosphorPauseIcon",
   "phosphorXIcon",
-  "phosphorPencilIcon",
   "phosphorLinkIcon",
   "phosphorChevronLeftIcon",
   "phosphorChevronRightIcon",
@@ -74,9 +76,10 @@ assert.match(fieldStyles, /\.wl-field dt\s*\{[\s\S]*?font-size: var\(--text-micr
 assert.match(fieldStyles, /\.wl-field-value\s*\{[\s\S]*?font-size: var\(--text-ui\);/, "Saved overlay product text should match main card title size");
 assert.match(panelCardStyles, /\.wp-item-title[\s\S]*?font-size: var\(--text-ui\);/, "Main card title should use the UI token");
 assert.match(fieldStyles, /\.wl-site-price,\s*\.wl-compare-price\s*\{[\s\S]*?font-size: var\(--text-control\);/, "Saved overlay price should match main card price size");
+assert.match(fieldStyles, /\.wl-price-stack\s*\{[\s\S]*?display: inline-grid;/, "Saved overlay price should stack primary and secondary currencies");
+assert.match(fieldStyles, /\.wl-field\.is-price \.wl-field-value\s*\{[\s\S]*?white-space: normal;/, "Saved overlay price should be able to wrap into two lines");
 assert.match(panelCardStyles, /\.wp-site-price,\s*\.wp-compare-price\s*\{[\s\S]*?font-size: var\(--text-control\);/, "Main card price should use the control token");
-assert.match(fieldStyles, /\.wl-alt-button\s*\{[\s\S]*?font-size: var\(--text-caption\);/, "Saved overlay alternates should use the shared caption token");
-assert.match(fieldStyles, /\.wl-edit-button,\s*\.wl-open-button,\s*\.wl-cancel-button\s*\{[\s\S]*?font-size: var\(--text-control\);/, "Saved overlay actions should match main control size");
+assert.match(fieldStyles, /\.wl-open-button,\s*\.wl-cancel-button\s*\{[\s\S]*?font-size: var\(--text-control\);/, "Saved overlay actions should match main control size");
 assert.match(overlayStyles, /overlayImageStyles\(\)/, "Saved overlay shell should include image styles");
 assert.match(overlayStyles, /overlayMotionStyles\(\)/, "Saved overlay shell should include motion styles");
 assert.match(overlayMotionSource, /wl-skeleton-layer[\s\S]*wl-skeleton-media[\s\S]*wl-skeleton-fields[\s\S]*wl-skeleton-actions/, "Saved overlay should include full-card skeleton structure");

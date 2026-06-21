@@ -203,6 +203,27 @@ function panelStylesChunk5() {
       text-overflow: ellipsis;
     }
 
+    .wp-price-stack {
+      min-width: 0;
+      display: inline-flex;
+      max-width: 100%;
+    }
+
+    .wp-price-line {
+      min-width: 0;
+      display: inline-flex;
+      align-items: baseline;
+      flex-wrap: nowrap;
+      gap: 8px;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .wp-price-line .wp-site-price {
+      color: rgba(8, 11, 16, 0.84);
+      font-weight: 780;
+    }
+
     .wp-site-price.is-sale {
       color: #d92d20;
     }
@@ -210,6 +231,20 @@ function panelStylesChunk5() {
     .wp-compare-price {
       font-weight: 650;
       min-width: 0;
+    }
+
+    .wp-native-price {
+      flex: 0 1 auto;
+      min-width: 0;
+      color: rgba(8, 11, 16, 0.42);
+      font-family: var(--figure-font);
+      font-variant-numeric: tabular-nums;
+      font-size: var(--text-control);
+      line-height: 1.2;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .wp-empty {
@@ -282,12 +317,14 @@ function panelStylesChunk5() {
     @keyframes wpItemIn {
       from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translate3d(0, 10px, 0) scale(.992);
+        filter: blur(4px);
       }
 
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0) scale(1);
+        filter: blur(0);
       }
     }
 

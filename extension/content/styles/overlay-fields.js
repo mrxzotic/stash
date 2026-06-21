@@ -49,35 +49,10 @@ function overlayFieldStyles() {
       white-space: normal;
     }
 
-    .wl-alternates {
-      grid-column: 1 / -1;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .wl-alt-button {
-      max-width: 100%;
-      height: 24px;
-      padding: 0 8px;
-      border: 1px solid rgba(8, 11, 16, 0.12);
-      border-radius: 8px;
-      color: rgba(8, 11, 16, 0.72);
-      background: rgba(255, 255, 255, 0.46);
-      font-size: var(--text-caption);
-      line-height: 1;
-      font-weight: 700;
-      letter-spacing: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .wl-alt-button:hover {
-      color: #101010;
-      border-color: rgba(8, 11, 16, 0.28);
-      background: rgba(255, 255, 255, 0.7);
+    .wl-field.is-price .wl-field-value {
+      display: block;
+      overflow: visible;
+      white-space: normal;
     }
 
     .wl-missing {
@@ -97,13 +72,51 @@ function overlayFieldStyles() {
       white-space: nowrap;
     }
 
+    .wl-price-stack {
+      min-width: 0;
+      display: inline-grid;
+      gap: 3px;
+      max-width: 100%;
+    }
+
+    .wl-price-line {
+      min-width: 0;
+      display: inline-flex;
+      align-items: baseline;
+      flex-wrap: nowrap;
+      gap: 7px;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    .wl-price-line .wl-site-price {
+      color: rgba(8, 11, 16, 0.86);
+      font-weight: 760;
+    }
+
     .wl-site-price.is-sale {
       color: #d92d20;
     }
 
     .wl-compare-price {
       margin-top: 0;
-      margin-left: 6px;
+      margin-left: 0;
+    }
+
+    .wl-native-price {
+      min-width: 0;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      color: rgba(8, 11, 16, 0.42);
+      font-family: var(--figure-font);
+      font-variant-numeric: tabular-nums;
+      font-size: var(--text-control);
+      line-height: 1.2;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .wl-actions {
@@ -128,7 +141,6 @@ function overlayFieldStyles() {
       flex: 1 1 auto;
     }
 
-    .wl-edit-button,
     .wl-open-button,
     .wl-cancel-button {
       height: 34px;
@@ -140,15 +152,6 @@ function overlayFieldStyles() {
       line-height: 1;
       font-weight: 760;
       letter-spacing: 0;
-    }
-
-    .wl-edit-button {
-      gap: 7px;
-      padding: 0 12px;
-      margin-top: 2px;
-      border: 1px solid rgba(8, 11, 16, 0.1);
-      color: rgba(8, 11, 16, 0.76);
-      background: rgba(255, 255, 255, 0.42);
     }
 
     .wl-open-button {
@@ -168,7 +171,6 @@ function overlayFieldStyles() {
       background: transparent;
     }
 
-    .wl-edit-button:hover,
     .wl-cancel-button:hover {
       color: #101010;
       background: rgba(8, 11, 16, 0.05);

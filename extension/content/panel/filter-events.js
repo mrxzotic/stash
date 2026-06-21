@@ -1,0 +1,123 @@
+function bindPanelFilterEvents(root) {
+  root.querySelector(".wp-filters")?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-panel-sort-root]")) {
+      return;
+    }
+
+    if (handlePanelFilterMenuTrigger(event, root)) {
+      return;
+    }
+
+    if (handlePanelFilterReset(event)) {
+      return;
+    }
+
+    if (handlePanelAddCategory(event)) {
+      return;
+    }
+
+    if (handlePanelRemoveCategoryPrompt(event)) {
+      return;
+    }
+
+    handlePanelCategorySelection(event);
+  });
+}
+
+function handlePanelFilterMenuTrigger(event, root) {
+  const trigger = event.target.closest("[data-filter-menu-trigger]");
+  if (!trigger) {
+    return false;
+  }
+
+  event.preventDefault();
+  closePanelSortMenu(root);
+  panelState.filterMenuOpen = !panelState.filterMenuOpen;
+  panelState.categoryComposerOpen = false;
+  panelState.deleteCategoryId = "";
+  panelState.deleteItemId = "";
+  syncPanelFilterMenu(root);
+  return true;
+}
+
+function handlePanelFilterReset(event) {
+  const button = event.target.closest("[data-panel-filter-reset]");
+  if (!button) {
+    return false;
+  }
+
+  event.preventDefault();
+  panelState.sortMenuOpen = false;
+  panelState.filterMenuOpen = false;
+  panelState.categoryComposerOpen = false;
+  panelState.deleteCategoryId = "";
+  panelState.deleteItemId = "";
+  panelState.brandCloudOpen = false;
+  panelState.brandCloudSortList = false;
+  panelState.brandFilterKey = "";
+  panelState.brandFilterLabel = "";
+  panelState.searchOpen = false;
+  panelState.searchQuery = "";
+  closePanelArchivedView();
+  panelState.activeCategory = "all";
+  renderStashPanel();
+  return true;
+}
+
+function handlePanelAddCategory(event) {
+  const button = event.target.closest("[data-add-category]");
+  if (!button) {
+    return false;
+  }
+
+  event.preventDefault();
+  panelState.sortMenuOpen = false;
+  panelState.filterMenuOpen = false;
+  panelState.categoryComposerOpen = !panelState.categoryComposerOpen;
+  panelState.settingsOpen = false;
+  closePanelArchivedView();
+  panelState.deleteCategoryId = "";
+  panelState.deleteItemId = "";
+  renderStashPanel();
+  return true;
+}
+
+function handlePanelRemoveCategoryPrompt(event) {
+  const button = event.target.closest("[data-remove-category-prompt]");
+  if (!button) {
+    return false;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  rememberPanelFocus(button);
+  panelState.sortMenuOpen = false;
+  panelState.filterMenuOpen = false;
+  panelState.categoryComposerOpen = false;
+  closePanelArchivedView();
+  panelState.deleteCategoryId = button.dataset.removeCategoryPrompt;
+  panelState.deleteItemId = "";
+  renderStashPanel();
+  return true;
+}
+
+function handlePanelCategorySelection(event) {
+  const button = event.target.closest("[data-category]");
+  if (!button) {
+    return;
+  }
+
+  if (!panelState.searchQuery) {
+    panelState.searchOpen = false;
+  }
+  panelState.sortMenuOpen = false;
+  panelState.filterMenuOpen = false;
+  panelState.brandCloudOpen = false;
+  panelState.brandCloudSortList = false;
+  panelState.categoryComposerOpen = false;
+  closePanelArchivedView();
+  panelState.deleteCategoryId = "";
+  panelState.deleteItemId = "";
+  panelState.activeCategory = button.dataset.category;
+  renderStashPanel();
+}
