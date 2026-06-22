@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-22-release-readiness-v1";
+var CONTENT_VERSION = "2026-06-22-release-qa-parser-pill-v1";
 
 
 var STORAGE_KEY = "stash.items.v1";
@@ -22,8 +22,34 @@ var SAVED_IMAGE_URL_LIMIT = 3;
 var DEFAULT_SETTINGS = {
   summaryCurrency: "USD",
   backgroundTheme: "warm",
-  compactView: false
+  compactView: false,
+  language: "en"
 };
+var PANEL_LANGUAGE_EN = "en";
+var PANEL_LANGUAGE_ES = "es";
+var PANEL_LANGUAGE_DE = "de";
+var PANEL_LANGUAGE_FR = "fr";
+var PANEL_LANGUAGE_RU = "ru";
+var PANEL_LANGUAGE_OPTIONS = [
+  { id: PANEL_LANGUAGE_EN, label: "English", flag: "🇺🇸" },
+  { id: PANEL_LANGUAGE_ES, label: "Spanish", flag: "🇪🇸" },
+  { id: PANEL_LANGUAGE_DE, label: "German", flag: "🇩🇪" },
+  { id: PANEL_LANGUAGE_FR, label: "French", flag: "🇫🇷" },
+  { id: PANEL_LANGUAGE_RU, label: "Russian", flag: "🇷🇺" }
+];
+var PANEL_OVERFLOW_ROOT_INLINE_STYLE = "position:relative;display:inline-flex;flex:0 0 auto;";
+var PANEL_OVERFLOW_MENU_INLINE_STYLE = "position:absolute;top:calc(100% + 8px);right:0;z-index:14;width:250px;max-width:calc(100vw - 32px);gap:3px;padding:6px;border:1px solid var(--wp-popover-border);border-radius:var(--radius);background:var(--wp-popover-bg);-webkit-backdrop-filter:var(--wp-popover-blur);backdrop-filter:var(--wp-popover-blur);box-shadow:var(--wp-popover-shadow);transform-origin:100% 0;box-sizing:border-box;";
+var PANEL_OVERFLOW_GRAPHITE_MENU_INLINE_STYLE = "--wp-overflow-option-color:rgba(244,244,240,0.72);--wp-overflow-option-hover-color:rgba(255,255,250,0.96);--wp-overflow-divider-bg:rgba(255,255,255,0.1);--wp-overflow-switch-bg:rgba(255,255,255,0.14);--wp-overflow-switch-border:rgba(255,255,255,0.1);--wp-overflow-switch-on-bg:rgba(244,244,240,0.9);--wp-overflow-switch-on-border:rgba(255,255,255,0.42);--wp-overflow-switch-knob-bg:rgba(255,255,255,0.96);--wp-overflow-switch-knob-shadow:rgba(0,0,0,0.34);--wp-overflow-switch-knob-on-bg:rgba(8,11,16,0.92);--wp-overflow-select-bg:rgba(255,255,255,0.1);--wp-overflow-select-border:rgba(255,255,255,0.16);--wp-overflow-select-color:rgba(255,255,250,0.92);";
+var PANEL_OVERFLOW_OPTION_INLINE_STYLE = "width:100%;height:34px;display:grid;grid-template-columns:20px minmax(0,1fr) 34px;align-items:center;gap:8px;padding:0 9px;border:0;border-radius:7px;background:transparent;color:var(--wp-overflow-option-color,rgba(8,11,16,0.72));font-family:var(--ui-font);font-size:13px;font-weight:720;line-height:1;text-align:left;white-space:nowrap;box-shadow:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_INLINE_STYLE = "position:relative;width:100%;height:34px;display:grid;grid-template-columns:20px minmax(0,1fr) 122px;align-items:center;gap:8px;padding:0 9px;border-radius:7px;color:var(--wp-overflow-option-color,rgba(8,11,16,0.72));font-family:var(--ui-font);font-size:13px;font-weight:720;line-height:1;white-space:nowrap;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_TRIGGER_INLINE_STYLE = "width:122px;height:28px;display:grid;grid-template-columns:20px minmax(0,1fr) 14px;align-items:center;gap:6px;padding:0 7px;border:1px solid var(--wp-overflow-select-border,rgba(8,11,16,0.12));border-radius:8px;background:var(--wp-overflow-select-bg,rgba(255,255,255,0.68));color:var(--wp-overflow-select-color,currentColor);font:inherit;font-size:12px;font-weight:720;text-align:left;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_MENU_INLINE_STYLE = "position:absolute;top:calc(100% + 6px);right:9px;z-index:16;width:162px;gap:4px;padding:6px;border:1px solid var(--wp-popover-border);border-radius:var(--radius);background:var(--wp-popover-bg);-webkit-backdrop-filter:var(--wp-popover-blur);backdrop-filter:var(--wp-popover-blur);box-shadow:var(--wp-popover-shadow);transform-origin:100% 0;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_OPTION_INLINE_STYLE = "width:100%;height:34px;display:grid;grid-template-columns:18px minmax(0,1fr) 24px;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:var(--radius);background:transparent;color:var(--foreground);font:inherit;font-size:13px;font-weight:700;text-align:left;white-space:nowrap;box-sizing:border-box;";
+var PANEL_OVERFLOW_DIVIDER_INLINE_STYLE = "height:1px;margin:3px 4px;background:var(--wp-overflow-divider-bg,rgba(8,11,16,0.1));";
+var PANEL_OVERFLOW_SWITCH_INLINE_STYLE = "position:relative;width:30px;height:18px;justify-self:end;border-radius:999px;background:var(--wp-overflow-switch-bg,rgba(8,11,16,0.14));box-shadow:inset 0 0 0 1px var(--wp-overflow-switch-border,rgba(8,11,16,0.08));overflow:visible;box-sizing:border-box;";
+var PANEL_OVERFLOW_SWITCH_ON_INLINE_STYLE = "background:var(--wp-overflow-switch-on-bg,rgba(8,11,16,0.84));box-shadow:inset 0 0 0 1px var(--wp-overflow-switch-on-border,rgba(8,11,16,0.16));";
+var PANEL_OVERFLOW_SWITCH_KNOB_INLINE_STYLE = "position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:999px;background:var(--wp-overflow-switch-knob-bg,rgba(255,255,255,0.96));box-shadow:0 1px 3px var(--wp-overflow-switch-knob-shadow,rgba(8,11,16,0.24));";
+var PANEL_OVERFLOW_SWITCH_KNOB_ON_INLINE_STYLE = "transform:translateX(12px);background:var(--wp-overflow-switch-knob-on-bg,var(--wp-overflow-switch-knob-bg,rgba(255,255,255,0.96)));";
 var GRAPHITE_BACKGROUND_THEME = "graphite";
 var DEFAULT_CATEGORIES = [
   { id: "tops", label: "Tops" },
@@ -117,6 +143,8 @@ var BRAND_ALIASES = new Map([
   ["aime leon dore", "Aimé Leon Dore"],
   ["aimé leon dore eu", "Aimé Leon Dore"],
   ["aimé leon dore", "Aimé Leon Dore"],
+  ["allsaints", "AllSaints"],
+  ["all saints", "AllSaints"],
   ["tomfordfashion", "Tom Ford"],
   ["tom ford fashion", "Tom Ford"],
   ["tomford", "Tom Ford"],
@@ -126,6 +154,10 @@ var BRAND_ALIASES = new Map([
   ["limestore", "LIME"],
   ["lime", "LIME"],
   ["on", "On"],
+  ["pyeoptics", "PYE"],
+  ["pye optics", "PYE"],
+  ["sorelle", "Sorelle Era"],
+  ["sorelleera", "Sorelle Era"],
   ["suitsupply", "Suitsupply"],
   ["about blank", "about:blank"],
   ["about:blank", "about:blank"],
@@ -171,6 +203,7 @@ var panelState = {
   summaryRateLoading: "",
   backgroundTheme: DEFAULT_SETTINGS.backgroundTheme,
   compactView: DEFAULT_SETTINGS.compactView,
+  language: DEFAULT_SETTINGS.language,
   hasRenderedPanel: false,
   rebuildMotion: "",
   rebuildMotionTimer: 0,
@@ -178,3 +211,29 @@ var panelState = {
   displacedItemId: "",
   highlightTimer: 0
 };
+
+function t(key, replacements = {}) {
+  return interpolatePanelText(key, replacements);
+}
+
+function interpolatePanelText(template, replacements = {}) {
+  return String(template || "").replace(/\{([A-Za-z0-9_]+)\}/g, (match, key) =>
+    Object.prototype.hasOwnProperty.call(replacements, key) ? String(replacements[key]) : match
+  );
+}
+
+function panelItemNoun(count) {
+  return Number(count) === 1 ? "item" : "items";
+}
+
+function panelBrandNoun(count) {
+  return Number(count) === 1 ? "brand" : "brands";
+}
+
+function panelCategoryDisplayLabel(category) {
+  return cleanCategoryLabel(category?.label || category?.id) || t("Saved");
+}
+
+function renderPanelLanguageSelect() {
+  return "";
+}

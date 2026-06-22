@@ -30,20 +30,20 @@ function renderMissingProductImage(namespace = "wp") {
   const logoClass = namespace === "wl" ? "wl-image-missing-logo" : "wp-image-missing-logo";
   const textClass = namespace === "wl" ? "wl-image-missing-text" : "wp-image-missing-text";
   return `
-    <span class="${className}" role="img" aria-label="Oops, image missing">
+    <span class="${className}" role="img" aria-label="${escapeAttribute(t("Oops, image missing"))}">
       <img class="${logoClass}" src="${escapeAttribute(stashedGreyscaleLogoUrl())}" alt="" aria-hidden="true">
-      <span class="${textClass}">Oops, image missing</span>
+      <span class="${textClass}">${escapeHtml(t("Oops, image missing"))}</span>
     </span>
   `;
 }
 
 function renderPanelImageSliderControls(urls, item = null) {
-  const label = item ? ` for ${panelItemAccessibleName(item)}` : "";
+  const label = item ? t(" for {item}", { item: panelItemAccessibleName(item) }) : "";
   return `
-    <button class="wp-image-slider-button is-prev" type="button" aria-label="${escapeAttribute(`Previous image${label}`)}" data-image-slide="previous">
+    <button class="wp-image-slider-button is-prev" type="button" aria-label="${escapeAttribute(t("Previous image{label}", { label }))}" data-image-slide="previous">
       ${phosphorChevronLeftIcon("wp-image-slider-icon")}
     </button>
-    <button class="wp-image-slider-button is-next" type="button" aria-label="${escapeAttribute(`Next image${label}`)}" data-image-slide="next">
+    <button class="wp-image-slider-button is-next" type="button" aria-label="${escapeAttribute(t("Next image{label}", { label }))}" data-image-slide="next">
       ${phosphorChevronRightIcon("wp-image-slider-icon")}
     </button>
     <span class="wp-image-slider-tray">
@@ -64,9 +64,9 @@ function renderPanelImageSliderDots(urls) {
 }
 
 function renderPanelImageDeleteButton(item = null) {
-  const label = item ? ` from ${panelItemAccessibleName(item)}` : "";
+  const label = item ? t(" from {item}", { item: panelItemAccessibleName(item) }) : "";
   return `
-    <button class="wp-image-delete-button" type="button" aria-label="${escapeAttribute(`Remove current image${label}`)}" title="Remove image" data-image-delete>
+    <button class="wp-image-delete-button" type="button" aria-label="${escapeAttribute(t("Remove current image{label}", { label }))}" title="${escapeAttribute(t("Remove image"))}" data-image-delete>
       ${phosphorImageOffIcon("wp-image-delete-icon")}
     </button>
   `;

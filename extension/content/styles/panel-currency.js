@@ -43,7 +43,7 @@ function panelCurrencyStyles() {
     .wp-summary-capsule .wp-total {
       width: auto;
       min-width: 120px;
-      max-width: 144px;
+      max-width: none;
       height: 32px;
       justify-content: center;
       gap: 8px;
@@ -88,9 +88,9 @@ function panelCurrencyStyles() {
     }
 
     .wp-summary-capsule .wp-total-value {
-      max-width: 96px;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      max-width: none;
+      overflow: visible;
+      text-overflow: clip;
     }
 
     .wp-total-value.is-counting {

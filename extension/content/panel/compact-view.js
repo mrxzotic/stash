@@ -27,8 +27,8 @@ function renderPanelCompactItem(item, index = 0) {
 
   return `
     <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}" data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}">
-      <span class="wp-compact-index" aria-label="Item ${index + 1}">#${index + 1}</span>
-      <a class="wp-compact-thumb ${compactThumbFocusClass(item)}" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(`Open ${itemLabel}`)}">
+      <span class="wp-compact-index" aria-label="${escapeAttribute(t("Item {number}", { number: index + 1 }))}">#${index + 1}</span>
+      <a class="wp-compact-thumb ${compactThumbFocusClass(item)}" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(t("Open {item}", { item: itemLabel }))}">
         ${renderPanelCardImageFrame(item, { slider: false })}
       </a>
       <div class="wp-compact-copy">
@@ -74,8 +74,8 @@ function syncPanelTopbarPreferenceControls(root = document.getElementById("stash
   if (compactButton) {
     compactButton.classList.toggle("is-toggle-active", panelState.compactView);
     compactButton.setAttribute("aria-checked", String(panelState.compactView));
-    compactButton.setAttribute("aria-label", panelState.compactView ? "List view on" : "List view off");
-    compactButton.setAttribute("title", "List view");
+    compactButton.setAttribute("aria-label", panelState.compactView ? t("List view on") : t("List view off"));
+    compactButton.setAttribute("title", t("List view"));
     compactButton.innerHTML = renderPanelCompactToggleContents();
   }
 
@@ -84,8 +84,8 @@ function syncPanelTopbarPreferenceControls(root = document.getElementById("stash
     const isGraphite = panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME;
     themeButton.classList.toggle("is-toggle-active", isGraphite);
     themeButton.setAttribute("aria-checked", String(isGraphite));
-    themeButton.setAttribute("aria-label", isGraphite ? "Dark mode on" : "Dark mode off");
-    themeButton.setAttribute("title", "Dark mode");
+    themeButton.setAttribute("aria-label", isGraphite ? t("Dark mode on") : t("Dark mode off"));
+    themeButton.setAttribute("title", t("Dark mode"));
     themeButton.innerHTML = renderPanelThemeToggleContents();
   }
 }
@@ -94,7 +94,7 @@ function renderPanelThemeToggleContents() {
   const isGraphite = panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME;
   return `
     ${phosphorMoonIcon("wp-overflow-option-icon")}
-    <span>Dark mode</span>
+    <span>${escapeHtml(t("Dark mode"))}</span>
     ${renderPanelOverflowSwitch(isGraphite)}
   `;
 }
@@ -102,13 +102,15 @@ function renderPanelThemeToggleContents() {
 function renderPanelCompactToggleContents() {
   return `
     ${phosphorListIcon("wp-overflow-option-icon")}
-    <span>List view</span>
+    <span>${escapeHtml(t("List view"))}</span>
     ${renderPanelOverflowSwitch(panelState.compactView)}
   `;
 }
 
 function renderPanelOverflowSwitch(isActive) {
-  return `<span class="wp-overflow-switch${isActive ? " is-on" : ""}" aria-hidden="true"></span>`;
+  const switchStyle = `${PANEL_OVERFLOW_SWITCH_INLINE_STYLE}${isActive ? PANEL_OVERFLOW_SWITCH_ON_INLINE_STYLE : ""}`;
+  const knobStyle = `${PANEL_OVERFLOW_SWITCH_KNOB_INLINE_STYLE}${isActive ? PANEL_OVERFLOW_SWITCH_KNOB_ON_INLINE_STYLE : ""}`;
+  return `<span class="wp-overflow-switch${isActive ? " is-on" : ""}" style="${escapeAttribute(switchStyle)}" aria-hidden="true"><span class="wp-overflow-switch-knob" style="${escapeAttribute(knobStyle)}"></span></span>`;
 }
 
 function renderPanelSummaryLead(displayItems = panelSummaryItems(panelState.items)) {
@@ -123,13 +125,13 @@ function renderPanelCountContents(displayItems = panelSummaryItems(panelState.it
   const totalCount = displayItems.length;
   if (panelTopbarCountIsScoped()) {
     return `
-      <span class="wp-count-figure">${panelTopbarVisibleItems().length}</span><span class="wp-count-label">&nbsp;of&nbsp;</span>
+      <span class="wp-count-figure">${panelTopbarVisibleItems().length}</span><span class="wp-count-label">&nbsp;${escapeHtml(t("of"))}&nbsp;</span>
       <span class="wp-count-figure">${totalCount}</span>
     `;
   }
 
   return `
-    <span class="wp-count-figure">${totalCount}</span><span class="wp-count-label">&nbsp;${escapeHtml(totalCount === 1 ? "item" : "items")}</span>
+    <span class="wp-count-figure">${totalCount}</span><span class="wp-count-label">&nbsp;${escapeHtml(panelItemNoun(totalCount))}</span>
   `;
 }
 
@@ -149,8 +151,8 @@ function syncPanelBrandCountControl(root = document.getElementById("stash-panel-
 function panelCountAriaLabel(displayItems = panelSummaryItems(panelState.items)) {
   const label = panelTopbarCountLabel(displayItems);
   return panelTopbarCountIsScoped()
-    ? `Showing ${label} items`
-    : `${label} saved`;
+    ? t("Showing {label} items", { label })
+    : t("{label} saved", { label });
 }
 
 function panelTopbarCountLabel(displayItems = panelSummaryItems(panelState.items)) {
@@ -175,7 +177,7 @@ function panelTopbarCountIsScoped() {
 }
 
 function panelItemCountLabel(itemCount) {
-  return `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
+  return `${itemCount} ${panelItemNoun(itemCount)}`;
 }
 
 function renderPanelBrandCloud(items) {
@@ -186,7 +188,7 @@ function renderPanelBrandCloud(items) {
       <span class="wp-brand-cloud-count">${brand.count}</span>
     </button>
   `).join("");
-  return `<div class="wp-brand-cloud${modeClass}" aria-label="Brands by saved item count">${brandNodes}</div>`;
+  return `<div class="wp-brand-cloud${modeClass}" aria-label="${escapeAttribute(t("Brands by saved item count"))}">${brandNodes}</div>`;
 }
 
 function bindPanelBrandCloudEvents(root) {
@@ -252,11 +254,11 @@ function bindPanelPreferenceEvents(root) {
   root.querySelector("[data-panel-compact-toggle]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    closePanelOverflowMenu(root);
+    closePanelLanguageMenu(root);
     safelyRunPanelAction(async () => {
       await savePanelSettings(
         { compactView: !panelState.compactView },
-        { rerender: false, syncViewMode: true, rebuildMotion: "view" }
+        { rerender: false, syncViewMode: true, syncSummary: false }
       );
     });
   });
@@ -264,13 +266,58 @@ function bindPanelPreferenceEvents(root) {
   root.querySelector("[data-panel-theme-toggle]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    closePanelOverflowMenu(root);
+    closePanelLanguageMenu(root);
     safelyRunPanelAction(async () => {
       await savePanelSettings(
         { backgroundTheme: toggledGraphiteThemeId() },
-        { rerender: false, rebuildMotion: "theme" }
+        { rerender: false, syncSummary: false }
       );
     });
+  });
+
+  root.querySelector("[data-panel-language-trigger]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    togglePanelLanguageMenu(event.currentTarget);
+  });
+
+  root.querySelector("[data-panel-language-menu]")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-panel-language]");
+    if (!button) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    const language = cleanText(button.dataset.panelLanguage).toLowerCase();
+    if (!isPanelLanguage(language) || language === panelState.language) {
+      closePanelLanguageMenu(root);
+      return;
+    }
+    panelState.settingsOpen = false;
+    safelyRunPanelAction(() => savePanelSettings({ language }));
+  });
+}
+
+function togglePanelLanguageMenu(trigger) {
+  const languageRoot = trigger.closest("[data-panel-language-root]");
+  const menu = languageRoot?.querySelector("[data-panel-language-menu]");
+  if (!languageRoot || !menu) {
+    return;
+  }
+
+  const willOpen = menu.hidden;
+  closePanelLanguageMenu(languageRoot.getRootNode());
+  menu.hidden = !willOpen;
+  languageRoot.classList.toggle("is-open", willOpen);
+  trigger.setAttribute("aria-expanded", String(willOpen));
+}
+
+function closePanelLanguageMenu(scope = document.getElementById("stash-panel-root")?.shadowRoot) {
+  scope?.querySelectorAll?.("[data-panel-language-root]").forEach((languageRoot) => {
+    languageRoot.classList.remove("is-open");
+    languageRoot.querySelector("[data-panel-language-menu]")?.setAttribute("hidden", "");
+    languageRoot.querySelector("[data-panel-language-trigger]")?.setAttribute("aria-expanded", "false");
   });
 }
 
@@ -293,12 +340,13 @@ function panelBrandCloudItems(items) {
     brands.set(key, current);
   });
   const sorted = panelSortedBrandCloudItems(Array.from(brands.values())).slice(0, 40);
-  const maxRoot = Math.sqrt(sorted[0]?.count || 1);
+  const maxCount = sorted[0]?.count || 1;
+  const countRange = Math.max(1, maxCount - 1);
   return sorted.map((brand) => ({
     ...brand,
     scale: panelState.brandCloudSortList
       ? 1.3
-      : maxRoot <= 1 ? 1 : 0.9 + (Math.sqrt(brand.count) / maxRoot) * 0.58
+      : maxCount <= 1 ? 1 : 1 + Math.pow((brand.count - 1) / countRange, 0.75) * 0.82
   }));
 }
 

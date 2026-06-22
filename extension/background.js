@@ -3,7 +3,7 @@ const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const COMMAND_SAVE_CURRENT = "save-to-stashed";
 const COMMAND_TOGGLE_PANEL = "toggle-stashed";
-const CONTENT_SCRIPT_VERSION = "2026-06-22-release-readiness-v1";
+const CONTENT_SCRIPT_VERSION = "2026-06-22-release-qa-parser-pill-v1";
 const MESSAGE_PING = "STASH_PING_V2";
 const MESSAGE_SAVE = "STASH_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
@@ -83,6 +83,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/media.js",
   "content/text.js",
   "content/utils.js",
+  "content/i18n.js",
   "content/bootstrap.js"
 ];
 

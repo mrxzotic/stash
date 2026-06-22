@@ -104,7 +104,7 @@ sandbox.extractFromPagePrice = () => ({
 sandbox.extractFromContext = () => ({});
 
 const extracted = sandbox.extractProduct({});
-assert.equal(extracted.brand, "ALLSAINTS");
+assert.equal(extracted.brand, "AllSaints");
 assert.equal(extracted.title, "Petals Oversized Short Sleeve Graphic T-Shirt");
 assert.equal(extracted.priceAmount, 50);
 assert.equal(extracted.priceText, "50 €");

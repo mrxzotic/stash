@@ -35,7 +35,8 @@ function exportStashBackup() {
     settings: normalizePanelSettings({
       summaryCurrency: panelState.summaryCurrency,
       backgroundTheme: panelState.backgroundTheme,
-      compactView: panelState.compactView
+      compactView: panelState.compactView,
+      language: panelState.language
     })
   };
   const blob = new Blob([JSON.stringify(backup, null, 2)], {
@@ -55,7 +56,7 @@ function exportStashBackup() {
 
 async function importStashBackupFile(file) {
   if (file.size > 6 * 1024 * 1024) {
-    throw importBackupError("Choose a Stashed JSON backup under 6 MB.");
+    throw importBackupError(t("Choose a Stashed JSON backup under 6 MB."));
   }
 
   const importedAt = new Date().toISOString();
@@ -68,6 +69,7 @@ async function importStashBackupFile(file) {
     summaryCurrency: panelState.summaryCurrency,
     backgroundTheme: panelState.backgroundTheme,
     compactView: panelState.compactView,
+    language: panelState.language,
     ...(source?.settings || {})
   });
   const previousSummary = panelSummaryTextForItems(panelState.items);
@@ -78,6 +80,7 @@ async function importStashBackupFile(file) {
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
+  panelState.language = settings.language;
   panelState.founderPromoOpen = false;
   panelState.searchOpen = false;
   panelState.searchQuery = "";
@@ -113,7 +116,7 @@ function parseStashBackupJson(text) {
     }
     return parsed;
   } catch {
-    throw importBackupError("Choose a valid Stashed JSON backup.");
+    throw importBackupError(t("Choose a valid Stashed JSON backup."));
   }
 }
 
@@ -131,14 +134,14 @@ function mergeImportedCategories(value) {
 
 function normalizeImportedBackupItems(value, categories, importedAt) {
   if (!Array.isArray(value)) {
-    throw importBackupError("Backup JSON must include an items array.");
+    throw importBackupError(t("Backup JSON must include an items array."));
   }
 
   const items = value
     .map((item) => normalizeImportedBackupItem(item, categories, importedAt))
     .filter(Boolean);
   if (value.length && !items.length) {
-    throw importBackupError("Backup JSON did not include any valid saved items.");
+    throw importBackupError(t("Backup JSON did not include any valid saved items."));
   }
 
   return items;
@@ -229,6 +232,6 @@ function normalizedImportDate(value) {
 
 function importBackupError(message) {
   const error = new Error(message);
-  error.title = "Could not import JSON";
+  error.title = t("Could not import JSON");
   return error;
 }

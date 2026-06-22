@@ -12,42 +12,42 @@ function renderEditItemDialog() {
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-edit-item></div>
     <form class="wp-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-edit-item-title" data-panel-modal data-edit-item-form>
       <div class="wp-edit-head">
-        <h3 id="wp-edit-item-title">Edit item</h3>
-        <button class="wp-edit-close" type="button" aria-label="Cancel edit" data-cancel-edit-item>${phosphorXIcon("wp-edit-close-icon")}</button>
+        <h3 id="wp-edit-item-title">${escapeHtml(t("Edit item"))}</h3>
+        <button class="wp-edit-close" type="button" aria-label="${escapeAttribute(t("Cancel edit"))}" data-cancel-edit-item>${phosphorXIcon("wp-edit-close-icon")}</button>
       </div>
       <label class="wp-edit-field">
-        <span>Brand</span>
+        <span>${escapeHtml(t("Brand"))}</span>
         <input name="brand" type="text" value="${escapeAttribute(item.brand)}" maxlength="80" autocomplete="off" data-autofocus>
       </label>
       <label class="wp-edit-field">
-        <span>Name</span>
+        <span>${escapeHtml(t("Name"))}</span>
         <input name="title" type="text" value="${escapeAttribute(item.title)}" maxlength="140" autocomplete="off">
       </label>
       <div class="wp-edit-price-row">
         <label class="wp-edit-field">
-          <span>Price</span>
+          <span>${escapeHtml(t("Price"))}</span>
           <input name="price" type="text" value="${escapeAttribute(priceAmount)}" maxlength="40" inputmode="decimal" autocomplete="off">
         </label>
         <label class="wp-edit-field">
-          <span>Currency</span>
-          <select name="currency" aria-label="Currency">
+          <span>${escapeHtml(t("Currency"))}</span>
+          <select name="currency" aria-label="${escapeAttribute(t("Currency"))}">
             ${renderEditCurrencyOptions(currency)}
           </select>
         </label>
       </div>
       <label class="wp-edit-field">
-        <span>Image URL</span>
+        <span>${escapeHtml(t("Image URL"))}</span>
         <input name="imageUrl" type="url" value="${escapeAttribute(item.imageUrl || "")}" maxlength="2048" autocomplete="off">
       </label>
       <div class="wp-edit-field">
-        <span>Category</span>
-        <div class="wp-edit-category-list" role="radiogroup" aria-label="Category">
+        <span>${escapeHtml(t("Category"))}</span>
+        <div class="wp-edit-category-list" role="radiogroup" aria-label="${escapeAttribute(t("Category"))}">
           ${renderEditCategoryOptions(item.category)}
         </div>
       </div>
       <div class="wp-edit-actions">
-        <button class="wp-confirm-cancel" type="button" data-cancel-edit-item>Cancel</button>
-        <button class="wp-confirm-delete wp-edit-save" type="submit">Save</button>
+        <button class="wp-confirm-cancel" type="button" data-cancel-edit-item>${escapeHtml(t("Cancel"))}</button>
+        <button class="wp-confirm-delete wp-edit-save" type="submit">${escapeHtml(t("Save"))}</button>
       </div>
     </form>
   `;
@@ -88,7 +88,7 @@ function renderEditCategoryOptions(selectedCategory) {
     return `
       <label class="wp-edit-category${isSelected ? " is-selected" : ""}">
         <input type="radio" name="category" value="${escapeAttribute(category.id)}" ${isSelected ? "checked" : ""}>
-        <span>${escapeHtml(category.label)}</span>
+        <span>${escapeHtml(panelCategoryDisplayLabel(category))}</span>
       </label>
     `;
   }).join("");

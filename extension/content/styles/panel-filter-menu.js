@@ -33,9 +33,10 @@ function panelFilterMenuStyles() {
     }
 
     .wp-brand-chip {
-      flex: 0 0 50px;
-      gap: 5px;
-      padding: 0 8px;
+      flex: 0 0 auto;
+      min-width: 50px;
+      gap: 6px;
+      padding: 0 10px;
       font-family: var(--figure-font);
       font-size: 12px;
       transition:
@@ -94,9 +95,10 @@ function panelFilterMenuStyles() {
     }
 
     .wp-filter-rail > .wp-filter-archive {
-      flex: 0 0 50px;
-      gap: 5px;
-      padding: 0 8px;
+      flex: 0 0 auto;
+      min-width: 50px;
+      gap: 6px;
+      padding: 0 10px;
     }
 
     .wp-brand-chip-icon,
@@ -120,7 +122,7 @@ function panelFilterMenuStyles() {
     }
 
     .wp-brand-chip-count {
-      min-width: 7px;
+      min-width: 1ch;
       font-family: var(--figure-font);
       font-variant-numeric: tabular-nums;
     }

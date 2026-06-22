@@ -1,6 +1,6 @@
 function renderPanelSaveCurrentTrigger() {
   return `
-    <button class="wp-brand-save" type="button" aria-label="Save current item" title="Save current item" data-panel-save-current>
+    <button class="wp-brand-save" type="button" aria-label="${escapeAttribute(t("Save current item"))}" title="${escapeAttribute(t("Save current item"))}" data-panel-save-current>
       ${phosphorPlusIcon("wp-brand-save-icon")}
     </button>
   `;
@@ -46,6 +46,6 @@ function setPanelSaveCurrentButtonSaving(button, isSaving) {
 
   button.disabled = isSaving;
   button.classList.toggle("is-saving", isSaving);
-  button.setAttribute("aria-label", isSaving ? "Saving current item" : "Save current item");
-  button.setAttribute("title", isSaving ? "Saving current item" : "Save current item");
+  button.setAttribute("aria-label", isSaving ? t("Saving current item") : t("Save current item"));
+  button.setAttribute("title", isSaving ? t("Saving current item") : t("Save current item"));
 }

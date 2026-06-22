@@ -46,7 +46,7 @@ function clearOrClosePanelSearch(root) {
 function syncSearchClearButton(root) {
   const clearButton = root.querySelector("[data-clear-search]");
   if (!clearButton) return;
-  const label = panelState.searchQuery ? "Clear search" : "Close search";
+  const label = panelState.searchQuery ? t("Clear search") : t("Close search");
   clearButton.disabled = false;
   clearButton.classList.add("is-visible");
   clearButton.setAttribute("aria-label", label);

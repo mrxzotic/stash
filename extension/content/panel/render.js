@@ -14,11 +14,11 @@ function renderStashPanel(options = {}) {
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
-    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}${rebuildMotionClass}" role="dialog" aria-label="Stashed">
+    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}${rebuildMotionClass}" role="dialog" aria-label="${escapeAttribute(t("Stashed"))}">
       ${renderPanelTopbarHtml(summaryItems)}
       ${renderFounderPromoDialog()}
 
-      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="Stashed categories">
+      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="${escapeAttribute(t("Stashed categories"))}">
         ${renderCategoryFilters(filterCategories, panelArchivedCount(displayItems))}
       </nav>
       ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
@@ -141,9 +141,9 @@ function renderPanelTopbarHtml(displayItems) {
 function renderCategoryComposer() {
   return `
     <form class="wp-category-composer wp-popover" data-category-form>
-      <input data-category-input type="text" placeholder="New category" maxlength="28" autocomplete="off" aria-label="New category">
-      <button class="wp-category-submit" type="submit">Add</button>
-      <button class="wp-category-cancel" type="button" aria-label="Cancel category" data-cancel-category>${phosphorXIcon("wp-category-cancel-icon")}</button>
+      <input data-category-input type="text" placeholder="${escapeAttribute(t("New category"))}" maxlength="28" autocomplete="off" aria-label="${escapeAttribute(t("New category"))}">
+      <button class="wp-category-submit" type="submit">${escapeHtml(t("Add"))}</button>
+      <button class="wp-category-cancel" type="button" aria-label="${escapeAttribute(t("Cancel category"))}" data-cancel-category>${phosphorXIcon("wp-category-cancel-icon")}</button>
     </form>
   `;
 }
@@ -157,11 +157,11 @@ function renderDeleteCategoryDialog() {
   return `
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-category></div>
     <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-delete-category-title" data-panel-modal>
-      <h3 id="wp-delete-category-title">Delete ${escapeHtml(category.label)}?</h3>
-      <p>Items stay saved and move back to All.</p>
+      <h3 id="wp-delete-category-title">${escapeHtml(t("Delete {category}?", { category: panelCategoryDisplayLabel(category) }))}</h3>
+      <p>${escapeHtml(t("Items stay saved and move back to All."))}</p>
       <div class="wp-confirm-actions">
-        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-category>Cancel</button>
-        <button class="wp-confirm-delete" type="button" data-confirm-delete-category="${escapeAttribute(category.id)}">Delete</button>
+        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-category>${escapeHtml(t("Cancel"))}</button>
+        <button class="wp-confirm-delete" type="button" data-confirm-delete-category="${escapeAttribute(category.id)}">${escapeHtml(t("Delete"))}</button>
       </div>
     </section>
   `;
@@ -178,11 +178,11 @@ function renderDeleteItemDialog() {
   return `
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-item></div>
     <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-delete-item-title" data-panel-modal>
-      <h3 id="wp-delete-item-title">Delete ${escapeHtml(item.title)}?</h3>
-      <p>This removes it from Stashed.</p>
+      <h3 id="wp-delete-item-title">${escapeHtml(t("Delete {item}?", { item: item.title }))}</h3>
+      <p>${escapeHtml(t("This removes it from Stashed."))}</p>
       <div class="wp-confirm-actions">
-        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-item>Cancel</button>
-        <button class="wp-confirm-delete" type="button" data-confirm-delete-item="${escapeAttribute(item.id)}">Delete</button>
+        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-item>${escapeHtml(t("Cancel"))}</button>
+        <button class="wp-confirm-delete" type="button" data-confirm-delete-item="${escapeAttribute(item.id)}">${escapeHtml(t("Delete"))}</button>
       </div>
     </section>
   `;
@@ -190,13 +190,13 @@ function renderDeleteItemDialog() {
 
 function renderPanelSearchHtml() {
   const hasQuery = Boolean(panelState.searchQuery);
-  const actionLabel = hasQuery ? "Clear search" : "Close search";
+  const actionLabel = hasQuery ? t("Clear search") : t("Close search");
 
   return `
     <div class="wp-inline-search" role="search">
       ${phosphorSearchIcon("wp-inline-search-icon")}
-      <label class="wp-inline-search-label" for="wp-panel-search-input">Search</label>
-      <input id="wp-panel-search-input" data-search type="text" inputmode="search" placeholder="Search saved" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
+      <label class="wp-inline-search-label" for="wp-panel-search-input">${escapeHtml(t("Search"))}</label>
+      <input id="wp-panel-search-input" data-search type="text" inputmode="search" placeholder="${escapeAttribute(t("Search saved"))}" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
       <button class="wp-clear-search is-visible" type="button" aria-label="${escapeAttribute(actionLabel)}" title="${escapeAttribute(actionLabel)}" data-clear-search>
         ${phosphorXIcon("wp-clear-search-icon")}
       </button>
@@ -212,7 +212,7 @@ function renderPanelSummaryHtml(displayItems) {
       <span class="wp-summary-capsule">
         ${renderPanelSummaryLead(displayItems)}
         <div class="wp-currency-select" data-currency-root>
-          <button class="wp-total" type="button" aria-label="Choose summary currency" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
+          <button class="wp-total" type="button" aria-label="${escapeAttribute(t("Choose summary currency"))}" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
             <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(valueItems, panelState.summaryCurrency))}</span>
             ${phosphorChevronDownIcon("wp-total-chevron")}
           </button>
@@ -221,7 +221,7 @@ function renderPanelSummaryHtml(displayItems) {
       </span>
     </span>
     <div class="wp-actions">
-      <button class="wp-icon-button wp-search-button" type="button" aria-label="Search" aria-expanded="${panelState.searchOpen}" data-panel-search>
+      <button class="wp-icon-button wp-search-button" type="button" aria-label="${escapeAttribute(t("Search"))}" aria-expanded="${panelState.searchOpen}" data-panel-search>
         ${phosphorSearchIcon()}
       </button>
       ${renderPanelOverflowMenu()}
@@ -232,26 +232,31 @@ function renderPanelSummaryHtml(displayItems) {
 function renderPanelOverflowMenu() {
   const isOpen = panelState.settingsOpen;
   return `
-    <div class="wp-overflow${isOpen ? " is-open" : ""}" data-panel-overflow-root>
-      <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="More options" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-overflow-trigger>
-        <span class="wp-overflow-dotmark" aria-hidden="true">⋮</span>
+    <div class="wp-overflow${isOpen ? " is-open" : ""}" style="${escapeAttribute(PANEL_OVERFLOW_ROOT_INLINE_STYLE)}" data-panel-overflow-root>
+      <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("More options"))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-overflow-trigger>
+        ${phosphorDotsThreeVerticalIcon("wp-overflow-button-icon")}
       </button>
-      <div class="wp-overflow-menu" role="menu" ${isOpen ? "" : "hidden"} data-panel-overflow-menu>
-        <button class="wp-overflow-option" type="button" role="menuitemcheckbox" aria-checked="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME}" data-panel-theme-toggle>
+      <div class="wp-overflow-menu" style="${escapeAttribute(panelOverflowMenuInlineStyle(isOpen))}" role="menu" ${isOpen ? "" : "hidden"} data-panel-overflow-menu>
+        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitemcheckbox" aria-checked="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME}" data-panel-theme-toggle>
           ${renderPanelThemeToggleContents()}
         </button>
-        <button class="wp-overflow-option" type="button" role="menuitemcheckbox" aria-checked="${panelState.compactView}" data-panel-compact-toggle>
+        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitemcheckbox" aria-checked="${panelState.compactView}" data-panel-compact-toggle>
           ${renderPanelCompactToggleContents()}
         </button>
-        <div class="wp-overflow-divider" role="separator" aria-hidden="true"></div>
-        <button class="wp-overflow-option" type="button" role="menuitem" data-founder-promo-trigger>
+        ${renderPanelLanguageSelect()}
+        <div class="wp-overflow-divider" style="${escapeAttribute(PANEL_OVERFLOW_DIVIDER_INLINE_STYLE)}" role="separator" aria-hidden="true"></div>
+        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitem" data-founder-promo-trigger>
           ${phosphorInfoIcon("wp-overflow-option-icon")}
-          <span>About</span>
+          <span>${escapeHtml(t("About"))}</span>
           ${phosphorChevronRightIcon("wp-overflow-chevron")}
         </button>
       </div>
     </div>
   `;
+}
+
+function panelOverflowMenuInlineStyle(isOpen = panelState.settingsOpen) {
+  return `${PANEL_OVERFLOW_MENU_INLINE_STYLE}display:${isOpen ? "grid" : "none"};${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME ? PANEL_OVERFLOW_GRAPHITE_MENU_INLINE_STYLE : ""}`;
 }
 
 function renderCurrencyMenuHtml() {
@@ -286,7 +291,7 @@ function renderPanelItem(item) {
     <article class="wp-item${isNew ? " is-new" : ""}${isShiftedRight ? " is-shifted-right" : ""}${isArchived ? " is-archived" : ""}" data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}">
       ${isNew && !isArchived ? renderPanelNewItemSkeleton() : ""}
       <div class="wp-media" ${panelImageSliderAttributes(item)}>
-        <a class="wp-media-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(`Open ${itemLabel}`)}">
+        <a class="wp-media-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(t("Open {item}", { item: itemLabel }))}">
           ${renderPanelCardImageFrame(item, { slider: false })}
         </a>
         ${imageUrls.length > 1 ? renderPanelImageSliderControls(imageUrls, item) : ""}

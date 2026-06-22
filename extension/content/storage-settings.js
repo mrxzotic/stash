@@ -78,6 +78,7 @@ function shouldAddAccessoriesCategory(categories) {
 function normalizePanelSettings(value) {
   const currency = cleanText(value?.summaryCurrency).toUpperCase();
   const backgroundTheme = cleanText(value?.backgroundTheme).toLowerCase();
+  const language = cleanText(value?.language).toLowerCase();
   return {
     summaryCurrency: isSummaryCurrency(currency)
       ? currency
@@ -85,7 +86,8 @@ function normalizePanelSettings(value) {
     backgroundTheme: isBackgroundTheme(backgroundTheme)
       ? backgroundTheme
       : DEFAULT_SETTINGS.backgroundTheme,
-    compactView: Boolean(value?.compactView)
+    compactView: Boolean(value?.compactView),
+    language: isPanelLanguage(language) ? language : DEFAULT_SETTINGS.language
   };
 }
 
@@ -121,16 +123,18 @@ function isBackgroundTheme(theme) {
   return backgroundThemeOptions().some((option) => option.id === id);
 }
 
+function isPanelLanguage(language) {
+  const id = cleanText(language).toLowerCase();
+  return PANEL_LANGUAGE_OPTIONS.some((option) => option.id === id);
+}
+
 function hasCategory(categories, id) {
   return Boolean(id && categories.some((category) => category.id === id));
 }
 
 function categoryLabelFor(categories, id) {
-  return (
-    categories.find((category) => category.id === id)?.label ||
-    cleanCategoryLabel(id) ||
-    "Saved"
-  );
+  const category = categories.find((item) => item.id === id);
+  return category ? panelCategoryDisplayLabel(category) : cleanCategoryLabel(id) || t("Saved");
 }
 
 function cleanCategoryLabel(value) {

@@ -26,8 +26,8 @@ function renderBrandFilterChip() {
 function renderAllFilter(category) {
   const isActive = panelAllFilterIsActive();
   return `
-    <button class="wp-filter wp-filter-all${isActive ? " is-active" : ""}" type="button" aria-label="Show all saved items" data-panel-filter-reset>
-      ${escapeHtml(category?.label || "All")}
+    <button class="wp-filter wp-filter-all${isActive ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("Show all saved items"))}" data-panel-filter-reset>
+      ${escapeHtml(t(category?.label || "All"))}
     </button>
   `;
 }
@@ -51,7 +51,7 @@ function renderFilterMenu(categories) {
       ${categories.map(renderFilterMenuRow).join("")}
       <button class="wp-filter-menu-add" type="button" role="menuitem" data-add-category>
         ${phosphorPlusIcon("wp-filter-menu-add-icon")}
-        <span>Add category</span>
+        <span>${escapeHtml(t("Add category"))}</span>
       </button>
     </div>
   `;
@@ -63,9 +63,9 @@ function renderFilterMenuRow(category) {
     <div class="wp-filter-menu-row${isActive ? " is-active" : ""}" role="none">
       <button class="wp-filter-menu-option" type="button" role="menuitemradio" aria-checked="${isActive}" data-category="${escapeAttribute(category.id)}">
         <span class="wp-filter-menu-check">${isActive ? phosphorCheckIcon("wp-filter-menu-check-icon") : ""}</span>
-        <span class="wp-filter-menu-label">${escapeHtml(category.label)}</span>
+        <span class="wp-filter-menu-label">${escapeHtml(panelCategoryDisplayLabel(category))}</span>
       </button>
-      <button class="wp-filter-menu-remove" type="button" aria-label="Remove ${escapeAttribute(category.label)}" data-remove-category-prompt="${escapeAttribute(category.id)}">
+      <button class="wp-filter-menu-remove" type="button" aria-label="${escapeAttribute(t("Remove {category}", { category: panelCategoryDisplayLabel(category) }))}" data-remove-category-prompt="${escapeAttribute(category.id)}">
         ${phosphorXIcon("wp-filter-remove-icon")}
       </button>
     </div>
@@ -78,7 +78,7 @@ function renderArchivedFilter(archivedCount) {
   }
 
   return `
-    <button class="wp-filter wp-filter-archive${panelState.archivedOpen ? " is-active" : ""}" type="button" aria-label="Archived items: ${archivedCount}" aria-pressed="${panelState.archivedOpen}" data-archive-view-toggle>
+    <button class="wp-filter wp-filter-archive${panelState.archivedOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("Archived items: {count}", { count: archivedCount }))}" aria-pressed="${panelState.archivedOpen}" data-archive-view-toggle>
       ${phosphorArchiveIcon("wp-archive-chip-icon")}
       <span class="wp-archive-count">${archivedCount}</span>
     </button>
@@ -161,15 +161,17 @@ function panelActiveFilterCount() {
 function panelFilterTriggerLabel(categories) {
   const count = panelActiveFilterCount();
   if (!count) {
-    return "Filter";
+    return t("Filter");
   }
 
-  return `Filter (${count})`;
+  return t("Filter ({count})", { count });
 }
 
 function panelFilterTriggerAriaLabel(categories) {
   const label = panelFilterTriggerLabel(categories);
-  return panelState.filterMenuOpen ? `${label}. Close category filter menu` : `${label}. Open category filter menu`;
+  return panelState.filterMenuOpen
+    ? t("{label}. Close category filter menu", { label })
+    : t("{label}. Open category filter menu", { label });
 }
 
 function panelBrandFilterCount() {
@@ -177,6 +179,8 @@ function panelBrandFilterCount() {
 }
 
 function panelBrandChipAriaLabel(brandCount) {
-  const label = `${brandCount} ${brandCount === 1 ? "brand" : "brands"}`;
-  return panelState.brandCloudOpen ? `${label}. Close brands` : `${label}. Show brands`;
+  const brandNoun = panelBrandNoun(brandCount);
+  return panelState.brandCloudOpen
+    ? t("{count} {brandNoun}. Close brands", { count: brandCount, brandNoun })
+    : t("{count} {brandNoun}. Show brands", { count: brandCount, brandNoun });
 }

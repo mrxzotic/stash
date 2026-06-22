@@ -34,7 +34,7 @@ async function getLocalStorageValue(keys) {
 function normalizeExtensionError(error) {
   if (/extension context invalidated/i.test(String(error?.message || error))) {
     removeStaleExtensionRoots();
-    return new Error("Stashed was reloaded. Refresh this page and try again.");
+    return new Error(t("Stashed was reloaded. Refresh this page and try again."));
   }
   return error;
 }
@@ -50,7 +50,7 @@ function assertKnownStorageKeys(keys) {
 
   for (const key of keyList) {
     if (!ALLOWED_STORAGE_KEYS.has(key)) {
-      throw new Error("Unexpected Stashed storage key.");
+      throw new Error(t("Unexpected Stashed storage key."));
     }
   }
 }

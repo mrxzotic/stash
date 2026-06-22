@@ -1,6 +1,8 @@
 function isNoiseLine(value) {
   const text = cleanText(value);
-  return /^(new|new in|new season|exclusive|runway|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|add to wish\s?list|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|shipping|returns|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging|slide\s+\d+|carousel\s+slide\s+\d+|image\s+\d+)$/i.test(
+  return /^(new|new in|new season|exclusive|runway|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|add to wish\s?list|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|email\*?|shipping|returns|details|all details|product details|composition|care|composition and care|skip to main content|man|men|mens|women|womens|unisex|collections?|free delivery(?:\s+from\b.*)?|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging|powered by onetrust|accept all cookies|your cookie settings|cookie settings|cookie preferences|privacy preferences|manage cookies|slide\s+\d+|carousel\s+slide\s+\d+|image\s+\d+|цвет\s*[:#-].*|коллекци(?:я|и)|состав\s+и\s+уход|гид\s+по\s+размерам|таблица\s+размеров|размеры|доставка|возврат|доставка\s+и\s+возврат|оплата|добавить(?:\s+в)?\s+корзину|в\s+корзину|купить)$/i.test(
+    text
+  ) || /^(?:sku|article|арт(?:икул)?\.?)\s*[:#-]?\s*[\p{L}0-9][\p{L}0-9\s._-]*$/iu.test(
     text
   ) || /^\d+\s+available\s+colou?rs?$/i.test(
     text
@@ -183,6 +185,7 @@ function cleanTitle(value, brand = "") {
       .replace(/\s*-\s*AIM[ÉE] LEON DORE.*$/i, "")
       .replace(/\bnew season\b/gi, "")
       .replace(/\b(?:available in|colour|color|size|sizes|view product|product details)\b/gi, "")
+      .replace(/\s+(?:[-–—,|]\s*)?(?:sku|article|арт(?:икул)?\.?)\s*[:#-]?\s*[\p{L}0-9._-]+.*$/iu, "")
       .replace(/\s+\b(?=[A-Za-z0-9]*\d)(?=[A-Za-z0-9]*[A-Za-z])[A-Za-z0-9]{7,}\b$/g, "")
       .replace(/\s+(?:[-–—|])\s*(?:xxs|xs|s|m|l|xl|xxl|xxxl|o\/s|os|one size)$/i, "")
       .replace(/\s+(?:[-–—|])\s+(?:all|available|shop|select|size|men|women|unisex)\b.*$/i, "")
