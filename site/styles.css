@@ -1,0 +1,271 @@
+:root {
+  color: #111116;
+  background: #f8f8f5;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  text-rendering: geometricPrecision;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 76% 22%, rgba(126, 99, 255, 0.12), transparent 32rem),
+    radial-gradient(circle at 92% 74%, rgba(255, 135, 215, 0.14), transparent 28rem),
+    #f8f8f5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.teaser {
+  min-height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+
+.topbar,
+.policy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px clamp(22px, 5vw, 72px);
+}
+
+.wordmark {
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.nav {
+  display: flex;
+  gap: clamp(18px, 3vw, 34px);
+  color: #606066;
+  font-size: 14px;
+}
+
+.nav a,
+.secondary-link {
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.nav a:hover,
+.secondary-link:hover {
+  color: #111116;
+}
+
+.hero {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(320px, 0.78fr);
+  align-items: center;
+  gap: clamp(28px, 6vw, 96px);
+  padding: clamp(28px, 7vw, 88px) clamp(22px, 5vw, 72px) clamp(24px, 6vw, 64px);
+}
+
+.hero-copy {
+  max-width: 720px;
+  animation: rise 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.kicker {
+  margin: 0 0 18px;
+  color: #68686f;
+  font-size: clamp(13px, 1.5vw, 15px);
+  font-weight: 720;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  margin: 0;
+  max-width: 12ch;
+  font-size: clamp(58px, 9vw, 118px);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.lede {
+  max-width: 520px;
+  margin: 28px 0 0;
+  color: #44444a;
+  font-size: clamp(18px, 2vw, 23px);
+  line-height: 1.42;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 38px;
+}
+
+.primary-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: #111116;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 760;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.primary-link:hover {
+  transform: translateY(-1px);
+  background: #282831;
+}
+
+.secondary-link {
+  color: #5b5b62;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hero-logo {
+  width: min(42vw, 520px);
+  min-width: 280px;
+  justify-self: center;
+  filter: drop-shadow(0 34px 58px rgba(93, 67, 173, 0.22));
+  animation: logo-in 820ms 120ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  padding: 28px clamp(22px, 5vw, 72px) 34px;
+  border-top: 1px solid rgba(17, 17, 22, 0.08);
+  color: #505057;
+  font-size: clamp(14px, 1.5vw, 16px);
+}
+
+.detail p {
+  margin: 0;
+  max-width: 38rem;
+}
+
+.policy {
+  min-height: 100svh;
+}
+
+.policy-header {
+  border-bottom: 1px solid rgba(17, 17, 22, 0.08);
+}
+
+.policy-header p {
+  margin: 0;
+  color: #66666d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.policy-copy {
+  width: min(760px, calc(100% - 44px));
+  margin: 0 auto;
+  padding: clamp(42px, 7vw, 82px) 0 88px;
+}
+
+.policy-copy h1 {
+  max-width: 9ch;
+  font-size: clamp(46px, 8vw, 86px);
+}
+
+.policy-copy h2 {
+  margin: 42px 0 12px;
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.policy-copy p,
+.policy-copy li {
+  color: #3f3f45;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.policy-copy p {
+  margin: 16px 0 0;
+}
+
+.policy-copy ul {
+  margin: 18px 0 0;
+  padding-left: 20px;
+}
+
+.updated {
+  color: #73737b;
+  font-weight: 700;
+}
+
+code {
+  padding: 0.08em 0.28em;
+  border-radius: 5px;
+  background: rgba(17, 17, 22, 0.06);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logo-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.94) rotate(-2deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar,
+  .policy-header {
+    padding: 22px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: 32px;
+  }
+
+  .hero-copy {
+    order: 2;
+  }
+
+  .hero-logo {
+    order: 1;
+    width: min(76vw, 360px);
+    min-width: 0;
+  }
+
+  h1 {
+    font-size: clamp(50px, 16vw, 72px);
+  }
+
+  .detail {
+    grid-template-columns: 1fr;
+  }
+}
