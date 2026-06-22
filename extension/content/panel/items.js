@@ -85,7 +85,7 @@ function panelItemsTotalSignature(items) {
 }
 
 function renderPanelSummaryOnly(options = {}) {
-  const root = document.getElementById("stash-panel-root")?.shadowRoot;
+  const root = document.getElementById("tuckio-panel-root")?.shadowRoot;
   const total = root?.querySelector("[data-total-value]");
   const count = root?.querySelector(".wp-count");
   if (!total) return;
@@ -96,7 +96,7 @@ function renderPanelSummaryOnly(options = {}) {
 }
 
 function syncPanelSettingsControls() {
-  const root = document.getElementById("stash-panel-root")?.shadowRoot;
+  const root = document.getElementById("tuckio-panel-root")?.shadowRoot;
   if (!root) {
     return;
   }
@@ -126,7 +126,7 @@ function syncPanelSettingsControls() {
 
 function setPanelTotalText(total, value, options = {}) {
   const shouldAnimate = Boolean(options.animate);
-  if (total.__stashTotalAnimation) {
+  if (total.__tuckioTotalAnimation) {
     retargetPanelTotalAnimation(total, value);
     return;
   }
@@ -158,7 +158,7 @@ function rollPanelTotalText(total, value, pill) {
   total.classList.add("is-counting");
   pill?.classList.add("is-recounting");
 
-  total.__stashTotalAnimation = {
+  total.__tuckioTotalAnimation = {
     duration: 1500,
     finalText: value,
     frame: 0,
@@ -169,7 +169,7 @@ function rollPanelTotalText(total, value, pill) {
   };
 
   const tick = (timestamp) => {
-    const state = total.__stashTotalAnimation;
+    const state = total.__tuckioTotalAnimation;
     if (!state) {
       return;
     }
@@ -185,16 +185,16 @@ function rollPanelTotalText(total, value, pill) {
     }
 
     total.textContent = state.finalText;
-    total.__stashTotalAnimation = null;
+    total.__tuckioTotalAnimation = null;
     total.classList.remove("is-counting");
     state.pill?.classList.remove("is-recounting");
   };
 
-  total.__stashTotalAnimation.frame = window.requestAnimationFrame(tick);
+  total.__tuckioTotalAnimation.frame = window.requestAnimationFrame(tick);
 }
 
 function retargetPanelTotalAnimation(total, value) {
-  const state = total.__stashTotalAnimation;
+  const state = total.__tuckioTotalAnimation;
   const nextValue = summaryIntegerFromText(value);
   if (!state || !Number.isFinite(nextValue)) {
     return;
@@ -210,10 +210,10 @@ function retargetPanelTotalAnimation(total, value) {
 }
 
 function cancelPanelTotalAnimation(total) {
-  if (total.__stashTotalAnimation?.frame) {
-    window.cancelAnimationFrame(total.__stashTotalAnimation.frame);
+  if (total.__tuckioTotalAnimation?.frame) {
+    window.cancelAnimationFrame(total.__tuckioTotalAnimation.frame);
   }
-  total.__stashTotalAnimation = null;
+  total.__tuckioTotalAnimation = null;
 }
 
 function summaryIntegerFromText(value) {

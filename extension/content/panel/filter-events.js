@@ -60,7 +60,7 @@ function handlePanelFilterReset(event) {
   panelState.searchQuery = "";
   closePanelArchivedView();
   panelState.activeCategory = "all";
-  renderStashPanel();
+  renderTuckioPanel();
   return true;
 }
 
@@ -78,7 +78,7 @@ function handlePanelAddCategory(event) {
   closePanelArchivedView();
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
-  renderStashPanel();
+  renderTuckioPanel();
   return true;
 }
 
@@ -97,7 +97,7 @@ function handlePanelRemoveCategoryPrompt(event) {
   closePanelArchivedView();
   panelState.deleteCategoryId = button.dataset.removeCategoryPrompt;
   panelState.deleteItemId = "";
-  renderStashPanel();
+  renderTuckioPanel();
   return true;
 }
 
@@ -119,5 +119,5 @@ function handlePanelCategorySelection(event) {
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
   panelState.activeCategory = button.dataset.category;
-  renderStashPanel();
+  renderTuckioPanel();
 }

@@ -1,4 +1,4 @@
-function syncPanelViewMode(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function syncPanelViewMode(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   if (!root) {
     return;
   }
@@ -65,7 +65,7 @@ function toggledGraphiteThemeId() {
     : GRAPHITE_BACKGROUND_THEME;
 }
 
-function syncPanelTopbarPreferenceControls(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function syncPanelTopbarPreferenceControls(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   if (!root) {
     return;
   }
@@ -135,7 +135,7 @@ function renderPanelCountContents(displayItems = panelSummaryItems(panelState.it
   `;
 }
 
-function syncPanelBrandCountControl(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function syncPanelBrandCountControl(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   const count = root?.querySelector(".wp-count");
   if (!count) {
     return;
@@ -209,7 +209,7 @@ function bindPanelBrandCloudEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
-    renderStashPanel();
+    renderTuckioPanel();
   });
 
   root.querySelector("[data-clear-brand-filter]")?.addEventListener("click", (event) => {
@@ -225,7 +225,7 @@ function bindPanelBrandCloudEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
-    renderStashPanel();
+    renderTuckioPanel();
   });
 
   root.querySelector(".wp-brand-cloud")?.addEventListener("click", (event) => {
@@ -246,7 +246,7 @@ function bindPanelBrandCloudEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
-    renderStashPanel();
+    renderTuckioPanel();
   });
 }
 
@@ -313,7 +313,7 @@ function togglePanelLanguageMenu(trigger) {
   trigger.setAttribute("aria-expanded", String(willOpen));
 }
 
-function closePanelLanguageMenu(scope = document.getElementById("stash-panel-root")?.shadowRoot) {
+function closePanelLanguageMenu(scope = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   scope?.querySelectorAll?.("[data-panel-language-root]").forEach((languageRoot) => {
     languageRoot.classList.remove("is-open");
     languageRoot.querySelector("[data-panel-language-menu]")?.setAttribute("hidden", "");

@@ -38,9 +38,9 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
           </button>
         </div>
         <div class="wl-action-group is-right">
-          <button class="wl-open-button" type="button" aria-label="${escapeAttribute(t("Open Stash panel"))}" data-open-stash>
+          <button class="wl-open-button" type="button" aria-label="${escapeAttribute(t("Open Tuckio panel"))}" data-open-tuckio>
             ${phosphorLinkIcon("wl-button-icon")}
-            <span>${escapeHtml(t("Open Stash"))}</span>
+            <span>${escapeHtml(t("Open Tuckio"))}</span>
           </button>
         </div>
       </div>
@@ -51,9 +51,9 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
   root.querySelector("[data-toggle-timer]")?.addEventListener("click", () => {
     toggleSavedOverlayTimer(root);
   });
-  root.querySelector("[data-open-stash]")?.addEventListener("click", () => {
+  root.querySelector("[data-open-tuckio]")?.addEventListener("click", () => {
     dismissSavedOverlay(root);
-    safelyRunPanelAction(() => openStashPanel());
+    safelyRunPanelAction(() => openTuckioPanel());
   });
   root.querySelector("[data-cancel-addition]")?.addEventListener("click", () => {
     safelyRunPanelAction(() => cancelSavedOverlayAddition(root, item));
@@ -74,36 +74,36 @@ function showErrorOverlay(error) {
       <span>${escapeHtml(error.message || t("Try a product page or product card."))}</span>
     </div>
   `;
-  window.clearTimeout(root.__stashTimer);
-  root.__stashTimer = window.setTimeout(() => {
+  window.clearTimeout(root.__tuckioTimer);
+  root.__tuckioTimer = window.setTimeout(() => {
     root.innerHTML = "";
   }, 2600);
 }
 
 function startSavedOverlayCountdown(root, durationMs) {
-  root.__stashCountdown = {
+  root.__tuckioCountdown = {
     durationMs,
     endsAt: Date.now() + durationMs,
     paused: false,
     remainingMs: durationMs
   };
   scheduleSavedOverlayTimer(root);
-  root.__stashTicker = window.setInterval(() => updateSavedOverlayTimer(root), 250);
+  root.__tuckioTicker = window.setInterval(() => updateSavedOverlayTimer(root), 250);
 }
 
 function scheduleSavedOverlayTimer(root) {
-  const state = root.__stashCountdown;
+  const state = root.__tuckioCountdown;
   if (!state) {
     return;
   }
 
-  window.clearTimeout(root.__stashTimer);
-  root.__stashTimer = window.setTimeout(() => dismissSavedOverlay(root), state.remainingMs);
+  window.clearTimeout(root.__tuckioTimer);
+  root.__tuckioTimer = window.setTimeout(() => dismissSavedOverlay(root), state.remainingMs);
   renderSavedOverlayTimer(root);
 }
 
 function updateSavedOverlayTimer(root) {
-  const state = root.__stashCountdown;
+  const state = root.__tuckioCountdown;
   if (!state || state.paused) {
     return;
   }
@@ -113,7 +113,7 @@ function updateSavedOverlayTimer(root) {
 }
 
 function renderSavedOverlayTimer(root) {
-  const state = root.__stashCountdown;
+  const state = root.__tuckioCountdown;
   if (!state) {
     return;
   }
@@ -136,7 +136,7 @@ function renderSavedOverlayTimer(root) {
 }
 
 function toggleSavedOverlayTimer(root) {
-  if (root.__stashCountdown?.paused) {
+  if (root.__tuckioCountdown?.paused) {
     resumeSavedOverlayTimer(root);
     return;
   }
@@ -145,7 +145,7 @@ function toggleSavedOverlayTimer(root) {
 }
 
 function pauseSavedOverlayTimer(root) {
-  const state = root.__stashCountdown;
+  const state = root.__tuckioCountdown;
   if (!state) {
     return;
   }
@@ -153,7 +153,7 @@ function pauseSavedOverlayTimer(root) {
   state.remainingMs = Math.max(0, state.endsAt - Date.now());
   state.paused = true;
   clearOverlayTimers(root);
-  root.__stashCountdown = state;
+  root.__tuckioCountdown = state;
   root.querySelector(".wl-panel")?.classList.add("is-timer-paused");
   renderSavedOverlayTimer(root);
 
@@ -167,7 +167,7 @@ function pauseSavedOverlayTimer(root) {
 }
 
 function resumeSavedOverlayTimer(root) {
-  const state = root.__stashCountdown;
+  const state = root.__tuckioCountdown;
   if (!state) {
     return;
   }
@@ -175,7 +175,7 @@ function resumeSavedOverlayTimer(root) {
   state.remainingMs = Math.max(0, state.remainingMs || state.durationMs || SAVED_OVERLAY_DURATION_MS);
   state.endsAt = Date.now() + state.remainingMs;
   state.paused = false;
-  root.__stashCountdown = state;
+  root.__tuckioCountdown = state;
   root.querySelector(".wl-panel")?.classList.remove("is-timer-paused");
   const button = root.querySelector("[data-toggle-timer]");
   if (button) {
@@ -185,7 +185,7 @@ function resumeSavedOverlayTimer(root) {
     button.innerHTML = phosphorPauseIcon("wl-timer-icon");
   }
   scheduleSavedOverlayTimer(root);
-  root.__stashTicker = window.setInterval(() => updateSavedOverlayTimer(root), 250);
+  root.__tuckioTicker = window.setInterval(() => updateSavedOverlayTimer(root), 250);
 }
 
 async function cancelSavedOverlayAddition(root, item) {
@@ -204,7 +204,7 @@ async function cancelSavedOverlayAddition(root, item) {
     panelState.items = nextItems;
   }
   if (panelState.open) {
-    renderStashPanel();
+    renderTuckioPanel();
   }
   dismissSavedOverlay(root);
 }
@@ -216,17 +216,17 @@ function dismissSavedOverlay(root) {
 }
 
 function clearOverlayTimers(root) {
-  window.clearTimeout(root.__stashTimer);
-  window.clearInterval(root.__stashTicker);
-  root.__stashTimer = 0;
-  root.__stashTicker = 0;
+  window.clearTimeout(root.__tuckioTimer);
+  window.clearInterval(root.__tuckioTicker);
+  root.__tuckioTimer = 0;
+  root.__tuckioTicker = 0;
 }
 
 function getOverlayRoot() {
-  let host = document.getElementById("stash-extension-root");
+  let host = document.getElementById("tuckio-extension-root");
   if (!host) {
     host = document.createElement("div");
-    host.id = "stash-extension-root";
+    host.id = "tuckio-extension-root";
     host.style.position = "fixed";
     host.style.inset = "0";
     host.style.zIndex = "2147483647";
@@ -247,10 +247,10 @@ function getOverlayRoot() {
 }
 
 function getPanelRoot() {
-  let host = document.getElementById("stash-panel-root");
+  let host = document.getElementById("tuckio-panel-root");
   if (!host) {
     host = document.createElement("div");
-    host.id = "stash-panel-root";
+    host.id = "tuckio-panel-root";
     host.style.position = "fixed";
     host.style.inset = "0";
     host.style.zIndex = "2147483646";

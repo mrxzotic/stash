@@ -24,7 +24,8 @@ function titleCaseTitle(value) {
     .replace(/\bRub\b/g, "RUB")
     .replace(/\bUsd\b/g, "USD")
     .replace(/\bEur\b/g, "EUR")
-    .replace(/\bGbp\b/g, "GBP");
+    .replace(/\bGbp\b/g, "GBP")
+    .replace(/\b(\d+(?:\.\d+)?)Mm\b/g, "$1mm");
 
   return lower;
 }
@@ -240,7 +241,7 @@ function productId(url) {
     hash = (hash << 5) - hash + url.charCodeAt(index);
     hash |= 0;
   }
-  return `stash-${Math.abs(hash)}`;
+  return `tuckio-${Math.abs(hash)}`;
 }
 
 function clamp(value, min, max) {

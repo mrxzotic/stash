@@ -31,7 +31,7 @@ function renderMissingProductImage(namespace = "wp") {
   const textClass = namespace === "wl" ? "wl-image-missing-text" : "wp-image-missing-text";
   return `
     <span class="${className}" role="img" aria-label="${escapeAttribute(t("Oops, image missing"))}">
-      <img class="${logoClass}" src="${escapeAttribute(stashedGreyscaleLogoUrl())}" alt="" aria-hidden="true">
+      <img class="${logoClass}" src="${escapeAttribute(tuckioMonochromeLogoUrl())}" alt="" aria-hidden="true">
       <span class="${textClass}">${escapeHtml(t("Oops, image missing"))}</span>
     </span>
   `;
@@ -74,7 +74,7 @@ function renderPanelImageDeleteButton(item = null) {
 
 function bindPanelImageSliderEvents(root) {
   const items = root.querySelector(".wp-items");
-  if (!items || items.__stashImageSliderBound) {
+  if (!items || items.__tuckioImageSliderBound) {
     return;
   }
 
@@ -100,7 +100,7 @@ function bindPanelImageSliderEvents(root) {
       button.blur();
     }
   });
-  items.__stashImageSliderBound = true;
+  items.__tuckioImageSliderBound = true;
 }
 
 function slidePanelCardImage(media, direction) {
@@ -213,7 +213,7 @@ async function removePanelCardImage(id, imageUrl, nextImageUrl, root) {
 
   panelState.items = nextItems;
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderPanelItemsOnly(root?.querySelector ? root : document.getElementById("stash-panel-root")?.shadowRoot);
+  renderPanelItemsOnly(root?.querySelector ? root : document.getElementById("tuckio-panel-root")?.shadowRoot);
 }
 
 function panelMediaImageUrls(media) {

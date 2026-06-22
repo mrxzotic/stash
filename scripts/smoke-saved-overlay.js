@@ -34,10 +34,10 @@ assert.doesNotMatch(fieldSource, /data-field-alternative|wl-alternates/, "Saved 
 assert.doesNotMatch(fieldStyles, /\.wl-alt-button|\.wl-alternates/, "Saved overlay should not style review choices");
 assert.match(overlaySource, /wl-action-group is-left[\s\S]*?data-cancel-addition/, "Undo should be separated on the left");
 assert.match(overlaySource, /wl-timer-line[\s\S]*?data-toggle-timer/, "Pause should be paired with the auto-close copy");
-assert.match(overlaySource, /wl-action-group is-right[\s\S]*?data-open-stash/, "Open Stash should be grouped on the right");
+assert.match(overlaySource, /wl-action-group is-right[\s\S]*?data-open-tuckio/, "Open Tuckio should be grouped on the right");
 assert.doesNotMatch(overlaySource, /data-edit-saved-item|wl-edit-button|>Edit</, "Saved overlay should not show an edit decision while auto-closing");
 assert.match(fieldStyles, /\.wl-actions\s*\{[\s\S]*?justify-content: space-between;/, "Saved overlay actions should not be centered");
-assert.match(fieldStyles, /\.wl-open-button\s*\{[\s\S]*?background: #050505;/, "Open Stash should be the primary CTA");
+assert.match(fieldStyles, /\.wl-open-button\s*\{[\s\S]*?background: #050505;/, "Open Tuckio should be the primary CTA");
 assert.doesNotMatch(overlaySource, /lucide[A-Z]/, "Saved overlay should not use lucide icons");
 assert.doesNotMatch(overlayImageSource, /lucide[A-Z]/, "Saved overlay image controls should not use lucide icons");
 for (const icon of [
@@ -53,7 +53,7 @@ for (const icon of [
 assert.match(backgroundSource, /"content\/overlay-fields\.js",\s*"content\/overlay-images\.js",\s*"content\/overlay-motion\.js",\s*"content\/overlays\.js"/, "Overlay helpers should load before the saved overlay");
 assert.match(backgroundSource, /"content\/styles\/overlay-fields\.js",\s*"content\/styles\/overlay-images\.js",\s*"content\/styles\/overlay-motion\.js",\s*"content\/styles\/overlay\.js"/, "Overlay motion styles should load before the saved overlay stylesheet");
 assert.match(overlaySource, /renderSavedOverlayImage\(item\)/, "Saved overlay should render images through the slider-aware image renderer");
-assert.match(overlayImageSource, /renderMissingProductImage\("wl"\)/, "Saved overlay should use the Stashed missing-image fallback");
+assert.match(overlayImageSource, /renderMissingProductImage\("wl"\)/, "Saved overlay should use the Tuckio missing-image fallback");
 assert.doesNotMatch(overlayImageSource, /phosphorImageIcon\("wl-image-placeholder"\)/, "Saved overlay should not use the old generic image icon fallback");
 assert.match(overlaySource, /wl-panel is-motion-reveal/, "Saved overlay should opt into staged motion reveal");
 assert.match(overlaySource, /renderSavedOverlaySkeleton\(\)/, "Saved overlay should render the skeleton layer before content");

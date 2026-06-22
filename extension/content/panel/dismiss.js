@@ -2,10 +2,10 @@ function bindPanelDismissEvents(root) {
   root.querySelector("[data-panel-close]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    closeStashPanel();
+    closeTuckioPanel();
   });
 
-  const current = window.__stashPanelDismiss;
+  const current = window.__tuckioPanelDismiss;
   if (current?.root === root) {
     return;
   }
@@ -13,13 +13,13 @@ function bindPanelDismissEvents(root) {
   unbindPanelDismissEvents();
   const insideListener = () => cancelPendingPanelDismiss(root);
   const listener = (event) => handlePanelDocumentPointerDown(root, event);
-  window.__stashPanelDismiss = { root, listener, insideListener, outsideTimer: 0 };
+  window.__tuckioPanelDismiss = { root, listener, insideListener, outsideTimer: 0 };
   root.addEventListener("pointerdown", insideListener, true);
   document.addEventListener("pointerdown", listener, true);
 }
 
 function unbindPanelDismissEvents(root) {
-  const current = window.__stashPanelDismiss;
+  const current = window.__tuckioPanelDismiss;
   if (!current || (root && current.root !== root)) {
     return;
   }
@@ -27,11 +27,11 @@ function unbindPanelDismissEvents(root) {
   document.removeEventListener("pointerdown", current.listener, true);
   current.root?.removeEventListener?.("pointerdown", current.insideListener, true);
   window.clearTimeout(current.outsideTimer);
-  window.__stashPanelDismiss = null;
+  window.__tuckioPanelDismiss = null;
 }
 
 function cancelPendingPanelDismiss(root) {
-  const current = window.__stashPanelDismiss;
+  const current = window.__tuckioPanelDismiss;
   if (!current || current.root !== root || !current.outsideTimer) {
     return;
   }
@@ -66,18 +66,18 @@ function handlePanelDocumentPointerDown(root, event) {
 }
 
 function schedulePanelOutsideDismiss(root) {
-  const current = window.__stashPanelDismiss;
+  const current = window.__tuckioPanelDismiss;
   if (!current || current.root !== root) {
     return;
   }
 
   window.clearTimeout(current.outsideTimer);
   current.outsideTimer = window.setTimeout(() => {
-    if (window.__stashPanelDismiss !== current || !panelState.open) {
+    if (window.__tuckioPanelDismiss !== current || !panelState.open) {
       return;
     }
 
     current.outsideTimer = 0;
-    closeStashPanel();
+    closeTuckioPanel();
   }, 0);
 }

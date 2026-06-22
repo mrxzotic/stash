@@ -154,7 +154,7 @@ const sandbox = {
   location: new URL(categoryUrl),
   chrome: {
     runtime: {
-      getURL: (assetPath) => `chrome-extension://stash/${assetPath}`
+      getURL: (assetPath) => `chrome-extension://tuckio/${assetPath}`
     },
     storage: {
       local: {},

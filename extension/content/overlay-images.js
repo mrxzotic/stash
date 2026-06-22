@@ -44,7 +44,7 @@ function renderSavedOverlayImageControls(urls, item) {
 
 function bindSavedOverlayImageEvents(root, item) {
   unbindSavedOverlayImageEvents(root);
-  root.__stashOverlayImageClick = (event) => {
+  root.__tuckioOverlayImageClick = (event) => {
     const deleteButton = event.target.closest?.("[data-overlay-image-delete]");
     if (deleteButton && root.contains(deleteButton)) {
       event.preventDefault();
@@ -67,16 +67,16 @@ function bindSavedOverlayImageEvents(root, item) {
       button.blur();
     }
   };
-  root.addEventListener("click", root.__stashOverlayImageClick);
+  root.addEventListener("click", root.__tuckioOverlayImageClick);
 }
 
 function unbindSavedOverlayImageEvents(root) {
-  if (!root.__stashOverlayImageClick) {
+  if (!root.__tuckioOverlayImageClick) {
     return;
   }
 
-  root.removeEventListener("click", root.__stashOverlayImageClick);
-  root.__stashOverlayImageClick = null;
+  root.removeEventListener("click", root.__tuckioOverlayImageClick);
+  root.__tuckioOverlayImageClick = null;
 }
 
 function slideSavedOverlayImage(media, direction, item) {
@@ -148,7 +148,7 @@ async function saveSavedOverlayImageChoice(item, imageUrl) {
   });
 
   if (result && panelState.open) {
-    renderStashPanel();
+    renderTuckioPanel();
   }
 }
 
@@ -177,7 +177,7 @@ async function removeSavedOverlayImage(root, media, item, imageUrl, nextImageUrl
 
   replaceSavedOverlayImageMedia(root, media, result.item);
   if (panelState.open) {
-    renderStashPanel();
+    renderTuckioPanel();
   }
 }
 

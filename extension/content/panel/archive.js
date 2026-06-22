@@ -81,7 +81,7 @@ function togglePanelArchivedView() {
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
   panelState.editItemId = "";
-  renderStashPanel();
+  renderTuckioPanel();
 }
 
 async function archivePanelItem(id) {
@@ -105,7 +105,7 @@ async function archivePanelItem(id) {
   panelState.items = nextItems;
   closePanelArchivedView();
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderStashPanel({ summaryAnimationFrom: previousSummary });
+  renderTuckioPanel({ summaryAnimationFrom: previousSummary });
 }
 
 async function restorePanelItem(id) {
@@ -130,5 +130,5 @@ async function restorePanelItem(id) {
   panelState.items = nextItems;
   closePanelArchivedView();
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderStashPanel({ summaryAnimationFrom: previousSummary });
+  renderTuckioPanel({ summaryAnimationFrom: previousSummary });
 }

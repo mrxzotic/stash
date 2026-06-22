@@ -24,8 +24,15 @@ async function setLocalStorageValue(key, value) {
 
 async function getLocalStorageValue(keys) {
   assertKnownStorageKeys(keys);
+  const keyList = storageKeyList(keys);
+  const storageKeys = [...new Set([
+    ...keyList,
+    ...keyList.map((key) => LEGACY_STORAGE_KEYS.get(key)).filter(Boolean)
+  ])];
   try {
-    return await chrome.storage.local.get(keys);
+    const stored = await chrome.storage.local.get(storageKeys);
+    await migrateLegacyStorageValues(stored, keyList);
+    return stored;
   } catch (error) {
     throw normalizeExtensionError(error);
   }
@@ -34,24 +41,43 @@ async function getLocalStorageValue(keys) {
 function normalizeExtensionError(error) {
   if (/extension context invalidated/i.test(String(error?.message || error))) {
     removeStaleExtensionRoots();
-    return new Error(t("Stashed was reloaded. Refresh this page and try again."));
+    return new Error(t("Tuckio was reloaded. Refresh this page and try again."));
   }
   return error;
 }
 
 function assertKnownStorageKeys(keys) {
-  const keyList = Array.isArray(keys)
+  const keyList = storageKeyList(keys);
+
+  for (const key of keyList) {
+    if (!ALLOWED_STORAGE_KEYS.has(key)) {
+      throw new Error(t("Unexpected Tuckio storage key."));
+    }
+  }
+}
+
+function storageKeyList(keys) {
+  return Array.isArray(keys)
     ? keys
     : typeof keys === "string"
       ? [keys]
       : keys && typeof keys === "object"
         ? Object.keys(keys)
         : [];
+}
 
-  for (const key of keyList) {
-    if (!ALLOWED_STORAGE_KEYS.has(key)) {
-      throw new Error(t("Unexpected Stashed storage key."));
+async function migrateLegacyStorageValues(stored, keyList) {
+  const migrated = {};
+  keyList.forEach((key) => {
+    const legacyKey = LEGACY_STORAGE_KEYS.get(key);
+    if (stored[key] === undefined && legacyKey && stored[legacyKey] !== undefined) {
+      stored[key] = stored[legacyKey];
+      migrated[key] = stored[legacyKey];
     }
+  });
+
+  if (Object.keys(migrated).length) {
+    await chrome.storage.local.set(sanitizeStorageValue(migrated));
   }
 }
 

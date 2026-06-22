@@ -1,18 +1,28 @@
-var CONTENT_VERSION = "2026-06-22-release-qa-parser-pill-v1";
+var CONTENT_VERSION = "2026-06-22-tuckio-brand-assets-v1";
 
 
-var STORAGE_KEY = "stash.items.v1";
-var RATE_STORAGE_KEY = "stash.rubRates.v1";
-var CATEGORY_STORAGE_KEY = "stash.categories.v1";
-var CATEGORY_SCHEMA_STORAGE_KEY = "stash.categories.schema.v1";
+var STORAGE_KEY = "tuckio.items.v1";
+var RATE_STORAGE_KEY = "tuckio.rubRates.v1";
+var CATEGORY_STORAGE_KEY = "tuckio.categories.v1";
+var CATEGORY_SCHEMA_STORAGE_KEY = "tuckio.categories.schema.v1";
 var CATEGORY_SCHEMA_VERSION = 2;
-var SETTINGS_STORAGE_KEY = "stash.settings.v1";
+var SETTINGS_STORAGE_KEY = "tuckio.settings.v1";
+var LEGACY_STORAGE_KEYS = new Map([
+  [STORAGE_KEY, "stash.items.v1"],
+  [RATE_STORAGE_KEY, "stash.rubRates.v1"],
+  [CATEGORY_STORAGE_KEY, "stash.categories.v1"],
+  [CATEGORY_SCHEMA_STORAGE_KEY, "stash.categories.schema.v1"],
+  [SETTINGS_STORAGE_KEY, "stash.settings.v1"]
+]);
+var BACKUP_SCHEMA = "tuckio.backup.v1";
+var LEGACY_BACKUP_SCHEMA = "stash.backup.v1";
 var ALLOWED_STORAGE_KEYS = new Set([
   STORAGE_KEY,
   RATE_STORAGE_KEY,
   CATEGORY_STORAGE_KEY,
   CATEGORY_SCHEMA_STORAGE_KEY,
-  SETTINGS_STORAGE_KEY
+  SETTINGS_STORAGE_KEY,
+  ...LEGACY_STORAGE_KEYS.values()
 ]);
 var STORAGE_MAX_DEPTH = 8;
 var STORAGE_MAX_ARRAY_LENGTH = 500;
@@ -148,6 +158,8 @@ var BRAND_ALIASES = new Map([
   ["tomfordfashion", "Tom Ford"],
   ["tom ford fashion", "Tom Ford"],
   ["tomford", "Tom Ford"],
+  ["d1milano", "D1 Milano"],
+  ["d1 milano", "D1 Milano"],
   ["loewe", "Loewe"],
   ["p448", "P448"],
   ["rimowa", "RIMOWA"],

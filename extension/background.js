@@ -1,12 +1,12 @@
-const MENU_ROOT_ID = "stash-save-root";
+const MENU_ROOT_ID = "tuckio-save-root";
 const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
-const COMMAND_SAVE_CURRENT = "save-to-stashed";
-const COMMAND_TOGGLE_PANEL = "toggle-stashed";
-const CONTENT_SCRIPT_VERSION = "2026-06-22-release-qa-parser-pill-v1";
-const MESSAGE_PING = "STASH_PING_V2";
-const MESSAGE_SAVE = "STASH_SAVE_V2";
-const MESSAGE_TOGGLE_PANEL = "STASH_TOGGLE_PANEL_V2";
+const COMMAND_SAVE_CURRENT = "save-to-tuckio";
+const COMMAND_TOGGLE_PANEL = "toggle-tuckio";
+const CONTENT_SCRIPT_VERSION = "2026-06-22-tuckio-brand-assets-v1";
+const MESSAGE_PING = "TUCKIO_PING_V2";
+const MESSAGE_SAVE = "TUCKIO_SAVE_V2";
+const MESSAGE_TOGGLE_PANEL = "TUCKIO_TOGGLE_PANEL_V2";
 const CONTENT_SCRIPT_FILES = [
   "content/constants.js",
   "content/lifecycle.js",
@@ -117,7 +117,7 @@ async function rebuildContextMenus() {
 async function ensureContextMenu() {
   await contextMenusCreate({
     id: MENU_ROOT_ID,
-    title: "Save to Stashed",
+    title: "Save to Tuckio",
     contexts: CONTEXTS,
     documentUrlPatterns: PAGE_PATTERNS
   });
@@ -128,7 +128,7 @@ function contextMenusRemoveAll() {
     chrome.contextMenus.removeAll(() => {
       const error = chrome.runtime.lastError;
       if (error) {
-        console.warn("Stashed could not clear context menus", error);
+        console.warn("Tuckio could not clear context menus", error);
       }
       resolve();
     });
@@ -145,7 +145,7 @@ function contextMenusCreate(options) {
       }
 
       if (error) {
-        console.warn("Stashed could not create context menu", error);
+        console.warn("Tuckio could not create context menu", error);
       }
       resolve();
     });
@@ -167,7 +167,7 @@ async function handleActionClick(tab) {
       contentVersion: CONTENT_SCRIPT_VERSION
     });
   } catch (error) {
-    console.warn("Stashed could not open on this page", error);
+    console.warn("Tuckio could not open on this page", error);
   }
 }
 
@@ -176,7 +176,7 @@ async function handleSaveClick(info, tab) {
     return;
   }
 
-  await saveTabToStashed(tab, {
+  await saveTabToTuckio(tab, {
     pageUrl: info.pageUrl,
     linkUrl: info.linkUrl,
     srcUrl: info.srcUrl,
@@ -199,12 +199,12 @@ async function handleKeyboardCommand(command, tab) {
     return;
   }
 
-  await saveTabToStashed(activeTab, {
+  await saveTabToTuckio(activeTab, {
     pageUrl: activeTab.url
   });
 }
 
-async function saveTabToStashed(tab, context) {
+async function saveTabToTuckio(tab, context) {
   if (!(await ensureContentScript(tab.id))) {
     return;
   }
@@ -217,7 +217,7 @@ async function saveTabToStashed(tab, context) {
       context
     });
   } catch (error) {
-    console.warn("Stashed could not save this page", error);
+    console.warn("Tuckio could not save this page", error);
   }
 }
 
@@ -250,7 +250,7 @@ async function ensureContentScript(tabId) {
     });
     return (await pingContentScript(tabId))?.version === CONTENT_SCRIPT_VERSION;
   } catch (error) {
-    console.warn("Stashed could not inject content script", error);
+    console.warn("Tuckio could not inject content script", error);
     return false;
   }
 }

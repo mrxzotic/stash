@@ -29,7 +29,7 @@ function bindPanelEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = button.dataset.removeId;
-    renderStashPanel();
+    renderTuckioPanel();
   });
   root.querySelector("[data-category-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -53,7 +53,7 @@ function bindPanelEvents(root) {
   root.querySelector("[data-cancel-category]")?.addEventListener("click", (event) => {
     event.preventDefault();
     panelState.categoryComposerOpen = false;
-    renderStashPanel();
+    renderTuckioPanel();
   });
   root.querySelector(".wp-category-list")?.addEventListener("change", (event) => {
     const input = event.target.closest("[data-category-label]");
@@ -99,16 +99,16 @@ function bindPanelEvents(root) {
   root.querySelectorAll("[data-cancel-delete-category]").forEach((button) => {
     button.addEventListener("click", () => {
       panelState.deleteCategoryId = "";
-      renderStashPanel();
+      renderTuckioPanel();
     });
   });
   root.querySelectorAll("[data-cancel-delete-item]").forEach((button) => {
     button.addEventListener("click", () => {
       panelState.deleteItemId = "";
-      renderStashPanel();
+      renderTuckioPanel();
     });
   });
-  if (!root.__stashPanelKeydownBound) {
+  if (!root.__tuckioPanelKeydownBound) {
     root.addEventListener("keydown", (event) => {
       if (trapPanelModalFocus(root, event)) {
         return;
@@ -146,16 +146,16 @@ function bindPanelEvents(root) {
           panelState.founderPromoOpen = false;
           closePanelArchivedView();
           panelState.categoryComposerOpen = false;
-          renderStashPanel();
+          renderTuckioPanel();
           return;
         }
-        closeStashPanel();
+        closeTuckioPanel();
       }
     });
-    root.__stashPanelKeydownBound = true;
+    root.__tuckioPanelKeydownBound = true;
   }
 
-  if (!root.__stashPanelClickawayBound) {
+  if (!root.__tuckioPanelClickawayBound) {
     root.addEventListener("click", (event) => {
       const target = event.target;
       if (target.closest?.(".wp-inline-search") || target.closest?.("[data-panel-search]")) {
@@ -168,7 +168,7 @@ function bindPanelEvents(root) {
 
       if (panelState.categoryComposerOpen) {
         panelState.categoryComposerOpen = false;
-        renderStashPanel();
+        renderTuckioPanel();
         return;
       }
 
@@ -196,10 +196,10 @@ function bindPanelEvents(root) {
 
       if (panelState.founderPromoOpen && !target.closest?.("[data-founder-promo-trigger]")) {
         panelState.founderPromoOpen = false;
-        renderStashPanel();
+        renderTuckioPanel();
       }
     });
-    root.__stashPanelClickawayBound = true;
+    root.__tuckioPanelClickawayBound = true;
   }
 }
 
@@ -222,7 +222,7 @@ function togglePanelOverflowMenu(root) {
   syncPanelOverflowMenu(root);
 }
 
-function closePanelOverflowMenu(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function closePanelOverflowMenu(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   if (!panelState.settingsOpen) {
     return;
   }
@@ -312,7 +312,7 @@ async function removePanelItem(id) {
   panelState.deleteItemId = "";
   syncPanelArchiveAvailability();
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderStashPanel({ summaryAnimationFrom: previousSummary });
+  renderTuckioPanel({ summaryAnimationFrom: previousSummary });
 }
 
 function safelyRunPanelAction(action) {
@@ -339,7 +339,7 @@ async function savePanelCategories(nextCategories) {
     panelState.activeCategory = "all";
   }
   await setLocalStorageValue(CATEGORY_STORAGE_KEY, panelState.categories);
-  renderStashPanel();
+  renderTuckioPanel();
 }
 
 async function deletePanelCategory(id) {
@@ -381,7 +381,7 @@ async function savePanelSettings(nextSettings, options = {}) {
     };
     if (options.rebuildMotion) {
       syncPanelWithRebuildMotion(
-        document.getElementById("stash-panel-root")?.shadowRoot,
+        document.getElementById("tuckio-panel-root")?.shadowRoot,
         options.rebuildMotion,
         syncSettingsUi
       );
@@ -393,5 +393,5 @@ async function savePanelSettings(nextSettings, options = {}) {
   }
 
   await setLocalStorageValue(SETTINGS_STORAGE_KEY, settings);
-  renderStashPanel();
+  renderTuckioPanel();
 }

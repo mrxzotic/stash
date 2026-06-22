@@ -13,7 +13,7 @@ const sandbox = {
     title: "New in: handpicked daily from the world's best brands and boutiques"
   },
   chrome: {
-    runtime: { getURL: (assetPath) => `chrome-extension://stash/${assetPath}` }
+    runtime: { getURL: (assetPath) => `chrome-extension://tuckio/${assetPath}` }
   },
   location: new URL("https://www.farfetch.com/fi/shopping/men/new-in-today-2/items.aspx")
 };
@@ -60,7 +60,7 @@ const pageImage =
 const scarfImage =
   "https://cdn-images.farfetch-contents.com/36/89/99/95/36899995_69000000_1000.jpg";
 const farfetchFavicon = "https://www.farfetch.com/favicon.ico";
-const localSourceFallback = "chrome-extension://stash/assets/phosphor-light/globe.svg";
+const localSourceFallback = "chrome-extension://tuckio/assets/phosphor-light/globe.svg";
 const scarfCardLines = ["Exclusive", "Jacquemus", "The Supporter silk scarf", "184 €"];
 const amiSneakerCardLines = ["Runway", "AMI Paris", "mesh mirage sneakers", "350 €"];
 
@@ -230,6 +230,44 @@ sandbox.extractFromContext = () => ({});
 const scarfPageExtracted = sandbox.extractProduct({});
 assert.equal(scarfPageExtracted.title, "The Supporter Silk Scarf");
 assert.equal(scarfPageExtracted.brand, "Jacquemus");
+
+sandbox.location = new URL("https://www.farfetch.com/fi/shopping/men/d1-milano-camo-marvel-skeleton-415mm-watch-item-36170704.aspx");
+sandbox.document.title = "D1 Milano Camo Marvel Skeleton 41.5mm Watch | FARFETCH FI";
+sandbox.findJsonLdProduct = () => ({
+  title: "Download the app for 10% off",
+  brand: "D1MILANO",
+  url: sandbox.location.href,
+  priceText: "625 €",
+  priceAmount: 625,
+  currency: "EUR",
+  imageUrl: pageImage
+});
+sandbox.extractFromCommonSelectors = () => ({
+  title: "Camo Marvel Skeleton 41.5mm watch",
+  brand: "D1 Milano",
+  url: sandbox.location.href,
+  priceText: "625 €",
+  priceAmount: 625,
+  currency: "EUR",
+  imageUrl: pageImage
+});
+sandbox.extractFromEmbeddedJson = () => ({});
+sandbox.extractFromMeta = () => ({
+  title: "Download the app for 10% off",
+  brand: "Farfetch",
+  url: sandbox.location.href,
+  priceText: "625 €",
+  priceAmount: 625,
+  currency: "EUR",
+  imageUrl: pageImage
+});
+sandbox.extractFromContext = () => ({});
+
+const watchPageExtracted = sandbox.extractProduct({});
+assert.equal(watchPageExtracted.title, "Camo Marvel Skeleton 41.5mm Watch");
+assert.equal(watchPageExtracted.brand, "D1 Milano");
+assert.equal(watchPageExtracted.priceAmount, 625);
+assert.notEqual(watchPageExtracted.title, "Download The App For 10% Off");
 
 runAsyncSmoke().then(() => {
   console.log("farfetch card image smoke passed");

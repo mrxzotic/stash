@@ -37,10 +37,10 @@ assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content
 assert.match(constantsSource, /displacedItemId: ""/, "Panel state should track the card displaced by an open-panel save");
 assert.match(constantsSource, /rebuildMotion: ""/, "Panel state should track transient rebuild motion");
 assert.match(constantsSource, /brandCloudSortList: false/, "Panel state should track sorted brand-cloud list mode separately from brand view");
-assert.match(lifecycleSource, /panelState\.hasRenderedPanel = false;[\s\S]*?renderStashPanel\(\);/, "Opening Stashed should replay the shell opening animation");
+assert.match(lifecycleSource, /panelState\.hasRenderedPanel = false;[\s\S]*?renderTuckioPanel\(\);/, "Opening Tuckio should replay the shell opening animation");
 assert.match(lifecycleSource, /const listContextChanged =[\s\S]*?previousActiveCategory !== panelState\.activeCategory[\s\S]*?previousSearchQuery !== panelState\.searchQuery;/, "Shift-right motion should only run in the same visible list context");
 assert.match(lifecycleSource, /panelState\.displacedItemId = listContextChanged \? "" : panelSavedItemDisplacedId\(item\);/, "Open-panel save should mark the displaced card before render");
-assert.match(lifecycleSource, /panelState\.highlightedItemId = "";[\s\S]*?panelState\.displacedItemId = "";[\s\S]*?renderStashPanel\(\);/, "Open-panel save motion state should clear after the reveal");
+assert.match(lifecycleSource, /panelState\.highlightedItemId = "";[\s\S]*?panelState\.displacedItemId = "";[\s\S]*?renderTuckioPanel\(\);/, "Open-panel save motion state should clear after the reveal");
 assert.match(lifecycleSource, /function panelSavedItemDisplacedId/, "Displaced card should be derived from the visible card list");
 
 assert.match(renderSource, /const isNew = item\.id === panelState\.highlightedItemId;/, "New card should use the existing highlighted item state");
@@ -101,7 +101,7 @@ assert.match(compactViewSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\
 assert.doesNotMatch(compactViewSource, /rebuildMotion: "view"|rebuildMotion: "theme"/, "Display preference row clicks should not trigger app rebuild motion");
 assert.match(eventsSource, /syncPanelWithRebuildMotion\([\s\S]*?options\.rebuildMotion[\s\S]*?syncSettingsUi/, "Settings sync should wrap in-place updates in rebuild motion");
 assert.match(panelMotionSource, /wp-new-card-skeleton[\s\S]*wp-new-card-skeleton-media[\s\S]*wp-new-card-skeleton-copy/, "New card skeleton should include media and copy zones");
-assert.match(panelMotionSource, /function renderStashPanelWithMotion/, "Panel motion helper should expose render-with-motion");
+assert.match(panelMotionSource, /function renderTuckioPanelWithMotion/, "Panel motion helper should expose render-with-motion");
 assert.match(panelMotionSource, /function renderPanelTopbarOnly/, "Panel motion helper should support topbar-only updates");
 assert.match(panelMotionSource, /return \["view", "theme"\]\.includes\(kind\) \? kind : "";/, "Search should be outside rebuild motion kinds");
 assert.match(panelMotionSource, /function syncPanelWithRebuildMotion/, "Panel motion helper should expose in-place rebuild motion");
@@ -111,8 +111,8 @@ assert.match(panelMotionSource, /\[data-panel-motion-id\]/, "Layout motion shoul
 assert.doesNotMatch(panelMotionSource, /is-brand-cloud[\s\S]*?return;/, "Brand cloud should not skip layout motion");
 assert.match(panelMotionSource, /is-new[\s\S]*?is-shifted-right/, "Layout motion should avoid conflicting with new-card and displaced-card animations");
 assert.match(panelMotionSource, /addEventListener\("transitionend", finish\)/, "Layout motion cleanup should wait for transform transitionend");
-assert.doesNotMatch(panelMotionSource, /finishPanelMovedItem\(element\),\s*\d+|PANEL_LAYOUT_SETTLE_MS|PANEL_LAYOUT_COOLING_MS|__stashLayoutMotionTimer|__stashLayoutCoolingTimer/, "Layout motion should not schedule fallback or cooling cleanup");
-assert.doesNotMatch(panelMotionSource, /PANEL_LAYOUT_RESTING_MS|add\("is-layout-resting"\)|add\("is-layout-cooling"\)|__stashLayoutRestingTimer/, "Layout motion should not schedule delayed post-sort visual cleanup");
+assert.doesNotMatch(panelMotionSource, /finishPanelMovedItem\(element\),\s*\d+|PANEL_LAYOUT_SETTLE_MS|PANEL_LAYOUT_COOLING_MS|__tuckioLayoutMotionTimer|__tuckioLayoutCoolingTimer/, "Layout motion should not schedule fallback or cooling cleanup");
+assert.doesNotMatch(panelMotionSource, /PANEL_LAYOUT_RESTING_MS|add\("is-layout-resting"\)|add\("is-layout-cooling"\)|__tuckioLayoutRestingTimer/, "Layout motion should not schedule delayed post-sort visual cleanup");
 assert.match(panelMotionSource, /classList\.add\("is-layout-positioned"\)[\s\S]*?setProperty\("--wp-layout-dx", "0px"\)/, "Layout motion should park cards on the final zero transform instead of dropping compositor state");
 assert.doesNotMatch(panelMotionSource, /removeProperty\("--wp-layout-dx"\)|removeProperty\("--wp-layout-dy"\)/, "Layout motion should not remove final transform vars at transition end");
 assert.match(panelMotionSource, /is-layout-hover-muted[\s\S]*?addEventListener\("pointerleave", finish, \{ once: true \}\)/, "Layout motion should mute hover until pointer leaves a moved card");
@@ -187,7 +187,7 @@ assert.match(motionDoc, /Card mode renders two stable `\.wp-item-column` contain
 assert.match(motionDoc, /## Panel Interaction Polish[\s\S]*?Graphite search uses its own iridescent palette/, "Motion contract should document panel interaction polish");
 assert.match(motionDoc, /The card-list top offset must be measured from visible filter children[\s\S]*?Hover affordance sizing must stay local to the control itself/, "Motion contract should prevent hover-driven panel flicker");
 assert.match(motionDoc, /Sort controls must not use native `title` tooltips/, "Motion contract should prevent delayed native tooltip flicker");
-assert.match(motionDoc, /Hover must not call `renderStashPanel\(\)`/, "Motion contract should document that hover is not a render path");
+assert.match(motionDoc, /Hover must not call `renderTuckioPanel\(\)`/, "Motion contract should document that hover is not a render path");
 assert.match(motionDoc, /Graphite currency menus must be dark glass/, "Motion contract should document graphite currency menu contrast");
 
 console.log("panel save motion smoke passed");

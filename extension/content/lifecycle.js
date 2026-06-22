@@ -22,25 +22,25 @@ async function saveCurrentProduct(message) {
   return { ok: true, item };
 }
 
-async function toggleStashPanel() {
+async function toggleTuckioPanel() {
   if (panelState.open) {
-    closeStashPanel();
+    closeTuckioPanel();
     return { ok: true, open: false };
   }
 
-  await openStashPanel();
+  await openTuckioPanel();
   return { ok: true, open: true };
 }
 
-async function openStashPanel() {
+async function openTuckioPanel() {
   await loadPanelData();
   panelState.open = true;
   panelState.hasRenderedPanel = false;
-  renderStashPanel();
+  renderTuckioPanel();
 }
 
-function closeStashPanel() {
-  const host = document.getElementById("stash-panel-root");
+function closeTuckioPanel() {
+  const host = document.getElementById("tuckio-panel-root");
   if (typeof unbindPanelDismissEvents === "function") {
     unbindPanelDismissEvents(host?.shadowRoot);
   }
@@ -86,7 +86,7 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
     previousActiveCategory !== panelState.activeCategory ||
     previousSearchQuery !== panelState.searchQuery;
   panelState.displacedItemId = listContextChanged ? "" : panelSavedItemDisplacedId(item);
-  renderStashPanel({ summaryAnimationFrom: options.summaryAnimationFrom });
+  renderTuckioPanel({ summaryAnimationFrom: options.summaryAnimationFrom });
   window.clearTimeout(panelState.highlightTimer);
   panelState.highlightTimer = window.setTimeout(() => {
     if (!panelState.open || panelState.highlightedItemId !== item.id) {
@@ -94,7 +94,7 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
     }
     panelState.highlightedItemId = "";
     panelState.displacedItemId = "";
-    renderStashPanel();
+    renderTuckioPanel();
   }, 1400);
 }
 
@@ -123,20 +123,20 @@ function panelSavedItemDisplacedId(item) {
 }
 
 function clearSavedOverlay() {
-  const host = document.getElementById("stash-extension-root");
+  const host = document.getElementById("tuckio-extension-root");
   if (host?.shadowRoot) {
     if (typeof clearOverlayTimers === "function") {
       clearOverlayTimers(host.shadowRoot);
     } else {
-      window.clearTimeout(host.shadowRoot.__stashTimer);
+      window.clearTimeout(host.shadowRoot.__tuckioTimer);
     }
     host.shadowRoot.innerHTML = "";
   }
 }
 
 function removeStaleExtensionRoots() {
-  document.getElementById("stash-panel-root")?.remove();
-  document.getElementById("stash-extension-root")?.remove();
+  document.getElementById("tuckio-panel-root")?.remove();
+  document.getElementById("tuckio-extension-root")?.remove();
 }
 
 async function loadPanelData() {

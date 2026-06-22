@@ -1,10 +1,10 @@
-function initializeStashContent() {
-  if (window.__stashContentVersion === CONTENT_VERSION) {
+function initializeTuckioContent() {
+  if (window.__tuckioContentVersion === CONTENT_VERSION) {
     return;
   }
 
-  window.__stashContentVersion = CONTENT_VERSION;
-  window.__stashContentLoaded = true;
+  window.__tuckioContentVersion = CONTENT_VERSION;
+  window.__tuckioContentLoaded = true;
 
   removeStaleExtensionRoots();
   
@@ -22,19 +22,19 @@ function initializeStashContent() {
       return false;
     }
 
-    if (isStashPingMessage(message)) {
+    if (isTuckioPingMessage(message)) {
       sendResponse({ ok: true, version: CONTENT_VERSION });
       return false;
     }
   
-    if (isStashToggleMessage(message)) {
-      toggleStashPanel()
+    if (isTuckioToggleMessage(message)) {
+      toggleTuckioPanel()
         .then((result) => sendResponse(result))
         .catch((error) => sendResponse({ ok: false, error: error.message }));
       return true;
     }
   
-    if (!isStashSaveMessage(message)) {
+    if (!isTuckioSaveMessage(message)) {
       return false;
     }
   
@@ -108,24 +108,24 @@ function initializeStashContent() {
       return;
     }
   
-    renderStashPanel({ summaryAnimationFrom });
+    renderTuckioPanel({ summaryAnimationFrom });
   });
 }
 
-initializeStashContent();
+initializeTuckioContent();
 
 function hasContentVersionMismatch(message) {
   return Boolean(message?.contentVersion && message.contentVersion !== CONTENT_VERSION);
 }
 
-function isStashPingMessage(message) {
-  return message?.type === "STASH_PING" || message?.type === "STASH_PING_V2";
+function isTuckioPingMessage(message) {
+  return message?.type === "TUCKIO_PING" || message?.type === "TUCKIO_PING_V2";
 }
 
-function isStashToggleMessage(message) {
-  return message?.type === "STASH_TOGGLE_PANEL" || message?.type === "STASH_TOGGLE_PANEL_V2";
+function isTuckioToggleMessage(message) {
+  return message?.type === "TUCKIO_TOGGLE_PANEL" || message?.type === "TUCKIO_TOGGLE_PANEL_V2";
 }
 
-function isStashSaveMessage(message) {
-  return message?.type === "STASH_SAVE" || message?.type === "STASH_SAVE_V2";
+function isTuckioSaveMessage(message) {
+  return message?.type === "TUCKIO_SAVE" || message?.type === "TUCKIO_SAVE_V2";
 }

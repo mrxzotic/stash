@@ -10,7 +10,7 @@ const archiveSource = fs.readFileSync(
 );
 
 const sandbox = {
-  STORAGE_KEY: "stash.items.v1",
+  STORAGE_KEY: "tuckio.items.v1",
   panelState: {
     items: [{ id: "item-1", title: "Cabin", url: "https://example.com/cabin" }],
     archivedOpen: false,
@@ -32,7 +32,7 @@ const sandbox = {
   setLocalStorageValue: async (_key, value) => {
     sandbox.lastStored = value;
   },
-  renderStashPanel: () => {
+  renderTuckioPanel: () => {
     sandbox.renderCount += 1;
   },
   safelyRunPanelAction: (action) => {

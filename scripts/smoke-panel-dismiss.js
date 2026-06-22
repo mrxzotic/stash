@@ -20,7 +20,7 @@ const outsideNode = {};
 
 const sandbox = {
   panelState: { open: true },
-  closeStashPanel: () => {
+  closeTuckioPanel: () => {
     closed += 1;
     sandbox.panelState.open = false;
   },
@@ -35,7 +35,7 @@ const sandbox = {
     }
   },
   window: {
-    __stashPanelDismiss: null,
+    __tuckioPanelDismiss: null,
     setTimeout: (callback) => {
       pendingTimer = callback;
       return 1;

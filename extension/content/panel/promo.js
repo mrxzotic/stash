@@ -2,7 +2,7 @@ function renderFounderPromoTrigger() {
   return `
     <span class="wp-brand-cluster">
       ${renderPanelSaveCurrentTrigger()}
-      <button class="wp-topbar-info" type="button" aria-label="${escapeAttribute(t("About Stashed"))}" aria-expanded="${panelState.founderPromoOpen}" title="${escapeAttribute(t("About Stashed"))}" data-founder-promo-trigger>
+      <button class="wp-topbar-info" type="button" aria-label="${escapeAttribute(t("About Tuckio"))}" aria-expanded="${panelState.founderPromoOpen}" title="${escapeAttribute(t("About Tuckio"))}" data-founder-promo-trigger>
         ${phosphorInfoIcon("wp-topbar-info-icon")}
       </button>
     </span>
@@ -30,13 +30,13 @@ function renderFounderPromoDialog() {
 function renderFounderAppIntro(version) {
   return `
     <div class="wp-founder-app">
-      <img class="wp-founder-app-logo" src="${escapeAttribute(stashedLogoUrl())}" alt="Stashed">
+      <img class="wp-founder-app-logo" src="${escapeAttribute(tuckioLogoUrl())}" alt="Tuckio">
       <div class="wp-founder-app-copy">
-        <strong id="wp-founder-app-title">Stashed</strong>
+        <strong id="wp-founder-app-title">Tuckio</strong>
         <p>${escapeHtml(t("Save products from any shop into a compact local wishlist."))}</p>
         <span class="wp-founder-meta">
           ${version ? `<span class="wp-founder-version">${escapeHtml(version)}</span>` : ""}
-          <a class="wp-founder-site" href="https://getstash.app" target="_blank" rel="noreferrer">getstash.app</a>
+          <a class="wp-founder-site" href="https://tuckio.app" target="_blank" rel="noreferrer">tuckio.app</a>
         </span>
       </div>
     </div>
@@ -82,11 +82,11 @@ function renderFounderBackupActions() {
         <small>${escapeHtml(t("Import merges with saved items."))}</small>
       </div>
       <div class="wp-founder-backup-actions">
-        <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Export Stashed JSON"))}" title="${escapeAttribute(t("Export Stashed JSON"))}" data-export-backup>
+        <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Export Tuckio JSON"))}" title="${escapeAttribute(t("Export Tuckio JSON"))}" data-export-backup>
           ${phosphorDownloadIcon("wp-founder-action-icon")}
           <span>${escapeHtml(t("Export JSON"))}</span>
         </button>
-        <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Import Stashed JSON"))}" title="${escapeAttribute(t("Import Stashed JSON"))}" data-import-backup>
+        <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Import Tuckio JSON"))}" title="${escapeAttribute(t("Import Tuckio JSON"))}" data-import-backup>
           ${phosphorUploadIcon("wp-founder-action-icon")}
           <span>${escapeHtml(t("Import JSON"))}</span>
         </button>
@@ -112,7 +112,7 @@ function bindPanelFounderPromoEvents(root) {
 }
 
 function bindPanelFounderPromoTrigger(button) {
-  if (!button || button.__stashFounderPromoBound) {
+  if (!button || button.__tuckioFounderPromoBound) {
     return;
   }
 
@@ -125,10 +125,10 @@ function bindPanelFounderPromoTrigger(button) {
     panelState.founderPromoOpen = !panelState.founderPromoOpen;
     syncPanelFounderPromoDialog(button.getRootNode());
   });
-  button.__stashFounderPromoBound = true;
+  button.__tuckioFounderPromoBound = true;
 }
 
-function syncPanelFounderPromoDialog(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function syncPanelFounderPromoDialog(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   const existing = root?.querySelector?.("[data-founder-promo-dialog]");
   if (!root || !panelState.founderPromoOpen) {
     existing?.remove();
@@ -158,9 +158,9 @@ function founderPhotoUrl() {
   }
 }
 
-function stashedLogoUrl() {
+function tuckioLogoUrl() {
   try {
-    return chrome.runtime.getURL("icons/stashed-lock-48.png");
+    return chrome.runtime.getURL("assets/tuckio-app-open.png");
   } catch {
     return "";
   }

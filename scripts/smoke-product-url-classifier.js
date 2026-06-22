@@ -11,9 +11,9 @@ const contentVersion = constantsSource.match(/CONTENT_VERSION\s*=\s*"([^"]+)"/)?
 
 assert.ok(contentVersion, "Content version should be declared");
 assert.ok(backgroundSource.includes(`CONTENT_SCRIPT_VERSION = "${contentVersion}"`), "Background should require the current content script version");
-assert.match(backgroundSource, /STASH_PING_V2/, "Background should ping versioned content scripts");
-assert.match(backgroundSource, /STASH_SAVE_V2/, "Background should send versioned save messages");
-assert.match(bootstrapSource, /STASH_SAVE_V2/, "Content script should handle versioned saves");
+assert.match(backgroundSource, /TUCKIO_PING_V2/, "Background should ping versioned content scripts");
+assert.match(backgroundSource, /TUCKIO_SAVE_V2/, "Background should send versioned save messages");
+assert.match(bootstrapSource, /TUCKIO_SAVE_V2/, "Content script should handle versioned saves");
 assert.match(bootstrapSource, /version:\s*CONTENT_VERSION/, "Content script ping should report the active content version");
 
 const sandbox = {

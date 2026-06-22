@@ -1,4 +1,4 @@
-function renderStashPanel(options = {}) {
+function renderTuckioPanel(options = {}) {
   const root = getPanelRoot();
   const previousItemRects = panelState.hasRenderedPanel ? capturePanelItemLayout(root) : null;
   const rebuildMotionClass = panelState.hasRenderedPanel
@@ -14,11 +14,11 @@ function renderStashPanel(options = {}) {
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
-    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}${rebuildMotionClass}" role="dialog" aria-label="${escapeAttribute(t("Stashed"))}">
+    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}${rebuildMotionClass}" role="dialog" aria-label="${escapeAttribute(t("Tuckio"))}">
       ${renderPanelTopbarHtml(summaryItems)}
       ${renderFounderPromoDialog()}
 
-      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="${escapeAttribute(t("Stashed categories"))}">
+      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="${escapeAttribute(t("Tuckio categories"))}">
         ${renderCategoryFilters(filterCategories, panelArchivedCount(displayItems))}
       </nav>
       ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
@@ -179,7 +179,7 @@ function renderDeleteItemDialog() {
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-item></div>
     <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-delete-item-title" data-panel-modal>
       <h3 id="wp-delete-item-title">${escapeHtml(t("Delete {item}?", { item: item.title }))}</h3>
-      <p>${escapeHtml(t("This removes it from Stashed."))}</p>
+      <p>${escapeHtml(t("This removes it from Tuckio."))}</p>
       <div class="wp-confirm-actions">
         <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-item>${escapeHtml(t("Cancel"))}</button>
         <button class="wp-confirm-delete" type="button" data-confirm-delete-item="${escapeAttribute(item.id)}">${escapeHtml(t("Delete"))}</button>
@@ -347,7 +347,7 @@ function renderPanelItemsHtml(items) {
 function bindImageFallbacks(root) {
   root.querySelectorAll(".wp-image-frame > img, .wl-image img").forEach((image) => {
     syncProductImageRatio(image);
-    if (image.__stashImageFallbackBound) {
+    if (image.__tuckioImageFallbackBound) {
       return;
     }
     image.addEventListener("load", () => syncProductImageRatio(image));
@@ -362,7 +362,7 @@ function bindImageFallbacks(root) {
       }
       image.replaceWith(elementFromHtml(renderMissingProductImage(placeholderClass.startsWith("wl") ? "wl" : "wp")));
     });
-    image.__stashImageFallbackBound = true;
+    image.__tuckioImageFallbackBound = true;
   });
 
 }

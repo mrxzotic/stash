@@ -146,7 +146,7 @@ function priceTextsFromElement(element) {
 function isUsablePriceElement(element) {
   if (
     !element ||
-    element.closest?.("#stash-panel-root, #stash-extension-root") ||
+    element.closest?.("#tuckio-panel-root, #tuckio-extension-root") ||
     element.closest?.("[aria-hidden='true']")
   ) {
     return false;

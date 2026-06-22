@@ -4,7 +4,7 @@ function renderPanelEmpty() {
   return `
     <div class="wp-empty">
       <div>
-        ${state.icon ? `<img class="wp-empty-logo" src="${escapeAttribute(stashedGreyscaleLogoUrl())}" alt="" aria-hidden="true">` : ""}
+        ${state.icon ? `<img class="wp-empty-logo" src="${escapeAttribute(tuckioMonochromeLogoUrl())}" alt="" aria-hidden="true">` : ""}
         <strong>${escapeHtml(state.title)}</strong>
         <span>${escapeHtml(state.detail)}</span>
       </div>
@@ -33,7 +33,7 @@ function panelEmptyState() {
     return {
       icon: true,
       title: t("Save your first product"),
-      detail: t("Use the plus button or right-click a product card, image, link, or product page and choose Save to Stashed.")
+      detail: t("Use the plus button or right-click a product card, image, link, or product page and choose Save to Tuckio.")
     };
   }
 
@@ -67,9 +67,9 @@ function panelActiveCategoryLabel() {
   return category ? panelCategoryDisplayLabel(category) : t("this category");
 }
 
-function stashedGreyscaleLogoUrl() {
+function tuckioMonochromeLogoUrl() {
   try {
-    return chrome.runtime.getURL("icons/stashed-lock-greyscale-128.png");
+    return chrome.runtime.getURL("assets/tuckio-app-black.png");
   } catch {
     return "";
   }

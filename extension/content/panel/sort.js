@@ -142,7 +142,7 @@ function applyPanelSortOption(field, direction, root) {
   syncPanelSortControlLayout(root);
 }
 
-function closePanelSortMenu(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function closePanelSortMenu(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   if (!panelState.sortMenuOpen) {
     return;
   }

@@ -119,7 +119,7 @@ function syncPanelFilterMenu(root) {
   syncPanelFilterMenuPosition(root);
 }
 
-function closePanelFilterMenu(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function closePanelFilterMenu(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   if (!panelState.filterMenuOpen) {
     return;
   }
