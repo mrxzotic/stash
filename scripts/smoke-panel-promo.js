@@ -19,7 +19,7 @@ assert.match(promoSource, /tuckioLogoUrl/, "Founder popup should show the Tuckio
 assert.match(promoSource, /assets\/tuckio-app-open\.png/, "Founder popup should use the Tuckio app artwork");
 assert.match(promoSource, /Save products from any shop/, "Founder popup should describe Tuckio first");
 assert.match(promoSource, /github\.com\/mrxzotic/, "Founder popup should include GitHub");
-assert.match(promoSource, /tuckio\.app/, "Founder popup should include the site");
+assert.match(promoSource, /tuckio\.com/, "Founder popup should include the site");
 assert.match(promoSource, /Founder/, "Founder popup should separate founder contacts");
 assert.doesNotMatch(promoSource, /<span>@zoticx<\/span>/, "Founder profile should not show the handle next to Alex");
 assert.match(promoSource, /phosphorXLogoIcon/, "Founder popup should use a Phosphor icon for X");

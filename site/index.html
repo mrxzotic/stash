@@ -11,35 +11,54 @@
     <link rel="icon" href="/assets/tuckio-icon-128.png">
     <link rel="apple-touch-icon" href="/assets/tuckio-icon-128.png">
     <link rel="stylesheet" href="/styles.css">
+    <script src="/waitlist.js" defer></script>
   </head>
   <body>
     <main class="teaser" aria-labelledby="hero-title">
       <header class="topbar" aria-label="Site navigation">
         <a class="wordmark" href="/" aria-label="Tuckio home">Tuckio</a>
         <nav class="nav">
-          <a href="https://tuckio.app">tuckio.app</a>
           <a href="/privacy">Privacy</a>
         </nav>
       </header>
 
-      <section class="hero">
+      <section class="hero" aria-label="Tuckio teaser">
         <div class="hero-copy">
-          <p class="kicker">Chrome extension in review</p>
-          <h1 id="hero-title">Save products from any shop into one local library.</h1>
-          <p class="lede">
-            Tuckio keeps product images, prices, brands, and source links together in your browser.
-          </p>
-          <div class="actions" aria-label="Primary links">
-            <a class="primary-link" href="/privacy">Privacy policy</a>
-            <a class="secondary-link" href="https://tuckio.app">tuckio.app</a>
+          <div class="browser-strip" aria-label="Supported browsers">
+            <span>Built for</span>
+            <span class="browser browser-chrome">
+              <img src="/assets/browser-chrome.svg" alt="" aria-hidden="true">Chrome
+            </span>
+            <span class="browser browser-edge">
+              <img src="/assets/browser-edge.svg" alt="" aria-hidden="true">Edge
+            </span>
+            <span class="browser browser-brave">
+              <img src="/assets/browser-brave.svg" alt="" aria-hidden="true">Brave
+            </span>
           </div>
+          <h1 id="hero-title">Tuckio</h1>
+          <p class="hero-line">Save it. Find it. Keep it local.</p>
+          <p class="lede">
+            A private product library for the pieces you want to come back to.
+          </p>
+          <form class="waitlist-form" data-waitlist-form>
+            <label class="sr-only" for="waitlist-email">Email address</label>
+            <div class="waitlist-control">
+              <input id="waitlist-email" name="email" type="email" placeholder="Email for early access" autocomplete="email" required>
+              <button type="submit">Join waitlist</button>
+            </div>
+            <p class="waitlist-status" data-waitlist-status>One launch email. No newsletter drip.</p>
+          </form>
         </div>
-        <img class="hero-logo" src="/assets/tuckio-app.png" alt="Tuckio app icon">
+        <div class="product-stage" aria-hidden="true">
+          <img class="hero-logo" src="/assets/tuckio-app.png" alt="">
+        </div>
       </section>
 
       <section class="detail" aria-label="Launch status">
-        <p>Local-first product saving. No account, no analytics, no hidden background scraping.</p>
-        <p>Public release is being prepared for the Chrome Web Store.</p>
+        <p><strong>Local-first.</strong> Saved products stay in your browser.</p>
+        <p><strong>No tracking.</strong> No account, analytics, or hidden background scraping.</p>
+        <p><strong>Coming soon.</strong> Public release is being prepared for the Chrome Web Store.</p>
       </section>
     </main>
   </body>

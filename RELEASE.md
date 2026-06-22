@@ -6,7 +6,7 @@ Save products from arbitrary shops into a private local library.
 
 Tuckio should be described publicly as a local shopping/product saver, not as price tracking, deal discovery, social shopping, sync, or account-based wishlist software.
 
-Use `tuckio.app` as the primary product URL. Keep `tuckio.com` reserved for the same product surface.
+Use `tuckio.com` as the public product URL.
 
 ## Chrome Web Store permission notes
 

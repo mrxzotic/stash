@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-22-tuckio-brand-assets-v1";
+var CONTENT_VERSION = "2026-06-22-tuckio-dot-com-v1";
 
 
 var STORAGE_KEY = "tuckio.items.v1";

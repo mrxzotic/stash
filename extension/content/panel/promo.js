@@ -36,7 +36,7 @@ function renderFounderAppIntro(version) {
         <p>${escapeHtml(t("Save products from any shop into a compact local wishlist."))}</p>
         <span class="wp-founder-meta">
           ${version ? `<span class="wp-founder-version">${escapeHtml(version)}</span>` : ""}
-          <a class="wp-founder-site" href="https://tuckio.app" target="_blank" rel="noreferrer">tuckio.app</a>
+          <a class="wp-founder-site" href="https://tuckio.com" target="_blank" rel="noreferrer">tuckio.com</a>
         </span>
       </div>
     </div>

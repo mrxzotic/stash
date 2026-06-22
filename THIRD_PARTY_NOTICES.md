@@ -2,6 +2,20 @@
 
 This project vendors selected assets from the following third-party projects.
 
+## Font Awesome Free Brands
+
+Source: `@fortawesome/free-brands-svg-icons`
+
+Used files:
+
+- `site/assets/browser-brave.svg`
+- `site/assets/browser-chrome.svg`
+- `site/assets/browser-edge.svg`
+
+License:
+
+CC BY 4.0 and MIT
+
 ## Phosphor Icons
 
 Source: `@phosphor-icons/web` / Phosphor Icons

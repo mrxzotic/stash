@@ -2,7 +2,7 @@
 
 Tuckio is a plain Manifest V3 Chrome/Arc extension for saving products from any shop into a private local library.
 
-The v0.1 promise is intentionally narrow: save products cleanly from arbitrary shops, keep the library local, and make saved data easy to correct or back up. Public domains are `tuckio.app` and `tuckio.com`.
+The v0.1 promise is intentionally narrow: save products cleanly from arbitrary shops, keep the library local, and make saved data easy to correct or back up. The public product domain is `tuckio.com`.
 
 ## What it does
 
