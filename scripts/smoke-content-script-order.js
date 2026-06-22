@@ -6,6 +6,7 @@ const { contentScriptFiles } = require("./content-script-files");
 
 const root = path.resolve(__dirname, "..");
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "extension/manifest.json"), "utf8"));
+const backgroundSource = fs.readFileSync(path.join(root, "extension/background.js"), "utf8");
 const scripts = contentScriptFiles(root).filter((file) => file !== "content/bootstrap.js");
 const productUrl =
   "https://www.loewe.com/eur/en/women/bags/bucket-bags/medium-bilbao-bucket-in-smooth-calfskin/AWRAWPRX01-5984.html";
@@ -55,6 +56,10 @@ assert.equal(typeof sandbox.extractProduct, "function");
 assert.equal(typeof sandbox.isExtractableProductPageUrl, "function");
 assert.equal(typeof sandbox.isKnownProductPageUrl, "function");
 assert.equal(sandbox.isProductLikeUrl(productUrl), true);
+assert.equal(
+  backgroundSource.match(/CONTENT_SCRIPT_VERSION = "([^"]+)"/)?.[1],
+  sandbox.CONTENT_VERSION
+);
 
 vm.runInContext(
   `

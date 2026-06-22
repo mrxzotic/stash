@@ -7,8 +7,8 @@ function renderPanelSortControls() {
   const isOpen = panelState.sortMenuOpen;
   return `
     <div class="wp-sort-controls${isOpen ? " is-open" : ""}" data-panel-sort-root>
-      <button class="wp-sort-trigger" type="button" aria-label="Sort saved items: ${escapeAttribute(current.label)}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-sort-trigger>
-        <span class="wp-sort-current">Sort</span>
+      <button class="wp-sort-trigger" type="button" aria-label="${escapeAttribute(t("Sort saved items: {label}", { label: current.label }))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-sort-trigger>
+        <span class="wp-sort-current">${escapeHtml(t("Sort"))}</span>
         ${phosphorChevronDownIcon("wp-sort-chevron")}
       </button>
       <div class="wp-sort-menu wp-popover" role="menu" ${isOpen ? "" : "hidden"} data-panel-sort-menu>
@@ -30,12 +30,12 @@ function renderPanelSortOption(option) {
 
 function panelSortOptions() {
   return [
-    { field: PANEL_SORT_FIELD_NAME, direction: PANEL_SORT_ASC, label: "Name A-Z", shortLabel: "Name" },
-    { field: PANEL_SORT_FIELD_NAME, direction: PANEL_SORT_DESC, label: "Name Z-A", shortLabel: "Name" },
-    { field: PANEL_SORT_FIELD_PRICE, direction: PANEL_SORT_ASC, label: "Price low-high", shortLabel: "Price" },
-    { field: PANEL_SORT_FIELD_PRICE, direction: PANEL_SORT_DESC, label: "Price high-low", shortLabel: "Price" },
-    { field: PANEL_SORT_FIELD_RECENT, direction: PANEL_SORT_DESC, label: "Date newest", shortLabel: "Date" },
-    { field: PANEL_SORT_FIELD_RECENT, direction: PANEL_SORT_ASC, label: "Date oldest", shortLabel: "Date" }
+    { field: PANEL_SORT_FIELD_NAME, direction: PANEL_SORT_ASC, label: t("Name A-Z"), shortLabel: t("Name") },
+    { field: PANEL_SORT_FIELD_NAME, direction: PANEL_SORT_DESC, label: t("Name Z-A"), shortLabel: t("Name") },
+    { field: PANEL_SORT_FIELD_PRICE, direction: PANEL_SORT_ASC, label: t("Price low-high"), shortLabel: t("Price") },
+    { field: PANEL_SORT_FIELD_PRICE, direction: PANEL_SORT_DESC, label: t("Price high-low"), shortLabel: t("Price") },
+    { field: PANEL_SORT_FIELD_RECENT, direction: PANEL_SORT_DESC, label: t("Date newest"), shortLabel: t("Date") },
+    { field: PANEL_SORT_FIELD_RECENT, direction: PANEL_SORT_ASC, label: t("Date oldest"), shortLabel: t("Date") }
   ];
 }
 

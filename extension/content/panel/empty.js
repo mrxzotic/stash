@@ -16,24 +16,24 @@ function panelEmptyState() {
   if (panelState.archivedOpen) {
     return {
       icon: false,
-      title: "No archived items",
-      detail: "Archived items will appear here."
+      title: t("No archived items"),
+      detail: t("Archived items will appear here.")
     };
   }
 
   if (panelState.searchQuery) {
     return {
       icon: false,
-      title: "No matches",
-      detail: "Try another name, category, or source."
+      title: t("No matches"),
+      detail: t("Try another name, category, or source.")
     };
   }
 
   if (!panelActiveItems(panelState.items).length) {
     return {
       icon: true,
-      title: "Save your first product",
-      detail: "Use the plus button or right-click a product card, image, link, or product page and choose Save to Stashed."
+      title: t("Save your first product"),
+      detail: t("Use the plus button or right-click a product card, image, link, or product page and choose Save to Stashed.")
     };
   }
 
@@ -41,30 +41,30 @@ function panelEmptyState() {
     const category = panelActiveCategoryLabel();
     return {
       icon: false,
-      title: `0 items in ${category}`,
-      detail: `Products saved to ${category} will appear here.`
+      title: t("0 items in {category}", { category }),
+      detail: t("Products saved to {category} will appear here.", { category })
     };
   }
 
   if (panelState.brandFilterKey) {
-    const brand = panelState.brandFilterLabel || "this brand";
+    const brand = panelState.brandFilterLabel || t("this brand");
     return {
       icon: false,
-      title: `0 items from ${brand}`,
-      detail: "Clear the brand filter to see the rest of your saved products."
+      title: t("0 items from {brand}", { brand }),
+      detail: t("Clear the brand filter to see the rest of your saved products.")
     };
   }
 
   return {
     icon: false,
-    title: "No items here",
-    detail: "Saved products that match this view will appear here."
+    title: t("No items here"),
+    detail: t("Saved products that match this view will appear here.")
   };
 }
 
 function panelActiveCategoryLabel() {
   const category = panelState.categories.find((item) => item.id === panelState.activeCategory);
-  return category?.label || "this category";
+  return category ? panelCategoryDisplayLabel(category) : t("this category");
 }
 
 function stashedGreyscaleLogoUrl() {

@@ -25,7 +25,10 @@ const sandbox = {
     const amount = Number(value);
     return Number.isFinite(amount) ? amount : undefined;
   },
-  normalizePanelPrice: (item) => item.price || { amount: item.priceAmount, rubAmount: item.rubPriceAmount }
+  normalizePanelPrice: (item) => item.price || { amount: item.priceAmount, rubAmount: item.rubPriceAmount },
+  t: (key, replacements = {}) => String(key || "").replace(/\{([A-Za-z0-9_]+)\}/g, (match, name) =>
+    Object.prototype.hasOwnProperty.call(replacements, name) ? String(replacements[name]) : match
+  )
 };
 
 vm.createContext(sandbox);
@@ -82,7 +85,7 @@ assert.match(
 );
 assert.match(
   filtersSource,
-  /function panelFilterTriggerLabel\(categories\)[\s\S]*?return "Filter";[\s\S]*?return `Filter \(\$\{count\}\)`;/,
+  /function panelFilterTriggerLabel\(categories\)[\s\S]*?return t\("Filter"\);[\s\S]*?return t\("Filter \(\{count\}\)", \{ count \}\);/,
   "Active filter trigger should show only the number of applied filters"
 );
 assert.doesNotMatch(
@@ -147,8 +150,13 @@ assert.match(
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-brand-chip\s*\{[\s\S]*?flex: 0 0 50px;[\s\S]*?padding: 0 8px;/,
-  "Brand chip should stay compact as tag icon plus count inside a pill"
+  /\.wp-brand-chip\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-width: 50px;[\s\S]*?padding: 0 10px;/,
+  "Brand chip should keep a compact floor and resize for multi-digit counts"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-rail > \.wp-filter-archive\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-width: 50px;[\s\S]*?padding: 0 10px;/,
+  "Archive chip should keep a compact floor and resize for multi-digit counts"
 );
 assert.match(
   filterMenuStylesSource,
@@ -174,6 +182,11 @@ assert.match(
   filtersSource,
   /phosphorArchiveIcon\("wp-archive-chip-icon"\)[\s\S]*?wp-archive-count/,
   "Archived chip should render as a Phosphor icon plus count"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-brand-chip-count\s*\{[\s\S]*?min-width: 1ch;[\s\S]*?font-variant-numeric: tabular-nums;/,
+  "Brand count should reserve one tabular digit and grow naturally"
 );
 assert.doesNotMatch(
   filterStylesSource,

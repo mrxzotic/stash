@@ -84,11 +84,14 @@ function initializeStashContent() {
     if (changes[SETTINGS_STORAGE_KEY]) {
       const settings = normalizePanelSettings(changes[SETTINGS_STORAGE_KEY].newValue);
       viewModeChanged = panelState.compactView !== settings.compactView;
+      const languageChanged = panelState.language !== settings.language;
       panelState.summaryCurrency = settings.summaryCurrency;
       panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
       panelState.backgroundTheme = settings.backgroundTheme;
       panelState.compactView = settings.compactView;
+      panelState.language = settings.language;
       settingsChanged = true;
+      requiresFullRender = requiresFullRender || languageChanged;
     }
 
     if (!requiresFullRender && !settingsChanged) {

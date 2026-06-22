@@ -294,12 +294,60 @@ function smokeLazyImageAndMissingFallback() {
   assert.match(renderSource, /renderMissingProductImage\("wp"\)/);
 }
 
+function smokeBrandNoiseFilter() {
+  const sandbox = runFiles(
+    { URL, console, location: new URL("https://shop.example/products/noise-test") },
+    [
+      "extension/content/constants.js",
+      "extension/content/utils.js",
+      "extension/content/media.js",
+      "extension/content/text.js",
+      "extension/content/extractors/product-url.js",
+      "extension/content/extractors/verify.js",
+      "extension/content/extractors/main.js"
+    ]
+  );
+
+  assert.equal(vm.runInContext('cleanBrandName("YOUR COOKIE SETTINGS")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("ACCEPT ALL COOKIES")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("Powered by Onetrust")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("Email*")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("FREE DELIVERY FROM")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("ДОБАВИТЬ В КОРЗИНУ")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("Man")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("АРТИКУЛ: 6103 336")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("All details")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("ЦВЕТ: СОСТАРЕННЫЙ СИНИЙ")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("СОСТАВ И УХОД")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("ДОСТАВКА И ВОЗВРАТ")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("ГИД ПО РАЗМЕРАМ")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("ОПЛАТА")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("Коллекции")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("Skip to main content")', sandbox), "");
+  assert.equal(vm.runInContext('cleanBrandName("Allsaints")', sandbox), "AllSaints");
+  assert.equal(vm.runInContext('cleanBrandName("Pyeoptics")', sandbox), "PYE");
+  assert.equal(vm.runInContext('cleanBrandName("Acne Studios")', sandbox), "Acne Studios");
+  assert.doesNotMatch(
+    vm.runInContext('cleanProductTitle("Umique Артикул 5144377, Оливковый", "LUMIQUE", "https://example.com/product")', sandbox),
+    /Артикул|5144377/
+  );
+  assert.equal(
+    vm.runInContext('bestProductBrand([{ brand: "ОПЛАТА", title: "Прямые джинсы" }], "https://limestore.com/ru_ru/product/32596")', sandbox),
+    "LIME"
+  );
+  assert.equal(
+    vm.runInContext('bestProductBrand([{ brand: "Casablanca", title: "Logo-Buckle Leather Belt" }], "https://www.farfetch.com/fi/shopping/men/casablanca-logo-buckle-leather-belt-item-36693002.aspx")', sandbox),
+    "Casablanca"
+  );
+}
+
 (async () => {
   await smokeRateFallback();
   await smokeCategoryMigration();
   smokePanelThreeHundredItems();
   await smokeEnrichmentFailureKeepsProduct();
   smokeLazyImageAndMissingFallback();
+  smokeBrandNoiseFilter();
   console.log("release edge cases smoke passed");
 })().catch((error) => {
   console.error(error);

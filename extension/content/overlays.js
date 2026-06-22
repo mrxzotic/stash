@@ -12,16 +12,16 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
       ${renderSavedOverlaySkeleton()}
       <header class="wl-header">
         <div class="wl-title-block">
-          <p class="wl-kicker">Saved</p>
+          <p class="wl-kicker">${escapeHtml(t("Saved"))}</p>
           <div class="wl-timer-line">
-            <p class="wl-countdown" data-countdown aria-hidden="true">Auto-close in ${Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000)}s</p>
-            <button class="wl-timer-button" type="button" data-toggle-timer aria-label="Pause auto-close" aria-pressed="false" title="Pause auto-close">
+            <p class="wl-countdown" data-countdown aria-hidden="true">${escapeHtml(t("Auto-close in {seconds}s", { seconds: Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000) }))}</p>
+            <button class="wl-timer-button" type="button" data-toggle-timer aria-label="${escapeAttribute(t("Pause auto-close"))}" aria-pressed="false" title="${escapeAttribute(t("Pause auto-close"))}">
               ${phosphorPauseIcon("wl-timer-icon")}
             </button>
           </div>
         </div>
         <div class="wl-controls">
-          <button class="wl-close" type="button" aria-label="Close" title="Close" data-close-overlay>
+          <button class="wl-close" type="button" aria-label="${escapeAttribute(t("Close"))}" title="${escapeAttribute(t("Close"))}" data-close-overlay>
             ${phosphorXIcon("wl-close-icon")}
           </button>
         </div>
@@ -33,14 +33,14 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
       </article>
       <div class="wl-actions">
         <div class="wl-action-group is-left">
-          <button class="wl-cancel-button" type="button" aria-label="Undo save" data-cancel-addition>
-            <span>Undo</span>
+          <button class="wl-cancel-button" type="button" aria-label="${escapeAttribute(t("Undo save"))}" data-cancel-addition>
+            <span>${escapeHtml(t("Undo"))}</span>
           </button>
         </div>
         <div class="wl-action-group is-right">
-          <button class="wl-open-button" type="button" aria-label="Open Stash panel" data-open-stash>
+          <button class="wl-open-button" type="button" aria-label="${escapeAttribute(t("Open Stash panel"))}" data-open-stash>
             ${phosphorLinkIcon("wl-button-icon")}
-            <span>Open Stash</span>
+            <span>${escapeHtml(t("Open Stash"))}</span>
           </button>
         </div>
       </div>
@@ -66,12 +66,12 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
 function showErrorOverlay(error) {
   const root = getOverlayRoot();
   clearOverlayTimers(root);
-  const title = error.title || "Could not save this item";
+  const title = error.title || t("Could not save this item");
   root.innerHTML = `
     <style>${overlayStyles()}</style>
     <div class="wl-error">
       <strong>${escapeHtml(title)}</strong>
-      <span>${escapeHtml(error.message || "Try a product page or product card.")}</span>
+      <span>${escapeHtml(error.message || t("Try a product page or product card."))}</span>
     </div>
   `;
   window.clearTimeout(root.__stashTimer);
@@ -122,8 +122,8 @@ function renderSavedOverlayTimer(root) {
   const countdown = root.querySelector("[data-countdown]");
   if (countdown) {
     countdown.textContent = state.paused
-      ? "Auto-close paused"
-      : `Auto-close in ${remainingSeconds}s`;
+      ? t("Auto-close paused")
+      : t("Auto-close in {seconds}s", { seconds: remainingSeconds });
   }
 
   const progress = root.querySelector("[data-timer-progress]");
@@ -160,8 +160,8 @@ function pauseSavedOverlayTimer(root) {
   const button = root.querySelector("[data-toggle-timer]");
   if (button) {
     button.setAttribute("aria-pressed", "true");
-    button.setAttribute("aria-label", "Resume auto-close");
-    button.setAttribute("title", "Resume auto-close");
+    button.setAttribute("aria-label", t("Resume auto-close"));
+    button.setAttribute("title", t("Resume auto-close"));
     button.innerHTML = phosphorPlayIcon("wl-timer-icon");
   }
 }
@@ -180,8 +180,8 @@ function resumeSavedOverlayTimer(root) {
   const button = root.querySelector("[data-toggle-timer]");
   if (button) {
     button.setAttribute("aria-pressed", "false");
-    button.setAttribute("aria-label", "Pause auto-close");
-    button.setAttribute("title", "Pause auto-close");
+    button.setAttribute("aria-label", t("Pause auto-close"));
+    button.setAttribute("title", t("Pause auto-close"));
     button.innerHTML = phosphorPauseIcon("wl-timer-icon");
   }
   scheduleSavedOverlayTimer(root);

@@ -96,8 +96,9 @@ assert.match(reorderSource, /syncPanelNodeOrder\(compactList, nodes\)/, "Compact
 assert.doesNotMatch(reorderSource, /innerHTML\s*=/, "Sort reorder should not replace card HTML");
 assert.doesNotMatch(reorderSource, /replaceChildren/, "Sort reorder should not bulk-replace card nodes");
 assert.doesNotMatch(reorderSource, /appendChild/, "Sort reorder should not append recreated card nodes");
-assert.match(compactViewSource, /syncViewMode: true,[\s\S]*?rebuildMotion: "view"/, "Card/list toggle should use in-place view rebuild motion");
-assert.match(compactViewSource, /rebuildMotion: "theme"/, "Theme toggle should use in-place theme rebuild motion");
+assert.match(compactViewSource, /syncViewMode: true,[\s\S]*?syncSummary: false/, "Card/list toggle should update view state without refreshing unrelated chrome");
+assert.match(compactViewSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\S]*?syncSummary: false/, "Theme toggle should update theme state without refreshing unrelated chrome");
+assert.doesNotMatch(compactViewSource, /rebuildMotion: "view"|rebuildMotion: "theme"/, "Display preference row clicks should not trigger app rebuild motion");
 assert.match(eventsSource, /syncPanelWithRebuildMotion\([\s\S]*?options\.rebuildMotion[\s\S]*?syncSettingsUi/, "Settings sync should wrap in-place updates in rebuild motion");
 assert.match(panelMotionSource, /wp-new-card-skeleton[\s\S]*wp-new-card-skeleton-media[\s\S]*wp-new-card-skeleton-copy/, "New card skeleton should include media and copy zones");
 assert.match(panelMotionSource, /function renderStashPanelWithMotion/, "Panel motion helper should expose render-with-motion");
@@ -124,8 +125,8 @@ assert.match(panelContentStylesSource, /\.wp-items\s*\{[\s\S]*?grid-template-col
 assert.match(panelContentStylesSource, /\.wp-item-column\s*\{[\s\S]*?display: grid;[\s\S]*?gap: 16px;/, "Card mode columns should stack variable-height cards tightly");
 assert.match(panelContentStylesSource, /\.wp-item-column \.wp-item:nth-child\(2\)[\s\S]*?animation-delay: 34ms;/, "Card entrance should use a restrained stagger");
 assert.match(panelContentStylesSource, /\.wp-brand-cloud\.is-sort-list[\s\S]*?flex-direction: column;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;/, "Sorted brand mode should stay centered as a list");
-assert.match(panelContentStylesSource, /\.wp-items\.is-brand-cloud\s*\{[\s\S]*?align-content: start;/, "Brand cloud view should start from the content origin under the header");
-assert.match(panelContentStylesSource, /\.wp-brand-cloud\s*\{[\s\S]*?align-content: flex-start;[\s\S]*?padding: 8px 8px 72px;/, "Default brand cloud should be top-anchored instead of vertically centered");
+assert.match(panelContentStylesSource, /\.wp-items\.is-brand-cloud\s*\{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;[\s\S]*?justify-content: safe center;[\s\S]*?padding: var\(--wp-items-padding-top, 136px\) 24px 48px;/, "Brand cloud view should be centered inside the area that starts under the filters");
+assert.match(panelContentStylesSource, /\.wp-brand-cloud\s*\{[\s\S]*?align-content: flex-start;[\s\S]*?padding: 8px;/, "Default brand cloud should keep its centered cloud spacing");
 
 for (const animation of [
   "wpPanelThemeShift",

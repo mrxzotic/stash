@@ -106,9 +106,10 @@ function panelContentStyles() {
     }
 
     .wp-items.is-brand-cloud {
-      grid-template-columns: 1fr;
-      align-content: start;
-      padding-top: var(--wp-items-padding-top, 136px);
+      display: flex;
+      flex-direction: column;
+      justify-content: safe center;
+      padding: var(--wp-items-padding-top, 136px) 24px 48px;
     }
 
     .wp-item-column {
@@ -127,7 +128,7 @@ function panelContentStyles() {
       align-items: baseline;
       justify-content: center;
       gap: 16px;
-      padding: 8px 8px 72px;
+      padding: 8px;
       text-align: center;
       isolation: isolate;
     }

@@ -21,16 +21,16 @@ function renderSavedOverlayImage(item) {
 }
 
 function renderSavedOverlayImageControls(urls, item) {
-  const label = ` for ${panelItemAccessibleName(item)}`;
+  const label = t(" for {item}", { item: panelItemAccessibleName(item) });
   return `
-    <button class="wl-image-slider-button is-prev" type="button" aria-label="${escapeAttribute(`Previous image${label}`)}" data-overlay-image-slide="previous">
+    <button class="wl-image-slider-button is-prev" type="button" aria-label="${escapeAttribute(t("Previous image{label}", { label }))}" data-overlay-image-slide="previous">
       ${phosphorChevronLeftIcon("wl-image-slider-icon")}
     </button>
-    <button class="wl-image-slider-button is-next" type="button" aria-label="${escapeAttribute(`Next image${label}`)}" data-overlay-image-slide="next">
+    <button class="wl-image-slider-button is-next" type="button" aria-label="${escapeAttribute(t("Next image{label}", { label }))}" data-overlay-image-slide="next">
       ${phosphorChevronRightIcon("wl-image-slider-icon")}
     </button>
     <span class="wl-image-slider-tray">
-      <button class="wl-image-delete-button" type="button" aria-label="${escapeAttribute(`Remove current image${label}`)}" title="Remove image" data-overlay-image-delete>
+      <button class="wl-image-delete-button" type="button" aria-label="${escapeAttribute(t("Remove current image{label}", { label }))}" title="${escapeAttribute(t("Remove image"))}" data-overlay-image-delete>
         ${phosphorImageOffIcon("wl-image-delete-icon")}
       </button>
     </span>

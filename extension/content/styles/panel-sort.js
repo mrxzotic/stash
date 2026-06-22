@@ -25,11 +25,10 @@ function panelSortStyles() {
       color: var(--foreground);
       -webkit-backdrop-filter: var(--wp-chrome-blur);
       backdrop-filter: var(--wp-chrome-blur);
-      box-shadow: var(--wp-chrome-shadow);
+      box-shadow: none;
       transition:
         background 220ms cubic-bezier(.22, 1, .36, 1),
         border-color 220ms cubic-bezier(.22, 1, .36, 1),
-        box-shadow 220ms cubic-bezier(.22, 1, .36, 1),
         transform 260ms cubic-bezier(.22, 1, .36, 1);
     }
 

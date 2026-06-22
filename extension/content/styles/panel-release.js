@@ -28,6 +28,7 @@ function panelReleaseStyles() {
     }
 
     .wp-archive-count {
+      min-width: 1ch;
       font-family: var(--figure-font);
       font-variant-numeric: tabular-nums;
       font-weight: 720;

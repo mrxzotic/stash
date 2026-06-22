@@ -178,13 +178,9 @@ function bindPanelEvents(root) {
         return;
       }
 
-      if (!target.closest?.("[data-currency-root]")) {
-        closePanelCurrencySelect(root);
-      }
-
-      if (!target.closest?.("[data-panel-sort-root]")) {
-        closePanelSortMenu(root);
-      }
+      if (!target.closest?.("[data-currency-root]")) closePanelCurrencySelect(root);
+      if (!target.closest?.("[data-panel-language-root]")) closePanelLanguageMenu(root);
+      if (!target.closest?.("[data-panel-sort-root]")) closePanelSortMenu(root);
 
       if (!target.closest?.("[data-filter-menu-trigger]") && !target.closest?.("[data-filter-menu]")) {
         closePanelFilterMenu(root);
@@ -219,6 +215,9 @@ function bindPanelOverflowEvents(root) {
 }
 
 function togglePanelOverflowMenu(root) {
+  if (panelState.settingsOpen) {
+    closePanelLanguageMenu(root);
+  }
   panelState.settingsOpen = !panelState.settingsOpen;
   syncPanelOverflowMenu(root);
 }
@@ -228,6 +227,7 @@ function closePanelOverflowMenu(root = document.getElementById("stash-panel-root
     return;
   }
 
+  closePanelLanguageMenu(root);
   panelState.settingsOpen = false;
   syncPanelOverflowMenu(root);
 }
@@ -244,6 +244,7 @@ function syncPanelOverflowMenu(root) {
   trigger.classList.toggle("is-active", panelState.settingsOpen);
   trigger.setAttribute("aria-expanded", String(panelState.settingsOpen));
   menu.hidden = !panelState.settingsOpen;
+  menu.setAttribute("style", panelOverflowMenuInlineStyle(panelState.settingsOpen));
 }
 
 function bindPanelCurrencyEvents(root) {
@@ -352,12 +353,10 @@ async function savePanelSettings(nextSettings, options = {}) {
     summaryCurrency: panelState.summaryCurrency,
     backgroundTheme: panelState.backgroundTheme,
     compactView: panelState.compactView,
+    language: panelState.language,
     ...nextSettings
   });
-  panelState.summaryCurrency = settings.summaryCurrency;
-  panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
-  panelState.backgroundTheme = settings.backgroundTheme;
-  panelState.compactView = settings.compactView;
+  Object.assign(panelState, { summaryCurrency: settings.summaryCurrency, summaryRate: fallbackSummaryRate(settings.summaryCurrency), backgroundTheme: settings.backgroundTheme, compactView: settings.compactView, language: settings.language });
   if (options.rerender === false) {
     const shouldAnimateSummary =
       options.animateSummary || previousCurrency !== settings.summaryCurrency;
@@ -366,17 +365,19 @@ async function savePanelSettings(nextSettings, options = {}) {
       if (options.syncViewMode) {
         syncPanelViewMode();
       }
-      renderPanelSummaryOnly({
-        animate: shouldAnimateSummary
-      });
-      if (shouldAnimateSummary) {
-        renderPanelPricesOnly({
-          animate: true
+      if (options.syncSummary !== false) {
+        renderPanelSummaryOnly({
+          animate: shouldAnimateSummary
+        });
+        if (shouldAnimateSummary) {
+          renderPanelPricesOnly({
+            animate: true
+          });
+        }
+        refreshPanelSummaryRate({
+          animateSummary: shouldAnimateSummary
         });
       }
-      refreshPanelSummaryRate({
-        animateSummary: shouldAnimateSummary
-      });
     };
     if (options.rebuildMotion) {
       syncPanelWithRebuildMotion(

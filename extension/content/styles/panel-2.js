@@ -14,10 +14,9 @@ function panelStylesChunk2() {
 
     .wp-summary-capsule {
       position: relative;
-      width: max-content;
-      height: 40px;
+      width: max-content; height: 40px;
       min-width: 0;
-      max-width: 208px;
+      max-width: min(100%, 320px);
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -28,14 +27,15 @@ function panelStylesChunk2() {
       background: rgba(255, 255, 255, 0.18);
       -webkit-backdrop-filter: var(--wp-chrome-blur);
       backdrop-filter: var(--wp-chrome-blur);
-      box-shadow: var(--wp-chrome-shadow);
+      box-shadow: none;
       overflow: visible;
       isolation: isolate;
     }
 
     .wp-count {
       position: relative;
-      min-width: 64px;
+      width: max-content; min-width: 64px;
+      max-width: none;
       height: 32px;
       display: inline-flex;
       align-items: center;
@@ -71,14 +71,15 @@ function panelStylesChunk2() {
       z-index: 1;
       min-width: 0;
       font-family: var(--ui-font);
-      overflow: hidden;
-      text-overflow: ellipsis;
+      overflow: visible;
+      text-overflow: clip;
       white-space: nowrap;
     }
 
     .wp-count-figure {
       position: relative;
       z-index: 1;
+      min-width: 1ch;
       font-family: var(--figure-font);
       font-variant-numeric: tabular-nums;
       letter-spacing: 0;

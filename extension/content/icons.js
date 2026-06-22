@@ -3,6 +3,7 @@
 var PHOSPHOR_LIGHT_ICON_FILES = {
   search: "magnifying-glass",
   settings: "gear-six",
+  dotsThreeVertical: "dots-three-vertical",
   list: "list-bullets",
   grid: "grid-four",
   moon: "moon",
@@ -83,6 +84,10 @@ function phosphorSearchIcon(className = "wp-phosphor") {
 
 function phosphorSettingsIcon(className = "wp-phosphor") {
   return phosphorIcon("settings", className);
+}
+
+function phosphorDotsThreeVerticalIcon(className = "wp-phosphor") {
+  return phosphorIcon("dotsThreeVertical", className);
 }
 
 function phosphorListIcon(className = "wp-phosphor") {

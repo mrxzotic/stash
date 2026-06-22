@@ -112,6 +112,7 @@ function syncPanelSettingsControls() {
   syncPanelBackgroundChoices(root);
   syncPanelCompactViewControl(root);
   syncPanelTopbarPreferenceControls(root);
+  syncPanelOverflowMenu(root);
   const backgroundLabel =
     backgroundThemeOptions().find((theme) => theme.id === panelState.backgroundTheme)?.label ||
     panelState.backgroundTheme;

@@ -227,18 +227,20 @@ function bestProductBrand(sources, productUrl) {
   const candidates = sources
     .map((source, index) => brandSourceCandidate(source, index, productUrl))
     .filter(Boolean);
+  const sourceKey = compactComparableText(sourceNameFromUrl(productUrl));
+  const sourceBrand = cleanBrandName(sourceNameFromUrl(productUrl));
+  if (sourceBrand && !isMarketplaceProductUrl(productUrl)) candidates.push({ brand: sourceBrand, key: sourceKey, score: 48 });
 
   if (!candidates.length) {
     return "";
   }
 
-  const sourceKey = compactComparableText(sourceNameFromUrl(productUrl));
   const hasNonSourceBrand = candidates.some((candidate) => candidate.key !== sourceKey);
 
   return candidates
     .map((candidate) => ({
       ...candidate,
-      score: candidate.score - (hasNonSourceBrand && candidate.key === sourceKey ? 34 : 0)
+      score: candidate.score - (isMarketplaceProductUrl(productUrl) && hasNonSourceBrand && candidate.key === sourceKey ? 34 : 0)
     }))
     .sort((a, b) => b.score - a.score)[0].brand;
 }

@@ -156,9 +156,9 @@ function panelItemAccessibleName(item) {
 }
 
 function panelItemActionLabel(action, item) {
-  return `${action} ${panelItemAccessibleName(item)}`;
+  return t("{action} {item}", { action: t(action), item: panelItemAccessibleName(item) });
 }
 
 function panelProductImageAlt(item) {
-  return `${panelItemAccessibleName(item)} product image`;
+  return t("{item} product image", { item: panelItemAccessibleName(item) });
 }

@@ -15,7 +15,7 @@ function renderSavedOverlayFields(item) {
 function savedOverlayFields(item) {
   const brand = formatBrandName(item.brand || item.source || sourceNameFromUrl(item.url));
   const title = cleanProductTitle(item.title, brand, item.url) || "Saved Product";
-  const priceHtml = renderSitePriceHtml(item, "wl") || `<span class="wl-missing">Not found</span>`;
+  const priceHtml = renderSitePriceHtml(item, "wl") || `<span class="wl-missing">${escapeHtml(t("Not found"))}</span>`;
   const brandQuality = savedFieldQuality("brand", item, brand);
   const titleQuality = savedFieldQuality("title", item, title);
   const priceQuality = savedFieldQuality("price", item, "");
@@ -24,21 +24,21 @@ function savedOverlayFields(item) {
     {
       key: "brand",
       field: "brand",
-      label: "Brand",
+      label: t("Brand"),
       html: escapeHtml(brand),
       ...brandQuality
     },
     {
       key: "name",
       field: "title",
-      label: "Name",
+      label: t("Name"),
       html: escapeHtml(title),
       ...titleQuality
     },
     {
       key: "price",
       field: "price",
-      label: "Price",
+      label: t("Price"),
       html: priceHtml,
       ...priceQuality
     }
