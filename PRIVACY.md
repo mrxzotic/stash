@@ -1,6 +1,6 @@
 # Tuckio Privacy Policy
 
-Last updated: June 22, 2026
+Last updated: June 23, 2026
 
 Tuckio is a local shopping and product saver. It saves products from pages the user explicitly opens or right-clicks and keeps the product library in local browser storage.
 
@@ -8,9 +8,7 @@ Tuckio is a local shopping and product saver. It saves products from pages the u
 
 Tuckio can save product URLs, source domains, product names, brands, prices, image URLs, categories, archive state, settings, cached currency rates, and JSON backups imported by the user.
 
-If a user joins the website waitlist, Tuckio stores the submitted email address only for launch access and product availability updates.
-
-Tuckio does not collect accounts, passwords, payment details, contacts, precise location, health data, or browsing history unrelated to a user-triggered save, open, import, export, or waitlist flow.
+Tuckio does not collect accounts, passwords, payment details, emails, contacts, precise location, health data, or browsing history unrelated to a user-triggered save, open, import, or export flow.
 
 ## Storage
 
@@ -36,8 +34,6 @@ Tuckio does not call remote favicon proxies or perform passive third-party asset
 Tuckio does not sell user data, transfer user data for advertising, or allow humans to read saved user data.
 
 The only data sent to third parties is the minimal request data required by the user-facing network behavior above. For example, an exchange-rate request includes the selected currency code, and a product enrichment request goes to the same shop origin for the product the user chose to save.
-
-Waitlist emails are used only to contact users about Tuckio availability and are not sold, shared for advertising, or combined with saved extension data.
 
 ## User Control
 

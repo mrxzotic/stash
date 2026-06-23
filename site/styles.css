@@ -25,18 +25,6 @@ a {
   text-decoration: none;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 .teaser {
   min-height: 100svh;
   display: grid;
@@ -75,13 +63,11 @@ a {
   line-height: 1;
 }
 
-.nav a,
-.quiet-link {
+.nav a {
   transition: color 160ms ease, transform 160ms ease;
 }
 
-.nav a:hover,
-.quiet-link:hover {
+.nav a:hover {
   color: var(--ink);
 }
 
@@ -158,46 +144,15 @@ a {
   line-height: 1.36;
 }
 
-.waitlist-form {
-  width: min(100%, 480px);
-  margin: 24px auto 0;
-}
-
-.waitlist-control {
-  display: flex;
+.store-link {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 56px;
-  padding: 8px;
-  border: 1px solid rgba(17, 17, 22, 0.1);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 24px 64px rgba(25, 25, 32, 0.08);
-  backdrop-filter: blur(16px);
-}
-
-.waitlist-control input {
-  min-width: 0;
-  flex: 1;
-  height: 40px;
-  border: 0;
-  outline: 0;
-  padding: 0 8px 0 16px;
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 15px;
-}
-
-.waitlist-control input::placeholder {
-  color: #8a8a91;
-}
-
-.waitlist-control button {
+  min-width: 144px;
   height: 40px;
   border: 0;
   border-radius: 999px;
+  margin: 24px auto 0;
   background: var(--ink);
   color: #fff;
   cursor: pointer;
@@ -207,45 +162,10 @@ a {
   transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
-.waitlist-control button:hover {
+.store-link:hover {
   transform: translateY(-1px);
   background: #2a2a30;
   box-shadow: 0 12px 28px rgba(13, 13, 18, 0.16);
-}
-
-.waitlist-control button:disabled {
-  cursor: default;
-  opacity: 0.54;
-  transform: none;
-  box-shadow: none;
-}
-
-.waitlist-status {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 650;
-  line-height: 16px;
-}
-
-.waitlist-status:empty {
-  display: none;
-}
-
-.waitlist-status.is-success {
-  color: #12805c;
-}
-
-.waitlist-status.is-error {
-  color: #b42318;
-}
-
-.quiet-link {
-  display: inline-flex;
-  margin-top: 8px;
-  color: #4f4f56;
-  font-size: 14px;
-  font-weight: 700;
 }
 
 .product-stage {
@@ -415,18 +335,6 @@ code {
 
   .hero-logo {
     width: min(66vw, 232px);
-  }
-
-  .waitlist-control {
-    border-radius: 28px;
-    align-items: stretch;
-    flex-direction: column;
-    padding: 8px;
-  }
-
-  .waitlist-control input,
-  .waitlist-control button {
-    width: 100%;
   }
 
   .detail {
