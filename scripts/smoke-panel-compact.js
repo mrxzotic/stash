@@ -26,6 +26,7 @@ assert.doesNotMatch(compactSource, /#\$\{index \+ 1\}/, "Compact row index shoul
 assert.match(compactSource, /syncPanelItemsState\(root\)/, "Compact toggle should use the shared item sync path so archive rows switch modes cleanly");
 assert.match(reorderSource, /renderPanelCompactItem\(item, index\)/, "In-place compact row sync should render new archive rows with the correct row index");
 assert.match(reorderSource, /syncPanelCompactItemNodeIndex/, "In-place compact row sync should refresh reused row numbers");
+assert.match(reorderSource, /parent\.insertBefore\(node, sibling \|\| null\)/, "Compact row sync should insert newly rendered rows instead of only assigning CSS order");
 assert.match(compactSource, /wp-compact-actions/, "Compact row actions should be grouped");
 assert.match(compactSource, /startPanelViewModeSwitch\(items\)/, "Compact toggle should animate only the content area in place");
 assert.match(

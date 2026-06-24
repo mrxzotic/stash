@@ -61,6 +61,29 @@ async function main() {
     const metrics = await page.evaluate(async () => {
       const root = document.getElementById("tuckio-panel-root").shadowRoot;
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      const clickAtShadowCenter = (selector) => {
+        const node = root.querySelector(selector);
+        if (!node) {
+          return { hit: "", clicked: false };
+        }
+        const rect = node.getBoundingClientRect();
+        const x = rect.left + (rect.width / 2);
+        const y = rect.top + (rect.height / 2);
+        const hitNode = root.elementFromPoint(x, y);
+        const target = hitNode?.closest?.(selector);
+        hitNode?.dispatchEvent(new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          clientX: x,
+          clientY: y,
+          detail: 1
+        }));
+        return {
+          hit: hitNode?.className || hitNode?.tagName || "",
+          clicked: Boolean(target)
+        };
+      };
       const rectCenterX = (rect) => rect.left + (rect.width / 2);
       const groupedRect = (nodes) => {
         const rects = Array.from(nodes, (node) => node.getBoundingClientRect()).filter((rect) => rect.width || rect.height);
@@ -458,7 +481,7 @@ async function main() {
         dropTrayStyles.getPropertyValue("background-image");
       const dropTarget = root.querySelector('[data-decision-drop-action="bought"]');
       dropTarget.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
-      await sleep(260);
+      await sleep(360);
       const dropTrayAfterDecisionStyles = getComputedStyle(root.querySelector("[data-decision-drop-tray]"));
       const decisionModeAfterDrop = root.querySelector(".wp-shell").classList.contains("is-decision-mode");
       const draggingModeAfterDrop = root.querySelector(".wp-shell").classList.contains("is-decision-dragging");
@@ -513,9 +536,25 @@ async function main() {
       const archivedCompactTitleWhiteSpace = archivedCompactTitleStyles?.whiteSpace || "";
       const archivedCompactTitleTextOverflow = archivedCompactTitleStyles?.textOverflow || "";
       const archivedCompactPriceCenterDeltaRounded = Math.round(archivedCompactPriceCenterDelta);
+      const listArchiveOffClick = clickAtShadowCenter("[data-archive-view-toggle]");
+      await sleep(260);
+      const listArchiveOffItems = root.querySelector(".wp-items");
+      const listArchiveOffRows = Array.from(root.querySelectorAll("[data-panel-item-id]"));
+      const listArchiveOffCompact = listArchiveOffItems.classList.contains("is-compact");
+      const listArchiveOffArchiveView = listArchiveOffItems.classList.contains("is-archive-view");
+      const listArchiveOffActiveRows = listArchiveOffRows.length > 0 && listArchiveOffRows.every((node) => !node.classList.contains("is-archived"));
+      const listArchiveOffChipActive = root.querySelector("[data-archive-view-toggle]")?.classList.contains("is-active") || false;
+      const listArchiveOnClick = clickAtShadowCenter("[data-archive-view-toggle]");
+      await sleep(260);
+      const listArchiveOnItems = root.querySelector(".wp-items");
+      const listArchiveOnRows = Array.from(root.querySelectorAll("[data-panel-item-id]"));
+      const listArchiveOnCompact = listArchiveOnItems.classList.contains("is-compact");
+      const listArchiveOnArchiveView = listArchiveOnItems.classList.contains("is-archive-view");
+      const listArchiveOnArchivedRows = listArchiveOnRows.length > 0 && listArchiveOnRows.every((node) => node.classList.contains("is-archived"));
+      const listArchiveOnChipActive = root.querySelector("[data-archive-view-toggle]")?.classList.contains("is-active") || false;
       root.querySelector("[data-panel-compact-toggle]").click();
       await sleep(520);
-      archiveToggle.click();
+      root.querySelector("[data-archive-view-toggle]")?.click();
       await sleep(260);
       const clickDecisionTargetId = "active-56";
       root.querySelector(`[data-decision-menu-id="${clickDecisionTargetId}"]`).click();
@@ -717,6 +756,18 @@ async function main() {
         archivedCompactTitleTextOverflow,
         archivedCompactPriceCenterDelta: archivedCompactPriceCenterDeltaRounded,
         archivedCompactActionsBelowTitle,
+        listArchiveOffHitTarget: listArchiveOffClick.hit,
+        listArchiveOffClickHitArchive: listArchiveOffClick.clicked,
+        listArchiveOffCompact,
+        listArchiveOffArchiveView,
+        listArchiveOffActiveRows,
+        listArchiveOffChipActive,
+        listArchiveOnHitTarget: listArchiveOnClick.hit,
+        listArchiveOnClickHitArchive: listArchiveOnClick.clicked,
+        listArchiveOnCompact,
+        listArchiveOnArchiveView,
+        listArchiveOnArchivedRows,
+        listArchiveOnChipActive,
         archiveToggleClearExists: Boolean(archiveToggle?.querySelector(".wp-chip-clear")),
         decisionStatusText: decisionStatus?.textContent.trim() || "",
         decisionStatusClass: decisionStatus?.className || "",
@@ -917,6 +968,16 @@ async function main() {
     assert.ok(metrics.archivedCompactPriceCenterDelta <= 8, `Archive compact price should be vertically centered: ${metrics.archivedCompactPriceCenterDelta}px`);
     assert.equal(metrics.archivedCompactActionsBelowTitle, true, "Archive compact actions should sit below the title");
     assert.ok(metrics.archivedCompactRowHeight <= 124, `Archived list row should stay dense: ${metrics.archivedCompactRowHeight}px`);
+    assert.equal(metrics.listArchiveOffClickHitArchive, true, `List archive off click should hit the archive chip, hit ${metrics.listArchiveOffHitTarget}`);
+    assert.equal(metrics.listArchiveOffCompact, true, "Turning archive off from List view should keep List view enabled");
+    assert.equal(metrics.listArchiveOffArchiveView, false, "Turning archive off from List view should leave archive scope");
+    assert.equal(metrics.listArchiveOffActiveRows, true, "Turning archive off from List view should restore active rows");
+    assert.equal(metrics.listArchiveOffChipActive, false, "Turning archive off from List view should clear the archive chip active state");
+    assert.equal(metrics.listArchiveOnClickHitArchive, true, `List archive on click should hit the archive chip, hit ${metrics.listArchiveOnHitTarget}`);
+    assert.equal(metrics.listArchiveOnCompact, true, "Turning archive on from List view should keep List view enabled");
+    assert.equal(metrics.listArchiveOnArchiveView, true, "Turning archive on from List view should enter archive scope");
+    assert.equal(metrics.listArchiveOnArchivedRows, true, "Turning archive on from List view should show archived rows");
+    assert.equal(metrics.listArchiveOnChipActive, true, "Turning archive on from List view should activate the archive chip");
     assert.equal(metrics.archiveToggleClearExists, true, "Active archive chip should expose an inline close affordance");
     assert.equal(metrics.decisionStatusText, "Bought", "Archived card should display the persisted Bought decision");
     assert.match(metrics.decisionStatusClass, /is-bought/, "Bought decision badge should use bought styling");

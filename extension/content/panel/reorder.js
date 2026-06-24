@@ -290,6 +290,10 @@ function syncPanelNodeOrder(parent, nodes) {
   const ordered = new Set(nodes);
   nodes.forEach((node, index) => {
     node.style.order = String(index);
+    const sibling = parent.children[index];
+    if (node.parentElement !== parent || sibling !== node) {
+      parent.insertBefore(node, sibling || null);
+    }
   });
   Array.from(parent.children).forEach((node) => {
     if (!ordered.has(node) && (node.dataset?.panelItemId || node.dataset?.brandFilterKey)) {
