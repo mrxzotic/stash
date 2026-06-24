@@ -12,6 +12,7 @@ const renderSource = read("extension/content/panel/render.js");
 const filtersSource = read("extension/content/panel/filters.js");
 const searchSource = read("extension/content/panel/search.js");
 const compactViewSource = read("extension/content/panel/compact-view.js");
+const archiveSource = read("extension/content/panel/archive.js");
 const filterControlsSource = read("extension/content/panel/filter-controls.js");
 const sortSource = read("extension/content/panel/sort.js");
 const reorderSource = read("extension/content/panel/reorder.js");
@@ -19,11 +20,15 @@ const eventsSource = read("extension/content/panel/events.js");
 const panelMotionSource = read("extension/content/panel/motion.js");
 const panelStylesSource = read("extension/content/styles/panel.js");
 const panelContentStylesSource = read("extension/content/styles/panel-content.js");
+const panelChunk5Styles = read("extension/content/styles/panel-5.js");
 const panelCurrencyStyles = read("extension/content/styles/panel-currency.js");
 const panelRebuildMotionStyles = read("extension/content/styles/panel-rebuild-motion.js");
 const panelMotionStyles = read("extension/content/styles/panel-save-motion.js");
 const panelInteractionMotionStyles = read("extension/content/styles/panel-interaction-motion.js");
 const motionDoc = read("motion.md");
+const syncPanelViewStateBody = panelMotionSource.match(/function syncPanelViewState\(root, options = \{\}\) \{[\s\S]*?\n\}/)?.[0] || "";
+const animatePanelItemLayoutBody = panelMotionSource.match(/function animatePanelItemLayout\(root, previousRects\) \{[\s\S]*?\n\}/)?.[0] || "";
+const reorderPanelItemsOnlyBody = reorderSource.match(/function reorderPanelItemsOnly\(root\) \{[\s\S]*?\n\}/)?.[0] || "";
 
 const contentVersion = constantsSource.match(/CONTENT_VERSION\s*=\s*"([^"]+)"/)?.[1];
 assert.ok(contentVersion, "Content version should be declared");
@@ -32,7 +37,7 @@ assert.ok(
   "Background should inject the active panel save motion version"
 );
 assert.match(backgroundSource, /"content\/panel\/empty\.js",\s*"content\/panel\/motion\.js",\s*"content\/panel\/filters\.js",\s*"content\/panel\/render\.js",\s*"content\/panel\/reorder\.js"/, "Panel motion, filter, and reorder helpers should load before item-only flows");
-assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content\/styles\/panel-edit\.js",\s*"content\/styles\/panel-rebuild-motion\.js",\s*"content\/styles\/panel-save-motion\.js",\s*"content\/styles\/panel-interaction-motion\.js",\s*"content\/styles\/panel\.js"/, "Panel motion styles should load before panel style composition");
+assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content\/styles\/panel-decision-ui\.js",\s*"content\/styles\/panel-decision-motion\.js",\s*"content\/styles\/panel-edit\.js",\s*"content\/styles\/panel-rebuild-motion\.js",\s*"content\/styles\/panel-save-motion\.js",\s*"content\/styles\/panel-interaction-motion\.js",\s*"content\/styles\/panel\.js"/, "Panel motion styles should load before panel style composition");
 
 assert.match(constantsSource, /displacedItemId: ""/, "Panel state should track the card displaced by an open-panel save");
 assert.match(constantsSource, /rebuildMotion: ""/, "Panel state should track transient rebuild motion");
@@ -71,6 +76,9 @@ assert.doesNotMatch(searchSource, /syncPanelWithRebuildMotion\(root, "search"/, 
 assert.match(compactViewSource, /data-panel-item-id="\$\{escapeAttribute\(item\.id\)\}"/, "Compact rows should expose stable layout ids");
 assert.match(compactViewSource, /data-panel-motion-id="\$\{escapeAttribute\(item\.id\)\}"/, "Compact rows should expose stable motion ids");
 assert.match(compactViewSource, /data-panel-motion-id="brand:\$\{escapeAttribute\(brand\.key\)\}"/, "Brand cloud items should expose stable motion ids");
+assert.match(compactViewSource, /data-brand-cloud-toggle[\s\S]*?syncPanelViewStateWithMotion\(\)/, "Opening or closing Brands should sync the view in place without replaying the panel");
+assert.match(archiveSource, /function togglePanelArchivedView\(\)[\s\S]*?syncPanelViewStateWithMotion\(\)/, "Opening or closing Archive should sync the view in place without replaying the panel");
+assert.match(archiveSource, /function decidePanelItem\(id, state\)[\s\S]*?syncPanelViewStateWithMotion\(\{ animateSummary: true \}\)/, "Decision-to-archive should preserve summary animation without view replay");
 assert.match(compactViewSource, /panelSortedBrandCloudItems/, "Brand cloud should have its own sorted list ordering");
 assert.match(filterControlsSource, /const wasVisible = filters\.classList\.contains\("is-controls-visible"\);[\s\S]*?if \(wasVisible === visible\)/, "Hover filter controls should not resync unchanged visibility");
 assert.doesNotMatch(filterControlsSource, /syncPanelSortControlLayout\(root\)/, "Hover filter controls should not use the sort layout helper");
@@ -93,22 +101,33 @@ assert.match(reorderSource, /node\.style\.order = String\(index\)/, "Compact and
 assert.match(reorderSource, /column\.insertBefore\(node, nextSibling\)/, "Card sort should move existing nodes between columns without recreating cards");
 assert.match(reorderSource, /classList\.add\("is-reordering"\)/, "Card sort should suppress entrance animation while moving existing nodes");
 assert.match(reorderSource, /syncPanelNodeOrder\(compactList, nodes\)/, "Compact sort should update visual order on existing row nodes");
-assert.doesNotMatch(reorderSource, /innerHTML\s*=/, "Sort reorder should not replace card HTML");
-assert.doesNotMatch(reorderSource, /replaceChildren/, "Sort reorder should not bulk-replace card nodes");
-assert.doesNotMatch(reorderSource, /appendChild/, "Sort reorder should not append recreated card nodes");
+assert.doesNotMatch(reorderPanelItemsOnlyBody, /innerHTML\s*=/, "Sort reorder should not replace card HTML");
+assert.doesNotMatch(reorderPanelItemsOnlyBody, /replaceChildren/, "Sort reorder should not bulk-replace card nodes");
+assert.doesNotMatch(reorderPanelItemsOnlyBody, /appendChild/, "Sort reorder should not append recreated card nodes");
 assert.match(compactViewSource, /syncViewMode: true,[\s\S]*?syncSummary: false/, "Card/list toggle should update view state without refreshing unrelated chrome");
 assert.match(compactViewSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\S]*?syncSummary: false/, "Theme toggle should update theme state without refreshing unrelated chrome");
-assert.doesNotMatch(compactViewSource, /rebuildMotion: "view"|rebuildMotion: "theme"/, "Display preference row clicks should not trigger app rebuild motion");
+assert.match(compactViewSource, /\{ compactView: !panelState\.compactView \},\s*\{ rerender: false, syncViewMode: true, syncSummary: false \}/, "List view toggle should sync in place without rebuild motion");
+assert.doesNotMatch(compactViewSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\S]*?rebuildMotion:/, "Theme toggle should not enter rebuild motion");
 assert.match(eventsSource, /syncPanelWithRebuildMotion\([\s\S]*?options\.rebuildMotion[\s\S]*?syncSettingsUi/, "Settings sync should wrap in-place updates in rebuild motion");
 assert.match(panelMotionSource, /wp-new-card-skeleton[\s\S]*wp-new-card-skeleton-media[\s\S]*wp-new-card-skeleton-copy/, "New card skeleton should include media and copy zones");
 assert.match(panelMotionSource, /function renderTuckioPanelWithMotion/, "Panel motion helper should expose render-with-motion");
 assert.match(panelMotionSource, /function renderPanelTopbarOnly/, "Panel motion helper should support topbar-only updates");
-assert.match(panelMotionSource, /return \["view", "theme"\]\.includes\(kind\) \? kind : "";/, "Search should be outside rebuild motion kinds");
+assert.match(panelMotionSource, /return kind === "view" \? kind : "";/, "Only explicit view rebuilds should use rebuild motion");
 assert.match(panelMotionSource, /function syncPanelWithRebuildMotion/, "Panel motion helper should expose in-place rebuild motion");
+assert.match(panelMotionSource, /function syncPanelViewStateWithMotion/, "Panel helper should expose in-place view-state sync");
+assert.doesNotMatch(panelMotionSource, /function syncPanelViewStateWithMotion[\s\S]*?syncPanelWithRebuildMotion\(root, "view"/, "State swaps should not add view rebuild motion");
+assert.doesNotMatch(syncPanelViewStateBody, /capturePanelItemLayout|animatePanelItemLayout/, "View-state swaps should not run FLIP layout motion or a final settle pass");
+assert.match(syncPanelViewStateBody, /syncPanelItemsState\(root\)/, "View-state swaps should sync the existing items container");
+assert.match(syncPanelViewStateBody, /syncPanelDecisionMode\(root\)/, "View-state swaps should close stale decision chrome after decisions");
+assert.doesNotMatch(syncPanelViewStateBody, /renderTuckioPanel|root\.innerHTML/, "View-state swaps should not rebuild the shell");
+assert.match(reorderSource, /function syncPanelItemsContent/, "State swaps should use item-level DOM reconciliation");
+assert.match(reorderSource, /node\?\.dataset\.panelRenderSignature === signature/, "Existing cards should only be reused when the render signature still matches");
+assert.match(renderSource, /data-panel-render-signature="\$\{escapeAttribute\(panelItemRenderSignature\(item, "cards"\)\)\}"/, "Initial card render should carry a render signature for the first in-place decision sync");
+assert.match(compactViewSource, /data-panel-render-signature="\$\{escapeAttribute\(panelItemRenderSignature\(item, "compact"\)\)\}"/, "Initial compact render should carry a render signature for the first in-place decision sync");
 assert.match(panelMotionSource, /function capturePanelItemLayout/, "Panel motion helper should capture card layout positions");
 assert.match(panelMotionSource, /function animatePanelItemLayout/, "Panel motion helper should animate card layout movement");
 assert.match(panelMotionSource, /\[data-panel-motion-id\]/, "Layout motion should work on cards, compact rows, and brand cloud nodes");
-assert.doesNotMatch(panelMotionSource, /is-brand-cloud[\s\S]*?return;/, "Brand cloud should not skip layout motion");
+assert.doesNotMatch(animatePanelItemLayoutBody, /is-brand-cloud[\s\S]*?return;/, "Brand cloud should not skip layout motion when reorder explicitly uses it");
 assert.match(panelMotionSource, /is-new[\s\S]*?is-shifted-right/, "Layout motion should avoid conflicting with new-card and displaced-card animations");
 assert.match(panelMotionSource, /addEventListener\("transitionend", finish\)/, "Layout motion cleanup should wait for transform transitionend");
 assert.doesNotMatch(panelMotionSource, /finishPanelMovedItem\(element\),\s*\d+|PANEL_LAYOUT_SETTLE_MS|PANEL_LAYOUT_COOLING_MS|__tuckioLayoutMotionTimer|__tuckioLayoutCoolingTimer/, "Layout motion should not schedule fallback or cooling cleanup");
@@ -124,21 +143,20 @@ assert.match(panelStylesSource, /panelInteractionMotionStyles\(\)/, "Panel style
 assert.match(panelContentStylesSource, /\.wp-items\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[\s\S]*?column-gap: 16px;/, "Card mode should keep two visual columns");
 assert.match(panelContentStylesSource, /\.wp-item-column\s*\{[\s\S]*?display: grid;[\s\S]*?gap: 16px;/, "Card mode columns should stack variable-height cards tightly");
 assert.match(panelContentStylesSource, /\.wp-item-column \.wp-item:nth-child\(2\)[\s\S]*?animation-delay: 34ms;/, "Card entrance should use a restrained stagger");
-assert.match(panelContentStylesSource, /\.wp-brand-cloud\.is-sort-list[\s\S]*?flex-direction: column;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;/, "Sorted brand mode should stay centered as a list");
-assert.match(panelContentStylesSource, /\.wp-items\.is-brand-cloud\s*\{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;[\s\S]*?justify-content: safe center;[\s\S]*?padding: var\(--wp-items-padding-top, 136px\) 24px 48px;/, "Brand cloud view should be centered inside the area that starts under the filters");
+assert.match(panelContentStylesSource, /\.wp-brand-cloud\.is-sort-list[\s\S]*?flex-direction: column;[\s\S]*?align-items: center;/, "Sorted brand mode should switch the cloud to a vertical list");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list\s*\{[\s\S]*?max-height: min\(540px, calc\(100svh - var\(--wp-items-padding-top, 112px\) - 96px\)\);[\s\S]*?overflow-y: auto;[\s\S]*?scroll-snap-type: y proximity;[\s\S]*?mask-image: linear-gradient/, "Sorted brand list should become an internal wheel-scroll surface");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list::-webkit-scrollbar\s*\{[\s\S]*?display: none;/, "Brand wheel should hide native WebKit scrollbars");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list \.wp-brand-cloud-item\s*\{[\s\S]*?scroll-snap-align: center;/, "Brand wheel items should snap toward the center");
+assert.match(panelContentStylesSource, /\.wp-items\.is-brand-cloud\s*\{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;[\s\S]*?justify-content: safe center;[\s\S]*?padding: var\(--wp-items-padding-top, 112px\) 24px 48px;/, "Brand cloud view should be centered inside the area that starts under the filters");
 assert.match(panelContentStylesSource, /\.wp-brand-cloud\s*\{[\s\S]*?align-content: flex-start;[\s\S]*?padding: 8px;/, "Default brand cloud should keep its centered cloud spacing");
 
 for (const animation of [
-  "wpPanelThemeShift",
-  "wpPanelThemeWash",
-  "wpPanelChromeRebuild",
   "wpPanelViewRebuild",
-  "wpPanelItemRebuild",
-  "wpPanelThemeContent"
+  "wpPanelItemRebuild"
 ]) {
   assert.match(panelRebuildMotionStyles, new RegExp(`@keyframes ${animation}`), `Panel rebuild motion should define ${animation}`);
 }
-assert.doesNotMatch(panelRebuildMotionStyles, /is-search-rebuild|wpPanelSearch|wpPanelListBreathe/, "Search should not carry rebuild motion styles");
+assert.doesNotMatch(panelRebuildMotionStyles, /is-search-rebuild|is-theme-rebuild|wpPanelSearch|wpPanelListBreathe|wpPanelThemeContent/, "Search and theme should not carry rebuild motion styles");
 
 for (const animation of [
   "wpNewCardShell",
@@ -155,6 +173,9 @@ for (const animation of [
 assert.match(panelMotionStyles, /\.wp-shell\.is-static \.wp-item\.is-new/, "New-card reveal should override static panel rerenders");
 assert.match(panelMotionStyles, /\.wp-shell\.is-static \.wp-item\.is-shifted-right/, "Displaced-card motion should override static panel rerenders");
 assert.match(panelRebuildMotionStyles, /\.wp-shell\.is-static\.is-view-rebuild \.wp-item/, "View rebuild should override static panel item animation suppression");
+assert.doesNotMatch(panelRebuildMotionStyles, /\.wp-shell\.is-view-rebuild::before|\.wp-shell\.is-view-rebuild::after|wpPanelTopSurfaceReveal|wpPanelBottomSurfaceReveal/, "View rebuild should not animate shell surfaces or stable chrome");
+assert.match(panelRebuildMotionStyles, /\.wp-shell\.is-view-rebuild \.wp-brand-cloud-item[\s\S]*?wpPanelItemRebuild/, "Brand cloud items should enter through view rebuild motion");
+assert.match(panelRebuildMotionStyles, /@keyframes wpPanelCloudReveal/, "Brand cloud should have a dedicated soft reveal");
 assert.match(panelRebuildMotionStyles, /\.wp-item\.is-layout-moving[\s\S]*?\.wp-item\.is-layout-settling[\s\S]*?\.wp-item\.is-layout-positioned[\s\S]*?\.wp-item\.is-layout-hover-muted/, "Panel rebuild styles should define card layout movement states");
 assert.match(panelRebuildMotionStyles, /\.wp-brand-cloud-item\.is-layout-moving[\s\S]*?\.wp-brand-cloud-item\.is-layout-settling/, "Panel rebuild styles should animate brand-cloud layout movement states");
 assert.match(panelRebuildMotionStyles, /\.wp-items\.is-reordering \.wp-item,[\s\S]*?\.wp-items\.is-reordering \.wp-brand-cloud-item[\s\S]*?animation: none !important;/, "Sort movement should not restart entrance animations");

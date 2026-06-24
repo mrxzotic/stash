@@ -114,6 +114,7 @@ function bindPanelEditEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
+    panelState.decisionItemId = "";
     panelState.settingsOpen = false;
     renderTuckioPanel();
   });

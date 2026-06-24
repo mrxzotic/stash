@@ -4,11 +4,11 @@ function bindPanelFilterEvents(root) {
       return;
     }
 
-    if (handlePanelFilterMenuTrigger(event, root)) {
+    if (handlePanelFilterClear(event)) {
       return;
     }
 
-    if (handlePanelFilterReset(event)) {
+    if (handlePanelFilterMenuTrigger(event, root)) {
       return;
     }
 
@@ -36,31 +36,27 @@ function handlePanelFilterMenuTrigger(event, root) {
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
+  panelState.decisionItemId = "";
   syncPanelFilterMenu(root);
   return true;
 }
 
-function handlePanelFilterReset(event) {
-  const button = event.target.closest("[data-panel-filter-reset]");
-  if (!button) {
+function handlePanelFilterClear(event) {
+  const button = event.target.closest("[data-filter-clear]");
+  if (!button || panelState.activeCategory === "all") {
     return false;
   }
 
   event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation?.();
   panelState.sortMenuOpen = false;
   panelState.filterMenuOpen = false;
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
-  panelState.brandCloudOpen = false;
-  panelState.brandCloudSortList = false;
-  panelState.brandFilterKey = "";
-  panelState.brandFilterLabel = "";
-  panelState.searchOpen = false;
-  panelState.searchQuery = "";
-  closePanelArchivedView();
   panelState.activeCategory = "all";
-  renderTuckioPanel();
+  syncPanelViewStateWithMotion();
   return true;
 }
 
@@ -75,6 +71,7 @@ function handlePanelAddCategory(event) {
   panelState.filterMenuOpen = false;
   panelState.categoryComposerOpen = !panelState.categoryComposerOpen;
   panelState.settingsOpen = false;
+  panelState.shortlistOpen = false;
   closePanelArchivedView();
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
@@ -94,6 +91,7 @@ function handlePanelRemoveCategoryPrompt(event) {
   panelState.sortMenuOpen = false;
   panelState.filterMenuOpen = false;
   panelState.categoryComposerOpen = false;
+  panelState.shortlistOpen = false;
   closePanelArchivedView();
   panelState.deleteCategoryId = button.dataset.removeCategoryPrompt;
   panelState.deleteItemId = "";
@@ -114,10 +112,11 @@ function handlePanelCategorySelection(event) {
   panelState.filterMenuOpen = false;
   panelState.brandCloudOpen = false;
   panelState.brandCloudSortList = false;
+  panelState.shortlistOpen = false;
   panelState.categoryComposerOpen = false;
   closePanelArchivedView();
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
   panelState.activeCategory = button.dataset.category;
-  renderTuckioPanel();
+  syncPanelViewStateWithMotion();
 }

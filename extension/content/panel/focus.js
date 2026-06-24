@@ -117,7 +117,8 @@ function panelFocusSelector(element) {
 
   const attrs = [
     "data-edit-id",
-    "data-archive-id",
+    "data-decision-menu-id",
+    "data-shortlist-id",
     "data-restore-id",
     "data-remove-id",
     "data-remove-category-prompt",
@@ -127,9 +128,9 @@ function panelFocusSelector(element) {
     "data-panel-compact-toggle",
     "data-panel-theme-toggle",
     "data-archive-view-toggle",
+    "data-shortlist-toggle",
     "data-brand-cloud-toggle",
     "data-filter-menu-trigger",
-    "data-panel-filter-reset",
     "data-category"
   ];
   const attr = attrs.find((name) => element.hasAttribute(name));

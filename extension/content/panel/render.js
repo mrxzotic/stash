@@ -14,13 +14,14 @@ function renderTuckioPanel(options = {}) {
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
-    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}${rebuildMotionClass}" role="dialog" aria-label="${escapeAttribute(t("Tuckio"))}">
+    <section class="wp-shell wp-theme-${escapeAttribute(panelState.backgroundTheme)}${panelState.compactView ? " is-compact-view" : ""}${panelState.decisionItemId ? " is-decision-mode" : ""}${panelState.hasRenderedPanel ? " is-static" : ""}${rebuildMotionClass}" role="dialog" aria-label="${escapeAttribute(t("Tuckio"))}">
       ${renderPanelTopbarHtml(summaryItems)}
       ${renderFounderPromoDialog()}
 
       <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="${escapeAttribute(t("Tuckio categories"))}">
         ${renderCategoryFilters(filterCategories, panelArchivedCount(displayItems))}
       </nav>
+      ${renderPanelDecisionScrim()}
       ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
       ${panelState.deleteCategoryId ? renderDeleteCategoryDialog() : ""}
       ${panelState.deleteItemId ? renderDeleteItemDialog() : ""}
@@ -29,6 +30,7 @@ function renderTuckioPanel(options = {}) {
       <section class="wp-items${panelState.compactView ? " is-compact" : ""}${panelState.archivedOpen ? " is-archive-view" : ""}${panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen ? " is-brand-cloud" : ""}" aria-live="polite">
         ${renderPanelItemsHtml(visibleItems)}
       </section>
+      ${renderPanelDecisionDropTray()}
     </section>
   `;
 
@@ -70,8 +72,8 @@ function syncPanelItemsTopOffset(root, options = {}) {
     const shellTop = shell.getBoundingClientRect().top;
     const filterBottom = panelVisibleFiltersBottom(filters);
     const baseTop = panelState.compactView
-      ? 144
-      : 136;
+      ? 96
+      : 112;
     const measuredTop = filterBottom - shellTop + 16;
     const nextTop = `${roundPanelGridOffset(Math.max(baseTop, measuredTop))}px`;
     if (items.style.getPropertyValue("--wp-items-padding-top") !== nextTop) {
@@ -288,22 +290,19 @@ function renderPanelItem(item) {
   const isShiftedRight = item.id === panelState.displacedItemId;
 
   return `
-    <article class="wp-item${isNew ? " is-new" : ""}${isShiftedRight ? " is-shifted-right" : ""}${isArchived ? " is-archived" : ""}" data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}">
+    <article class="wp-item${isNew ? " is-new" : ""}${isShiftedRight ? " is-shifted-right" : ""}${isArchived ? " is-archived" : ""}" ${isArchived ? "" : `draggable="true" data-decision-draggable-id="${escapeAttribute(item.id)}"`} data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}" data-panel-render-signature="${escapeAttribute(panelItemRenderSignature(item, "cards"))}">
       ${isNew && !isArchived ? renderPanelNewItemSkeleton() : ""}
       <div class="wp-media" ${panelImageSliderAttributes(item)}>
         <a class="wp-media-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(t("Open {item}", { item: itemLabel }))}">
           ${renderPanelCardImageFrame(item, { slider: false })}
         </a>
         ${imageUrls.length > 1 ? renderPanelImageSliderControls(imageUrls, item) : ""}
-        ${isArchived
-          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
-             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>`
-          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
-             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${phosphorTrashIcon("wp-card-action-icon")}</button>`}
+        ${renderPanelCardActions(item)}
       </div>
       <div class="wp-item-copy">
         <div class="wp-brand-row">
           <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
+          ${renderPanelDecisionStatus(item)}
         </div>
         <div class="wp-title-row">
           <a class="wp-item-title" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a>

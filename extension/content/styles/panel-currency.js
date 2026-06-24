@@ -42,12 +42,12 @@ function panelCurrencyStyles() {
 
     .wp-summary-capsule .wp-total {
       width: auto;
-      min-width: 120px;
+      min-width: 128px;
       max-width: none;
       height: 32px;
       justify-content: center;
-      gap: 8px;
-      padding: 0 12px 0 16px;
+      gap: 0;
+      padding: 0 16px;
       border: 0;
       border-radius: 999px;
       background:
@@ -91,6 +91,8 @@ function panelCurrencyStyles() {
       max-width: none;
       overflow: visible;
       text-overflow: clip;
+      text-align: center;
+      transform-origin: center center;
     }
 
     .wp-total-value.is-counting {
@@ -119,14 +121,21 @@ function panelCurrencyStyles() {
       width: 16px;
       height: 16px;
       font-size: 16px;
-      opacity: 0.5;
+      opacity: 0;
       stroke: currentColor;
       stroke-width: 2.2;
       stroke-linecap: round;
       stroke-linejoin: round;
+      transform: translateX(-2px) scale(.94);
       transition:
         opacity 180ms ease,
         transform 220ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .wp-total:hover .wp-total-chevron,
+    .wp-total:focus-visible .wp-total-chevron {
+      opacity: 0.58;
+      transform: translateX(0) scale(1);
     }
 
     .wp-currency-select.is-open .wp-total-chevron {
@@ -137,8 +146,25 @@ function panelCurrencyStyles() {
     .wp-summary-capsule .wp-total-chevron {
       width: 14px;
       height: 14px;
+      flex: 0 0 14px;
+      max-width: 0;
+      margin-left: 0;
       font-size: 14px;
-      opacity: 0.56;
+      opacity: 0;
+      overflow: hidden;
+      transition:
+        opacity 180ms ease,
+        max-width 220ms cubic-bezier(.16, 1, .3, 1),
+        margin-left 220ms cubic-bezier(.16, 1, .3, 1),
+        transform 220ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .wp-summary-capsule .wp-total:hover .wp-total-chevron,
+    .wp-summary-capsule .wp-total:focus-visible .wp-total-chevron,
+    .wp-summary-capsule .wp-currency-select.is-open .wp-total-chevron {
+      max-width: 14px;
+      margin-left: 6px;
+      opacity: 0.62;
     }
 
     .wp-currency-menu {

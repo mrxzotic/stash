@@ -1,10 +1,10 @@
 function renderCategoryFilters(filterCategories, archivedCount = 0) {
-  const [allCategory, ...categoryOptions] = filterCategories;
+  const [, ...categoryOptions] = filterCategories;
 
   return `
     <div class="wp-filter-rail" data-filter-rail>
+      ${renderShortlistFilterChip()}
       ${renderBrandFilterChip()}
-      ${renderAllFilter(allCategory)}
       ${renderFilterMenuTrigger(categoryOptions)}
       ${renderArchivedFilter(archivedCount)}
     </div>
@@ -13,21 +13,29 @@ function renderCategoryFilters(filterCategories, archivedCount = 0) {
   `;
 }
 
-function renderBrandFilterChip() {
-  const brandCount = panelBrandFilterCount();
+function renderShortlistFilterChip() {
+  const count = panelShortlistCount();
+  if (!count) {
+    return "";
+  }
+
   return `
-    <button class="wp-brand-chip${panelState.brandCloudOpen || panelState.brandFilterKey ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(panelBrandChipAriaLabel(brandCount))}" aria-pressed="${panelState.brandCloudOpen}" data-brand-cloud-toggle>
-      ${phosphorTagIcon("wp-brand-chip-icon")}
-      <span class="wp-brand-chip-count">${brandCount}</span>
+    <button class="wp-filter wp-filter-shortlist${panelState.shortlistOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("Shortlisted items: {count}", { count }))}" aria-pressed="${panelState.shortlistOpen}" data-shortlist-toggle>
+      ${phosphorStarIcon("wp-shortlist-chip-icon")}
+      <span class="wp-shortlist-chip-count">${count}</span>
+      ${panelState.shortlistOpen ? renderPanelChipClearIcon() : ""}
     </button>
   `;
 }
 
-function renderAllFilter(category) {
-  const isActive = panelAllFilterIsActive();
+function renderBrandFilterChip() {
+  const brandCount = panelBrandFilterCount();
+  const isActive = panelState.brandCloudOpen || panelState.brandFilterKey;
   return `
-    <button class="wp-filter wp-filter-all${isActive ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("Show all saved items"))}" data-panel-filter-reset>
-      ${escapeHtml(t(category?.label || "All"))}
+    <button class="wp-brand-chip${isActive ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(panelBrandChipAriaLabel(brandCount))}" aria-pressed="${isActive}" data-brand-cloud-toggle>
+      ${phosphorTagIcon("wp-brand-chip-icon")}
+      <span class="wp-brand-chip-count">${brandCount}</span>
+      ${isActive ? renderPanelChipClearIcon() : ""}
     </button>
   `;
 }
@@ -35,13 +43,17 @@ function renderAllFilter(category) {
 function renderFilterMenuTrigger(categories) {
   const isOpen = panelState.filterMenuOpen;
   const hasActiveFilter = panelActiveFilterCount() > 0;
-  const label = panelFilterTriggerLabel(categories);
   return `
-    <button class="wp-filter wp-filter-trigger${isOpen || hasActiveFilter ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(panelFilterTriggerAriaLabel(categories))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-filter-menu-trigger>
-      <span class="wp-filter-trigger-label">${escapeHtml(label)}</span>
-      ${phosphorChevronDownIcon("wp-filter-chevron")}
+    <button class="wp-filter wp-filter-trigger${hasActiveFilter ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(panelFilterTriggerAriaLabel(categories))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-filter-menu-trigger>
+      ${phosphorListIcon("wp-filter-trigger-icon")}
+      <span class="wp-filter-trigger-label">${escapeHtml(panelFilterTriggerLabel(categories))}</span>
+      ${hasActiveFilter ? renderPanelChipClearIcon("data-filter-clear") : phosphorChevronDownIcon("wp-filter-chevron")}
     </button>
   `;
+}
+
+function renderPanelChipClearIcon(attribute = "") {
+  return `<span class="wp-chip-clear" ${attribute} aria-hidden="true">${phosphorXIcon("wp-chip-clear-icon")}</span>`;
 }
 
 function renderFilterMenu(categories) {
@@ -81,6 +93,7 @@ function renderArchivedFilter(archivedCount) {
     <button class="wp-filter wp-filter-archive${panelState.archivedOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("Archived items: {count}", { count: archivedCount }))}" aria-pressed="${panelState.archivedOpen}" data-archive-view-toggle>
       ${phosphorArchiveIcon("wp-archive-chip-icon")}
       <span class="wp-archive-count">${archivedCount}</span>
+      ${panelState.archivedOpen ? renderPanelChipClearIcon() : ""}
     </button>
   `;
 }
@@ -109,7 +122,7 @@ function syncPanelFilterMenu(root) {
 
   const isOpen = panelState.filterMenuOpen;
   menu.hidden = !isOpen;
-  trigger.classList.toggle("is-active", isOpen || panelActiveFilterCount() > 0);
+  trigger.classList.toggle("is-active", panelActiveFilterCount() > 0);
   trigger.setAttribute("aria-expanded", String(isOpen));
   trigger.setAttribute("aria-label", panelFilterTriggerAriaLabel(panelState.categories));
   const label = trigger.querySelector(".wp-filter-trigger-label");
@@ -144,8 +157,9 @@ function syncPanelFilterMenuPosition(root) {
   filters.style.setProperty("--wp-filter-menu-left", `${Math.max(0, Math.round(triggerRect.left - filtersRect.left))}px`);
 }
 
-function panelAllFilterIsActive() {
+function panelMainScopeIsActive() {
   return !panelState.archivedOpen &&
+    !panelState.shortlistOpen &&
     !panelState.brandCloudOpen &&
     !panelState.brandFilterKey &&
     panelState.activeCategory === "all" &&
@@ -154,8 +168,7 @@ function panelAllFilterIsActive() {
 }
 
 function panelActiveFilterCount() {
-  return (panelState.activeCategory !== "all" ? 1 : 0) +
-    (panelState.brandFilterKey ? 1 : 0);
+  return panelState.activeCategory !== "all" ? 1 : 0;
 }
 
 function panelFilterTriggerLabel(categories) {
@@ -180,7 +193,7 @@ function panelBrandFilterCount() {
 
 function panelBrandChipAriaLabel(brandCount) {
   const brandNoun = panelBrandNoun(brandCount);
-  return panelState.brandCloudOpen
+  return panelState.brandCloudOpen || panelState.brandFilterKey
     ? t("{count} {brandNoun}. Close brands", { count: brandCount, brandNoun })
     : t("{count} {brandNoun}. Show brands", { count: brandCount, brandNoun });
 }

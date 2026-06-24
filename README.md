@@ -4,6 +4,8 @@ Tuckio is a plain Manifest V3 Chrome/Arc extension for saving products from any 
 
 The v0.1 promise is intentionally narrow: save products cleanly from arbitrary shops, keep the library local, and make saved data easy to correct or back up. The public product domain is `tuckio.com`.
 
+Chrome Web Store listing: https://chromewebstore.google.com/detail/akehcgpjghmmenhicldnppjjelkipfpk
+
 ## What it does
 
 - Saves products from right-clicked product cards, images, links, and product pages.
@@ -16,7 +18,15 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 - Supports sale display with current price and compare-at price.
 - Converts totals with cached RUB fallback rates while preserving the original site currency on cards.
 
+## Install
+
+Install the published extension from the Chrome Web Store:
+
+https://chromewebstore.google.com/detail/akehcgpjghmmenhicldnppjjelkipfpk
+
 ## Install locally
+
+Use the local install flow for development and release checks:
 
 1. Open `chrome://extensions` in Chrome or Arc.
 2. Enable Developer mode.
@@ -24,6 +34,35 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 4. Select the `extension` folder from this repo.
 5. Click the Tuckio extension icon to open the in-page panel.
 6. Open a product page or product grid, right click an item/image/card, then choose **Save to Tuckio**.
+
+## Safari local wrapper
+
+The Safari wrapper lives in `safari/Tuckio` and references the canonical `extension` folder instead of copying it.
+
+Regenerate it with:
+
+```bash
+xcrun safari-web-extension-packager extension \
+  --project-location safari \
+  --app-name Tuckio \
+  --bundle-identifier com.tuckio.tuckio \
+  --swift \
+  --macos-only \
+  --no-open \
+  --no-prompt
+```
+
+Build it with:
+
+```bash
+xcodebuild -project safari/Tuckio/Tuckio.xcodeproj \
+  -scheme Tuckio \
+  -configuration Debug \
+  -destination 'platform=macOS' \
+  build
+```
+
+For local runtime testing in Safari, enable Safari Settings -> Advanced -> Show features for web developers, then Safari Settings -> Developer -> Allow unsigned extensions. A distributable Safari build needs an Apple code-signing identity configured in Xcode.
 
 ## Privacy
 
@@ -84,7 +123,7 @@ find scripts -maxdepth 1 -name 'smoke-*.js' -print | sort | xargs -n1 node
 
 ## Status
 
-Tuckio is approaching a v0.1 public release. It currently focuses on local saving, generic extraction, manual correction, JSON backup export/import, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or Chrome Web Store packaging automation yet.
+Tuckio v0.1 is published on the Chrome Web Store. It currently focuses on local saving, generic extraction, manual correction, JSON backup export/import, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or background shopping automation.
 
 ## License
 

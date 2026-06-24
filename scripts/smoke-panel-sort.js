@@ -18,6 +18,7 @@ const sandbox = {
     brandCloudOpen: false,
     brandCloudSortList: false,
     brandFilterKey: "",
+    shortlistOpen: false,
     filterMenuOpen: false
   },
   normalizeComparableText: (value) => String(value || "").toLowerCase().trim(),
@@ -48,6 +49,10 @@ const compactViewSource = fs.readFileSync(
   path.join(root, "extension/content/panel/compact-view.js"),
   "utf8"
 );
+const filterEventsSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/filter-events.js"),
+  "utf8"
+);
 
 vm.runInContext(
   `${filterControlsSource}\n${sortSource}`,
@@ -70,23 +75,107 @@ const filterMenuStylesSource = fs.readFileSync(
 
 assert.match(
   sortStylesSource,
-  /\.wp-sort-trigger\s*\{[\s\S]*?min-width: 74px;[\s\S]*?var\(--wp-chrome-bg\)/,
-  "Sort should be a stable separate chrome trigger"
+  /\.wp-sort-trigger\s*\{[\s\S]*?min-width: 42px;[\s\S]*?var\(--wp-chrome-bg\)/,
+  "Sort should be a compact stable chrome trigger"
+);
+assert.match(
+  sortSource,
+  /renderPanelSortTriggerIcon\(current\)[\s\S]*?phosphorArrow/,
+  "Sort trigger should use a Phosphor direction icon instead of relying on label weight"
+);
+assert.match(
+  sortSource,
+  /wp-sort-current/,
+  "Sort trigger should keep a hover-only label"
+);
+assert.match(
+  sortStylesSource,
+  /\.wp-sort-current\s*\{[\s\S]*?max-width: 0;[\s\S]*?margin-left: 0;[\s\S]*?margin-right: 0;[\s\S]*?opacity: 0;[\s\S]*?pointer-events: none;/,
+  "Sort label should start hidden inside the compact pill"
+);
+assert.match(
+  sortStylesSource,
+  /\.wp-sort-trigger:hover \.wp-sort-current,[\s\S]*?\.wp-sort-controls\.is-open \.wp-sort-current\s*\{[\s\S]*?max-width: 42px;[\s\S]*?margin-left: 6px;[\s\S]*?margin-right: 5px;[\s\S]*?opacity: 1;/,
+  "Sort label should expand inside the pill on hover, focus, and open"
+);
+assert.doesNotMatch(
+  sortStylesSource,
+  /\.wp-sort-current\s*\{[^}]*position: absolute;/,
+  "Sort label should not render as a detached tooltip"
 );
 assert.match(
   filtersSource,
-  /renderBrandFilterChip\(\)[\s\S]*?renderAllFilter\(allCategory\)[\s\S]*?renderFilterMenuTrigger\(categoryOptions\)[\s\S]*?renderArchivedFilter\(archivedCount\)/,
-  "Second chip row should render brand chip, All, Filter, then optional Archived"
+  /renderShortlistFilterChip\(\)[\s\S]*?renderBrandFilterChip\(\)[\s\S]*?renderFilterMenuTrigger\(categoryOptions\)[\s\S]*?renderArchivedFilter\(archivedCount\)/,
+  "Second chip row should render Shortlist, Brand, Filter, then optional Archived"
+);
+assert.doesNotMatch(filtersSource, /renderAllFilter|wp-filter-all/, "All should not render as a permanent filter-row chip");
+assert.match(
+  filtersSource,
+  /function renderShortlistFilterChip\(\)[\s\S]*?panelShortlistCount\(\)[\s\S]*?phosphorStarIcon\("wp-shortlist-chip-icon"\)[\s\S]*?wp-shortlist-chip-count/,
+  "Shortlist should render as a count chip in the filter rail"
+);
+assert.doesNotMatch(filtersSource, /wp-chip-label/, "Brand, shortlist, and archive chips should not render hidden text labels");
+assert.doesNotMatch(filtersSource, /wp-filter-reset|data-panel-filter-reset|renderScopeResetControl/, "Separate undo/reset chip should not render");
+assert.match(
+  filtersSource,
+  /phosphorListIcon\("wp-filter-trigger-icon"\)/,
+  "Filter trigger should use a compact Phosphor icon"
+);
+assert.match(
+  filtersSource,
+  /wp-filter-trigger-label/,
+  "Filter trigger should keep a hover-only label"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-trigger-label\s*\{[\s\S]*?max-width: 0;[\s\S]*?margin-left: 0;[\s\S]*?margin-right: 0;[\s\S]*?opacity: 0;[\s\S]*?pointer-events: none;/,
+  "Filter label should start hidden inside the compact pill"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-trigger:hover \.wp-filter-trigger-label,[\s\S]*?\.wp-filter-trigger\[aria-expanded="true"\] \.wp-filter-trigger-label\s*\{[\s\S]*?max-width: 86px;[\s\S]*?margin-left: 6px;[\s\S]*?margin-right: 5px;[\s\S]*?opacity: 1;/,
+  "Filter label should expand inside the pill on hover, focus, and open"
+);
+assert.doesNotMatch(
+  filterMenuStylesSource,
+  /\.wp-filter-trigger-label\s*\{[^}]*position: absolute;/,
+  "Filter label should not render as a detached tooltip"
 );
 assert.match(
   filtersSource,
   /phosphorTagIcon\("wp-brand-chip-icon"\)[\s\S]*?<span class="wp-brand-chip-count">\$\{brandCount\}<\/span>/,
-  "Brand chip should use a tag icon and numeric count"
+  "Brand chip should use a tag icon and numeric count without a text label"
 );
 assert.match(
   filtersSource,
-  /function panelFilterTriggerLabel\(categories\)[\s\S]*?return t\("Filter"\);[\s\S]*?return t\("Filter \(\{count\}\)", \{ count \}\);/,
-  "Active filter trigger should show only the number of applied filters"
+  /isActive \? renderPanelChipClearIcon\(\) : ""/,
+  "Active brand chip should expose an inline close affordance"
+);
+assert.match(
+  filtersSource,
+  /wp-filter-trigger\$\{hasActiveFilter \? " is-active" : ""\}/,
+  "Opening the filter menu should not paint the trigger active unless a filter is applied"
+);
+assert.doesNotMatch(filtersSource, /isOpen \|\| hasActiveFilter/, "Filter open state should not use the selected black surface");
+assert.match(
+  filterEventsSource,
+  /handlePanelFilterClear\(event\)[\s\S]*?handlePanelFilterMenuTrigger\(event, root\)/,
+  "Inline Filter clear should run before the parent trigger click handler"
+);
+assert.match(
+  filterEventsSource,
+  /handlePanelFilterClear\(event\)[\s\S]*?stopImmediatePropagation\?\.\(\)/,
+  "Inline Filter clear should fully cancel the parent trigger click"
+);
+assert.match(
+  filtersSource,
+  /hasActiveFilter \? renderPanelChipClearIcon\("data-filter-clear"\) : phosphorChevronDownIcon\("wp-filter-chevron"\)/,
+  "Active filter trigger should swap the chevron for an inline clear affordance"
+);
+assert.match(
+  filtersSource,
+  /function panelActiveFilterCount\(\)[\s\S]*?return panelState\.activeCategory !== "all" \? 1 : 0;/,
+  "Filter active count should track category state only; brand has its own chip"
 );
 assert.doesNotMatch(
   filtersSource,
@@ -114,9 +203,9 @@ assert.doesNotMatch(
   "Sort buttons should not use native title tooltips"
 );
 assert.doesNotMatch(
-  sortStylesSource,
-  /width\s+\d+ms|min-width\s+\d+ms/,
-  "Sort controls should not animate layout width"
+  sortStylesSource.match(/\.wp-sort-trigger\s*\{[^}]*\}/)?.[0] || "",
+  /(?:width|min-width|max-width)\s+\d+ms/,
+  "Sort trigger should not animate its own width"
 );
 assert.doesNotMatch(
   sortStylesSource,
@@ -136,7 +225,7 @@ assert.match(
 assert.match(
   filterMenuStylesSource,
   /\.wp-filter-rail\s*\{[\s\S]*?justify-self: start;[\s\S]*?width: 100%;[\s\S]*?gap: 8px;[\s\S]*?overflow: hidden;/,
-  "Second-row chips should stay in a compact fixed left cluster"
+  "Second-row chips should clip the row while labels expand inside pills"
 );
 assert.match(
   filterStylesSource,
@@ -150,28 +239,59 @@ assert.match(
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-brand-chip\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-width: 50px;[\s\S]*?padding: 0 10px;/,
-  "Brand chip should keep a compact floor and resize for multi-digit counts"
+  /\.wp-brand-chip\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-width: 50px;[\s\S]*?gap: 6px;[\s\S]*?padding: 0 9px;[\s\S]*?color: rgba\(8, 11, 16, 0\.52\);/,
+  "Brand chip should stay compact and keep space between icon and count"
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-filter-rail > \.wp-filter-archive\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-width: 50px;[\s\S]*?padding: 0 10px;/,
-  "Archive chip should keep a compact floor and resize for multi-digit counts"
+  /\.wp-filter-rail > \.wp-filter-shortlist,[\s\S]*?\.wp-filter-rail > \.wp-filter-trigger\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?max-width: 128px;/,
+  "Shortlist and Filter chips should size to their content instead of reserving a fixed right-side gutter"
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-brand-chip\.is-active\s*\{[\s\S]*?border-color: rgba\(8, 11, 16, 0\.14\);[\s\S]*?background: rgba\(255, 255, 255, 0\.76\);/,
-  "Brand trigger active/open state should stay outlined instead of using selected-filter black"
+  /\.wp-filter-rail > \.wp-filter-shortlist\s*\{[\s\S]*?min-width: 50px;[\s\S]*?gap: 6px;[\s\S]*?padding: 0 9px;/,
+  "Shortlist chip should keep space between star icon and count"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-rail > \.wp-filter-archive\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-width: 50px;[\s\S]*?gap: 6px;[\s\S]*?padding: 0 9px;/,
+  "Archive chip should keep space between icon and count"
+);
+assert.match(
+  fs.readFileSync(path.join(root, "extension/content/styles/panel-release.js"), "utf8"),
+  /\.wp-filter-rail > \.wp-filter-archive\s*\{[\s\S]*?gap: 6px;/,
+  "Later release styles should preserve archive icon/count spacing"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-trigger-label\s*\{[\s\S]*?max-width 280ms cubic-bezier\(\.18, \.84, \.24, 1\)[\s\S]*?transform 280ms cubic-bezier\(\.18, \.84, \.24, 1\);/,
+  "Filter label should keep the smoother in-pill resize animation"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filter-rail > \.wp-filter\.is-active \.wp-filter-trigger-label\s*\{[\s\S]*?color: var\(--primary-foreground\);/,
+  "Active black Filter should force its label to the selected foreground color"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-chip-clear\s*\{[\s\S]*?width: 14px;[\s\S]*?height: 14px;/,
+  "Active state chips should share a compact inline close affordance"
+);
+assert.doesNotMatch(filterMenuStylesSource, /wp-chip-label|wp-filter-reset/, "Reset labels and reset chip CSS should not remain");
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-brand-chip\.is-active,[\s\S]*?\.wp-filter-rail > \.wp-filter\.is-active\s*\{[\s\S]*?color: var\(--primary-foreground\);[\s\S]*?background: rgba\(8, 11, 16, 0\.86\);/,
+  "Brand active/open state should use the same selected surface as other state chips"
 );
 assert.match(
   filterMenuStylesSource,
   /\.wp-filter-rail > \.wp-filter\.is-active\s*\{[\s\S]*?background: rgba\(8, 11, 16, 0\.86\);/,
-  "Only active filter chips should use the black selected surface"
+  "Non-default active filter chips should use the black selected surface"
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-theme-graphite \.wp-brand-chip\.is-active\s*\{[\s\S]*?background: rgba\(255, 255, 255, 0\.08\);/,
-  "Graphite brand trigger active/open state should stay a muted trigger surface"
+  /\.wp-theme-graphite \.wp-brand-chip\.is-active,[\s\S]*?\.wp-theme-graphite \.wp-filter-rail > \.wp-filter\.is-active\s*\{[\s\S]*?color: #080b10;[\s\S]*?background: rgba\(244, 244, 240, 0\.9\);/,
+  "Graphite brand active/open state should use the same selected surface as other state chips"
 );
 assert.match(
   filterMenuStylesSource,
@@ -185,7 +305,7 @@ assert.match(
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-brand-chip-count\s*\{[\s\S]*?min-width: 1ch;[\s\S]*?font-variant-numeric: tabular-nums;/,
+  /\.wp-brand-chip-count,[\s\S]*?\.wp-shortlist-chip-count\s*\{[\s\S]*?min-width: 1ch;[\s\S]*?font-variant-numeric: tabular-nums;/,
   "Brand count should reserve one tabular digit and grow naturally"
 );
 assert.doesNotMatch(
@@ -221,6 +341,11 @@ assert.match(
 assert.match(sortSource, /function panelShouldShowSortControls[\s\S]*?panelVisibleItems\(items\)\.length >= 2/, "Sort controls should only render for two or more currently visible items");
 assert.match(sortSource, /currentControls\.remove\(\);[\s\S]*?insertAdjacentHTML\?\.\("beforeend", renderPanelSortControls\(\)\)/, "Sort controls should be removed or reinserted as live result counts change");
 assert.match(
+  sortSource,
+  /panelState\.brandCloudSortList[\s\S]*?reorderPanelItemsOnly\(root\);[\s\S]*?syncPanelSortControls\(root\);/,
+  "Sort should reorder cards before syncing sort chrome so the FLIP shuffle does not include row-offset movement"
+);
+assert.match(
   filterStylesSource,
   /\.wp-filter-remove\s*\{[\s\S]*?right: 8px;[\s\S]*?z-index: 2;/,
   "Category remove affordance should stay inside the pill boundary"
@@ -244,6 +369,8 @@ sandbox.panelItemMatchesSearch = (item) => {
 };
 sandbox.panelItemMatchesBrandFilter = (item) =>
   !sandbox.panelState.brandFilterKey || item.brand === sandbox.panelState.brandFilterKey;
+sandbox.panelItemMatchesShortlistFilter = (item) =>
+  !sandbox.panelState.shortlistOpen || Boolean(item.shortlistedAt);
 sandbox.escapeHtml = (value) => value;
 sandbox.escapeAttribute = (value) => value;
 sandbox.phosphorChevronDownIcon = () => "";
@@ -297,6 +424,7 @@ assert.deepEqual(sortedTitles("price", "desc"), ["Cabin", "Zip Hoodie", "Alpha B
 let renderedItems = 0;
 let reorderedItems = 0;
 let syncedBrandCount = 0;
+const sortApplyCalls = [];
 const filterListeners = {};
 const shellListeners = {};
 let renderedSortControl = "";
@@ -374,8 +502,13 @@ const fakeRoot = {
 };
 
 sandbox.renderPanelItemsOnly = () => { renderedItems += 1; };
-sandbox.reorderPanelItemsOnly = () => { reorderedItems += 1; return true; };
+sandbox.reorderPanelItemsOnly = () => {
+  sortApplyCalls.push("reorder");
+  reorderedItems += 1;
+  return true;
+};
 sandbox.syncPanelBrandCountControl = () => {
+  sortApplyCalls.push("brand-count");
   syncedBrandCount += 1;
 };
 sandbox.closePanelFilterMenu = () => {
@@ -451,7 +584,8 @@ const triggerClick = {
 filterListeners.click.handler(triggerClick);
 assert.equal(sandbox.panelState.sortMenuOpen, true);
 assert.match(renderedSortControl, /wp-sort-menu/);
-assert.match(renderedSortControl, />Sort</);
+assert.match(renderedSortControl, /aria-label="Sort saved items: Date newest"/);
+assert.match(renderedSortControl, /class="wp-sort-current">Sort<\/span>/);
 assert.equal(reorderedItems, 0);
 assert.equal(triggerPrevented, true);
 assert.equal(triggerStopped, true);
@@ -482,6 +616,7 @@ assert.equal(vm.runInContext("panelCurrentSortOption().label", sandbox), "Name A
 assert.equal(reorderedItems, 1);
 assert.equal(renderedItems, 0);
 assert.equal(syncedBrandCount, 1);
+assert.deepEqual(sortApplyCalls, ["reorder", "brand-count"], "Sort should preserve card shuffle before syncing chrome");
 assert.equal(optionPrevented, true);
 assert.equal(optionStopped, true);
 assert.equal(optionStoppedImmediate, true);

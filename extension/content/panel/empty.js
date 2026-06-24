@@ -4,12 +4,23 @@ function renderPanelEmpty() {
   return `
     <div class="wp-empty">
       <div>
-        ${state.icon ? `<img class="wp-empty-logo" src="${escapeAttribute(tuckioMonochromeLogoUrl())}" alt="" aria-hidden="true">` : ""}
+        ${renderPanelEmptyIcon(state)}
         <strong>${escapeHtml(state.title)}</strong>
         <span>${escapeHtml(state.detail)}</span>
       </div>
     </div>
   `;
+}
+
+function renderPanelEmptyIcon(state) {
+  if (state.icon === "search") {
+    return phosphorSearchMinusIcon("wp-empty-state-icon");
+  }
+
+  return state.icon ? `
+    <img class="wp-empty-logo" src="${escapeAttribute(tuckioEmptyLogoUrl())}" alt="" aria-hidden="true">
+    ${phosphorShoppingBagIcon("wp-empty-line-icon")}
+  ` : "";
 }
 
 function panelEmptyState() {
@@ -23,7 +34,7 @@ function panelEmptyState() {
 
   if (panelState.searchQuery) {
     return {
-      icon: false,
+      icon: "search",
       title: t("No matches"),
       detail: t("Try another name, category, or source.")
     };
@@ -67,9 +78,9 @@ function panelActiveCategoryLabel() {
   return category ? panelCategoryDisplayLabel(category) : t("this category");
 }
 
-function tuckioMonochromeLogoUrl() {
+function tuckioEmptyLogoUrl() {
   try {
-    return chrome.runtime.getURL("assets/tuckio-app-black.png");
+    return chrome.runtime.getURL("assets/tuckio-app.png");
   } catch {
     return "";
   }

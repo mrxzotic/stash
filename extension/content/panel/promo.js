@@ -105,6 +105,7 @@ function bindPanelFounderPromoEvents(root) {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
+      closePanelOverflowMenu(button.getRootNode());
       panelState.founderPromoOpen = false;
       syncPanelFounderPromoDialog(button.getRootNode());
     });
@@ -122,6 +123,7 @@ function bindPanelFounderPromoTrigger(button) {
     if (!panelState.founderPromoOpen) {
       rememberPanelFocus(button);
     }
+    closePanelOverflowMenu(button.getRootNode());
     panelState.founderPromoOpen = !panelState.founderPromoOpen;
     syncPanelFounderPromoDialog(button.getRootNode());
   });

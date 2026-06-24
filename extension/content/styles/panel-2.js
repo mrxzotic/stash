@@ -34,21 +34,16 @@ function panelStylesChunk2() {
 
     .wp-count {
       position: relative;
-      width: max-content; min-width: 64px;
-      max-width: none;
-      height: 32px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
+      width: max-content; min-width: 112px; max-width: none; height: 32px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 0;
       flex: 0 0 auto;
       padding: 0 8px;
       border: 0;
       border-radius: 999px;
       background: transparent;
-      color: rgba(8, 11, 16, 0.62);
+      color: rgba(8, 11, 16, 0.46);
       font-size: var(--text-control);
-      font-weight: 720;
+      font-weight: 680;
       line-height: 1;
       text-align: center;
       cursor: default;
@@ -61,9 +56,9 @@ function panelStylesChunk2() {
     }
 
     .wp-count.is-active {
-      color: var(--foreground);
+      color: rgba(8, 11, 16, 0.62);
       background: transparent;
-      font-weight: 780;
+      font-weight: 720;
     }
 
     .wp-count-label {
@@ -108,11 +103,7 @@ function panelStylesChunk2() {
 
     .wp-icon-button {
       position: relative;
-      width: 40px;
-      height: 40px;
-      display: grid;
-      place-items: center;
-      flex: 0 0 40px;
+      width: 40px; height: 40px; display: grid; place-items: center; flex: 0 0 40px;
       padding: 0;
       border: 0;
       border-radius: var(--radius);
@@ -169,14 +160,14 @@ function panelStylesChunk2() {
     }
 
     .wp-theme-graphite .wp-count {
-      color: rgba(244, 244, 240, 0.58);
+      color: rgba(244, 244, 240, 0.44);
       box-shadow: none;
     }
 
     .wp-theme-graphite .wp-count:hover,
     .wp-theme-graphite .wp-count:focus-visible,
     .wp-theme-graphite .wp-count.is-active {
-      color: rgba(244, 244, 240, 0.92);
+      color: rgba(244, 244, 240, 0.68);
       background: transparent;
     }
 
@@ -254,9 +245,15 @@ function panelStylesChunk2() {
     }
 
     .wp-phosphor {
+      display: inline-block;
+      flex: 0 0 auto;
       width: 20px;
       height: 20px;
       font-size: 20px;
+      color: currentColor;
+      background-color: currentColor;
+      -webkit-mask: var(--wp-icon-url) center / contain no-repeat;
+      mask: var(--wp-icon-url) center / contain no-repeat;
     }
 
     .wp-remove-category::before,

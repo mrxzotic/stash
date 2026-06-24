@@ -27,11 +27,11 @@ function panelOverflowStyles() {
       top: calc(100% + 8px);
       right: 0;
       z-index: 14;
-      width: 250px;
+      width: 344px;
       max-width: calc(100vw - 32px);
       display: grid;
-      gap: 3px;
-      padding: 6px;
+      gap: 6px;
+      padding: 8px;
       border: 1px solid var(--wp-popover-border);
       border-radius: var(--radius);
       background: var(--wp-popover-bg);
@@ -48,14 +48,14 @@ function panelOverflowStyles() {
 
     .wp-overflow-option {
       width: 100%;
-      height: 34px;
+      height: 40px;
       display: grid;
-      grid-template-columns: 20px minmax(0, 1fr) 34px;
+      grid-template-columns: 20px minmax(0, 1fr) 36px;
       align-items: center;
-      gap: 8px;
-      padding: 0 9px;
+      gap: 18px;
+      padding: 0 10px;
       border: 0;
-      border-radius: 7px;
+      border-radius: 9px;
       background: transparent;
       color: rgba(8, 11, 16, 0.72);
       font-size: var(--text-body);
@@ -89,13 +89,13 @@ function panelOverflowStyles() {
     .wp-overflow-language {
       position: relative;
       width: 100%;
-      height: 34px;
+      height: 40px;
       display: grid;
-      grid-template-columns: 20px minmax(0, 1fr) 122px;
+      grid-template-columns: 20px minmax(0, 1fr) 148px;
       align-items: center;
-      gap: 8px;
-      padding: 0 9px;
-      border-radius: 7px;
+      gap: 10px;
+      padding: 0 10px;
+      border-radius: 9px;
       color: var(--wp-overflow-option-color, rgba(8, 11, 16, 0.72));
       font-size: var(--text-body);
       font-weight: 720;
@@ -109,15 +109,15 @@ function panelOverflowStyles() {
     }
 
     .wp-overflow-language-trigger {
-      width: 122px;
-      height: 28px;
+      width: 148px;
+      height: 32px;
       display: grid;
-      grid-template-columns: 20px minmax(0, 1fr) 14px;
+      grid-template-columns: minmax(0, 1fr) 20px 14px;
       align-items: center;
-      gap: 6px;
-      padding: 0 7px;
+      gap: 7px;
+      padding: 0 8px;
       border: 1px solid var(--wp-overflow-select-border, rgba(8, 11, 16, 0.12));
-      border-radius: 8px;
+      border-radius: 9px;
       background: var(--wp-overflow-select-bg, rgba(255, 255, 255, 0.68));
       color: var(--wp-overflow-select-color, currentColor);
       font: inherit;
@@ -167,13 +167,13 @@ function panelOverflowStyles() {
 
     .wp-language-menu {
       position: absolute;
-      top: calc(100% + 6px);
-      right: 9px;
+      top: calc(100% + 8px);
+      right: 10px;
       z-index: 16;
-      width: 162px;
+      width: 232px;
       display: grid;
-      gap: 4px;
-      padding: 6px;
+      gap: 6px;
+      padding: 8px;
       border: 1px solid var(--wp-popover-border);
       border-radius: var(--radius);
       background: var(--wp-popover-bg);
@@ -190,14 +190,14 @@ function panelOverflowStyles() {
 
     .wp-language-option {
       width: 100%;
-      height: 34px;
+      height: 40px;
       display: grid;
-      grid-template-columns: 18px minmax(0, 1fr) 24px;
+      grid-template-columns: 20px minmax(0, 1fr) 24px;
       align-items: center;
-      gap: 8px;
-      padding: 0 8px;
+      gap: 10px;
+      padding: 0 10px;
       border: 0;
-      border-radius: var(--radius);
+      border-radius: 9px;
       background: transparent;
       color: var(--foreground);
       font: inherit;

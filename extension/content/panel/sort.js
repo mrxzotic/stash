@@ -8,6 +8,7 @@ function renderPanelSortControls() {
   return `
     <div class="wp-sort-controls${isOpen ? " is-open" : ""}" data-panel-sort-root>
       <button class="wp-sort-trigger" type="button" aria-label="${escapeAttribute(t("Sort saved items: {label}", { label: current.label }))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-sort-trigger>
+        ${renderPanelSortTriggerIcon(current)}
         <span class="wp-sort-current">${escapeHtml(t("Sort"))}</span>
         ${phosphorChevronDownIcon("wp-sort-chevron")}
       </button>
@@ -16,6 +17,12 @@ function renderPanelSortControls() {
       </div>
     </div>
   `;
+}
+
+function renderPanelSortTriggerIcon(current) {
+  return current.direction === PANEL_SORT_ASC
+    ? phosphorArrowUpIcon("wp-sort-trigger-icon")
+    : phosphorArrowDownIcon("wp-sort-trigger-icon");
 }
 
 function renderPanelSortOption(option) {
@@ -49,6 +56,7 @@ function panelSortOptionIsSelected(option) {
 
 function panelVisibleItems(items = panelState.items) {
   return panelScopedItems(items)
+    .filter(panelItemMatchesShortlistFilter)
     .filter(panelItemMatchesActiveCategory)
     .filter(panelItemMatchesSearch)
     .filter(panelItemMatchesBrandFilter);
@@ -136,9 +144,9 @@ function applyPanelSortOption(field, direction, root) {
     : panelDefaultSortDirection(panelState.sortField);
   panelState.sortMenuOpen = false;
   panelState.brandCloudSortList = panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen;
+  reorderPanelItemsOnly(root);
   syncPanelSortControls(root);
   syncPanelBrandCountControl(root);
-  reorderPanelItemsOnly(root);
   syncPanelSortControlLayout(root);
 }
 

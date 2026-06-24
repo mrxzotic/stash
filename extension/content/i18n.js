@@ -13,6 +13,7 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["Archive", "Archivar", "Archivieren", "Archiver", "Архивировать"],
   ["Archived items will appear here.", "Los artículos archivados aparecerán aquí.", "Archivierte Artikel erscheinen hier.", "Les articles archivés apparaîtront ici.", "Архивные товары появятся здесь."],
   ["Archived items: {count}", "Artículos archivados: {count}", "Archivierte Artikel: {count}", "Articles archivés : {count}", "В архиве: {count}"],
+  ["Add to shortlist", "Añadir a favoritos", "Zur Auswahlliste hinzufügen", "Ajouter à la sélection", "Добавить в шортлист"],
   ["Auto-close in {seconds}s", "Cierre automático en {seconds} s", "Schließt automatisch in {seconds} s", "Fermeture automatique dans {seconds} s", "Закроется через {seconds} с"],
   ["Auto-close paused", "Cierre automático en pausa", "Automatisches Schließen pausiert", "Fermeture automatique en pause", "Автозакрытие на паузе"],
   ["Backup", "Copia de seguridad", "Sicherung", "Sauvegarde", "Бэкап"],
@@ -22,6 +23,7 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["Bottoms", "Pantalones", "Hosen", "Bas", "Низ"],
   ["Brand", "Marca", "Marke", "Marque", "Бренд"],
   ["Brands by saved item count", "Marcas por número de artículos guardados", "Marken nach Anzahl gespeicherter Artikel", "Marques par nombre d’articles enregistrés", "Бренды по количеству сохранённых товаров"],
+  ["Bought", "Comprado", "Gekauft", "Acheté", "Куплено"],
   ["Cancel", "Cancelar", "Abbrechen", "Annuler", "Отмена"],
   ["Cancel category", "Cancelar categoría", "Kategorie abbrechen", "Annuler la catégorie", "Отменить категорию"],
   ["Cancel edit", "Cancelar edición", "Bearbeitung abbrechen", "Annuler la modification", "Отменить редактирование"],
@@ -34,6 +36,7 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["Close", "Cerrar", "Schließen", "Fermer", "Закрыть"],
   ["Close search", "Cerrar búsqueda", "Suche schließen", "Fermer la recherche", "Закрыть поиск"],
   ["Could not import JSON", "No se pudo importar el JSON", "JSON konnte nicht importiert werden", "Impossible d’importer le JSON", "Не удалось импортировать JSON"],
+  ["Could not delete this item", "No se pudo eliminar este artículo", "Dieser Artikel konnte nicht gelöscht werden", "Impossible de supprimer cet article", "Не удалось удалить товар"],
   ["Could not save this item", "No se pudo guardar este artículo", "Dieser Artikel konnte nicht gespeichert werden", "Impossible d’enregistrer cet article", "Не удалось сохранить товар"],
   ["Currency", "Moneda", "Währung", "Devise", "Валюта"],
   ["Dark mode", "Modo oscuro", "Dunkler Modus", "Mode sombre", "Тёмная тема"],
@@ -45,6 +48,9 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["Delete", "Eliminar", "Löschen", "Supprimer", "Удалить"],
   ["Delete {category}?", "¿Eliminar {category}?", "{category} löschen?", "Supprimer {category} ?", "Удалить {category}?"],
   ["Delete {item}?", "¿Eliminar {item}?", "{item} löschen?", "Supprimer {item} ?", "Удалить {item}?"],
+  ["Decide", "Decidir", "Entscheiden", "Décider", "Решить"],
+  ["Decision actions", "Acciones de decisión", "Entscheidungsaktionen", "Actions de décision", "Действия решения"],
+  ["Drop to decide", "Suelta para decidir", "Zum Entscheiden ablegen", "Déposer pour décider", "Перетащите для решения"],
   ["Edit", "Editar", "Bearbeiten", "Modifier", "Изменить"],
   ["Edit item", "Editar artículo", "Artikel bearbeiten", "Modifier l’article", "Изменить товар"],
   ["Export JSON", "Exportar JSON", "JSON exportieren", "Exporter JSON", "Экспорт JSON"],
@@ -88,6 +94,7 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["Price low-high", "Precio de menor a mayor", "Preis aufsteigend", "Prix croissant", "Цена по возрастанию"],
   ["Products saved to {category} will appear here.", "Los productos guardados en {category} aparecerán aquí.", "In {category} gespeicherte Produkte erscheinen hier.", "Les produits enregistrés dans {category} apparaîtront ici.", "Товары из категории {category} появятся здесь."],
   ["Remove current image{label}", "Eliminar imagen actual{label}", "Aktuelles Bild entfernen{label}", "Supprimer l’image actuelle{label}", "Удалить текущее изображение{label}"],
+  ["Remove from shortlist", "Quitar de favoritos", "Aus Auswahlliste entfernen", "Retirer de la sélection", "Убрать из шортлиста"],
   ["Remove image", "Eliminar imagen", "Bild entfernen", "Supprimer l’image", "Удалить изображение"],
   ["Remove {category}", "Eliminar {category}", "{category} entfernen", "Supprimer {category}", "Удалить {category}"],
   ["Restore", "Restaurar", "Wiederherstellen", "Restaurer", "Восстановить"],
@@ -103,6 +110,8 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["Saving current item", "Guardando artículo actual", "Aktueller Artikel wird gespeichert", "Enregistrement de l’article actuel", "Сохраняю текущий товар"],
   ["Shoes", "Calzado", "Schuhe", "Chaussures", "Обувь"],
   ["Show all saved items", "Mostrar todos los artículos guardados", "Alle gespeicherten Artikel anzeigen", "Afficher tous les articles enregistrés", "Показать все сохранённые товары"],
+  ["Shortlisted items: {count}", "Favoritos: {count}", "Auswahlliste: {count}", "Sélection : {count}", "В шортлисте: {count}"],
+  ["Skipped", "Descartado", "Übersprungen", "Écarté", "Пропущено"],
   ["Sort", "Ordenar", "Sortieren", "Trier", "Сортировка"],
   ["Sort saved items: {label}", "Ordenar artículos guardados: {label}", "Gespeicherte Artikel sortieren: {label}", "Trier les articles enregistrés : {label}", "Сортировать сохранённые товары: {label}"],
   ["Tuckio categories", "Categorías de Tuckio", "Tuckio-Kategorien", "Catégories Tuckio", "Категории Tuckio"],
@@ -226,8 +235,8 @@ function renderPanelLanguageSelect() {
       ${phosphorGlobeIcon("wp-overflow-option-icon")}
       <span id="wp-language-label">${escapeHtml(label)}</span>
       <button class="wp-overflow-language-trigger" style="${escapeAttribute(PANEL_OVERFLOW_LANGUAGE_TRIGGER_INLINE_STYLE)}" type="button" role="menuitem" aria-labelledby="wp-language-label wp-language-current" aria-haspopup="menu" aria-expanded="false" data-panel-language-trigger>
-        <span class="wp-language-flag" aria-hidden="true">${escapeHtml(currentOption?.flag || "")}</span>
         <span id="wp-language-current" class="wp-language-current">${escapeHtml(currentOption?.label || currentLanguage)}</span>
+        <span class="wp-language-flag" aria-hidden="true">${escapeHtml(currentOption?.flag || "")}</span>
         ${phosphorChevronDownIcon("wp-language-chevron")}
       </button>
       <div class="wp-language-menu" style="${escapeAttribute(PANEL_OVERFLOW_LANGUAGE_MENU_INLINE_STYLE)}" role="menu" hidden data-panel-language-menu>

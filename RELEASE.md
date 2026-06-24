@@ -8,6 +8,10 @@ Tuckio should be described publicly as a local shopping/product saver, not as pr
 
 Use `tuckio.com` as the public product URL.
 
+Chrome Web Store listing:
+
+https://chromewebstore.google.com/detail/akehcgpjghmmenhicldnppjjelkipfpk
+
 ## Chrome Web Store permission notes
 
 - `activeTab`: temporary access to the current HTTP/HTTPS tab after the user clicks Tuckio or the context menu.
@@ -29,7 +33,7 @@ The extension intentionally does not request persistent `host_permissions` or ma
 - Third-party icon attribution is recorded in `THIRD_PARTY_NOTICES.md`.
 - Web-accessible resources use dynamic extension URLs to reduce extension fingerprinting.
 
-## Pre-submit checklist
+## Update checklist
 
 - Run syntax checks and smoke scripts.
 - Load unpacked extension in Chrome and Arc.
@@ -38,5 +42,5 @@ The extension intentionally does not request persistent `host_permissions` or ma
 - Verify edit saved item updates brand, name, price, image, and category.
 - Verify JSON backup export downloads and contains `tuckio.backup.v1`.
 - Verify JSON backup import merges valid saved items without duplicating existing saved product URLs.
-- Capture fresh Chrome Web Store screenshots from the current UI.
-- Use a privacy-policy URL that matches the behavior above.
+- Refresh Chrome Web Store screenshots when the visible panel or onboarding changes.
+- Keep the Chrome Web Store privacy URL pointed at the policy matching the behavior above.

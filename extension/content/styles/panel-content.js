@@ -95,7 +95,7 @@ function panelContentStyles() {
       align-content: start;
       column-gap: 16px;
       row-gap: 0;
-      padding: var(--wp-items-padding-top, 136px) 24px 48px;
+      padding: var(--wp-items-padding-top, 112px) 24px 48px;
       margin-top: 0;
       overflow-y: auto;
       scroll-behavior: smooth;
@@ -109,7 +109,7 @@ function panelContentStyles() {
       display: flex;
       flex-direction: column;
       justify-content: safe center;
-      padding: var(--wp-items-padding-top, 136px) 24px 48px;
+      padding: var(--wp-items-padding-top, 112px) 24px 48px;
     }
 
     .wp-item-column {

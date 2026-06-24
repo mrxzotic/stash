@@ -53,6 +53,9 @@ function closeTuckioPanel() {
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
   panelState.editItemId = "";
+  panelState.decisionItemId = "";
+  panelState.decisionDragItemId = "";
+  panelState.shortlistOpen = false;
   panelState.founderPromoOpen = false;
   panelState.archivedOpen = false;
   panelState.brandCloudOpen = false;
@@ -72,6 +75,7 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
   panelState.categories = categories;
   panelState.highlightedItemId = item.id;
   panelState.archivedOpen = false;
+  panelState.shortlistOpen = false;
 
   if (panelState.activeCategory !== "all" && panelState.activeCategory !== item.category) {
     panelState.activeCategory = item.category;

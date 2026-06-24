@@ -1,4 +1,4 @@
-# Stash Refactor Notes
+# Tuckio Refactor Notes
 
 Current structure:
 - `extension/background.js`: MV3 service-worker events, context menu, action click, and dynamic content-script injection.

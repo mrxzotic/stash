@@ -10,13 +10,9 @@ function syncPanelViewMode(root = document.getElementById("tuckio-panel-root")?.
     return;
   }
 
-  items.classList.toggle("is-compact", panelState.compactView);
-  items.classList.toggle("is-brand-cloud", panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen);
-  if (panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen) {
-    return;
-  }
-
-  renderPanelItemsOnly(root);
+  startPanelViewModeSwitch(items);
+  syncPanelItemsState(root);
+  syncPanelItemsTopOffset(root, { defer: false });
 }
 
 function renderPanelCompactItem(item, index = 0) {
@@ -26,22 +22,21 @@ function renderPanelCompactItem(item, index = 0) {
   const itemLabel = panelItemAccessibleName(item);
 
   return `
-    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}" data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}">
-      <span class="wp-compact-index" aria-label="${escapeAttribute(t("Item {number}", { number: index + 1 }))}">#${index + 1}</span>
+    <article class="wp-item wp-compact-item${item.id === panelState.highlightedItemId ? " is-new" : ""}${isArchived ? " is-archived" : ""}" ${isArchived ? "" : `draggable="true" data-decision-draggable-id="${escapeAttribute(item.id)}"`} data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}" data-panel-render-signature="${escapeAttribute(panelItemRenderSignature(item, "compact"))}">
+      <span class="wp-compact-index" aria-hidden="true">${index + 1}</span>
       <a class="wp-compact-thumb ${compactThumbFocusClass(item)}" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(t("Open {item}", { item: itemLabel }))}">
         ${renderPanelCardImageFrame(item, { slider: false })}
       </a>
       <div class="wp-compact-copy">
-        <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
+        <div class="wp-compact-meta">
+          <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
+        </div>
         <a class="wp-item-title" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a>
       </div>
+      <div class="wp-compact-state">${renderPanelDecisionStatus(item)}</div>
       <div class="wp-price-row wp-compact-price${priceHtml ? "" : " is-empty"}"${priceHtml ? "" : " aria-hidden=\"true\""}>${priceHtml}</div>
       <div class="wp-compact-actions">
-        ${isArchived
-          ? `<button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
-             <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>`
-          : `<button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
-             <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Archive", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Archive", item))}" data-archive-id="${escapeAttribute(item.id)}">${phosphorTrashIcon("wp-card-action-icon")}</button>`}
+        ${renderPanelCompactActions(item)}
       </div>
     </article>
   `;
@@ -60,9 +55,7 @@ function compactThumbFocusClass(item) {
 }
 
 function toggledGraphiteThemeId() {
-  return panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME
-    ? DEFAULT_SETTINGS.backgroundTheme
-    : GRAPHITE_BACKGROUND_THEME;
+  return panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME ? DEFAULT_SETTINGS.backgroundTheme : GRAPHITE_BACKGROUND_THEME;
 }
 
 function syncPanelTopbarPreferenceControls(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
@@ -173,7 +166,7 @@ function panelTopbarVisibleItems() {
 }
 
 function panelTopbarCountIsScoped() {
-  return Boolean(panelState.searchQuery || panelState.activeCategory !== "all" || panelState.brandFilterKey);
+  return Boolean(panelState.searchQuery || panelState.shortlistOpen || panelState.activeCategory !== "all" || panelState.brandFilterKey);
 }
 
 function panelItemCountLabel(itemCount) {
@@ -193,12 +186,30 @@ function renderPanelBrandCloud(items) {
 
 function bindPanelBrandCloudEvents(root) {
   bindPanelPreferenceEvents(root);
-  root.querySelector("[data-brand-cloud-toggle]")?.addEventListener("click", (event) => {
+  root.querySelector(".wp-filters")?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-clear-brand-filter]")) {
+      event.preventDefault();
+      event.stopPropagation();
+      panelState.brandFilterKey = "";
+      panelState.brandFilterLabel = "";
+      panelState.brandCloudOpen = false;
+      panelState.brandCloudSortList = false;
+      panelState.searchOpen = false;
+      panelState.filterMenuOpen = false;
+      panelState.sortMenuOpen = false;
+      panelState.categoryComposerOpen = false;
+      panelState.deleteCategoryId = "";
+      panelState.deleteItemId = "";
+      syncPanelViewStateWithMotion();
+      return;
+    }
+
+    if (!event.target.closest("[data-brand-cloud-toggle]")) return;
     event.preventDefault();
     event.stopPropagation();
-    const willOpen = !panelState.brandCloudOpen || Boolean(panelState.brandFilterKey);
-    panelState.brandCloudOpen = willOpen;
-    if (willOpen) {
+    const isActive = panelState.brandCloudOpen || Boolean(panelState.brandFilterKey);
+    panelState.brandCloudOpen = !isActive;
+    if (isActive || panelState.brandCloudOpen) {
       panelState.brandFilterKey = "";
       panelState.brandFilterLabel = "";
     }
@@ -209,26 +220,10 @@ function bindPanelBrandCloudEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
-    renderTuckioPanel();
+    syncPanelViewStateWithMotion();
   });
 
-  root.querySelector("[data-clear-brand-filter]")?.addEventListener("click", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    panelState.brandFilterKey = "";
-    panelState.brandFilterLabel = "";
-    panelState.brandCloudOpen = false;
-    panelState.brandCloudSortList = false;
-    panelState.searchOpen = false;
-    panelState.filterMenuOpen = false;
-    panelState.sortMenuOpen = false;
-    panelState.categoryComposerOpen = false;
-    panelState.deleteCategoryId = "";
-    panelState.deleteItemId = "";
-    renderTuckioPanel();
-  });
-
-  root.querySelector(".wp-brand-cloud")?.addEventListener("click", (event) => {
+  root.querySelector(".wp-items")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-brand-filter-key]");
     if (!button) {
       return;
@@ -246,7 +241,7 @@ function bindPanelBrandCloudEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
-    renderTuckioPanel();
+    syncPanelViewStateWithMotion();
   });
 }
 

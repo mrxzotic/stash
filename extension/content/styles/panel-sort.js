@@ -12,13 +12,14 @@ function panelSortStyles() {
     }
 
     .wp-sort-trigger {
+      position: relative;
       height: var(--wp-pill-height);
-      min-width: 74px;
+      min-width: 42px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      padding: 0 10px 0 12px;
+      gap: 0;
+      padding: 0 9px;
       border: 1px solid var(--wp-chrome-border);
       border-radius: 999px;
       background: var(--wp-chrome-bg);
@@ -26,6 +27,7 @@ function panelSortStyles() {
       -webkit-backdrop-filter: var(--wp-chrome-blur);
       backdrop-filter: var(--wp-chrome-blur);
       box-shadow: none;
+      overflow: hidden;
       transition:
         background 220ms cubic-bezier(.22, 1, .36, 1),
         border-color 220ms cubic-bezier(.22, 1, .36, 1),
@@ -41,13 +43,51 @@ function panelSortStyles() {
       transform: translate3d(0, -1px, 0);
     }
 
+    .wp-sort-trigger-icon {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 15px;
+      font-size: 15px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.72;
+    }
+
     .wp-sort-current {
+      min-width: 0;
+      max-width: 0;
+      margin-left: 0;
+      margin-right: 0;
+      color: rgba(8, 11, 16, 0.64);
       font-family: var(--ui-font);
       font-size: var(--text-control);
-      font-weight: 720;
+      font-weight: 760;
       line-height: 1;
-      letter-spacing: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate3d(-3px, 0, 0);
+      transition:
+        max-width 280ms cubic-bezier(.18, .84, .24, 1),
+        margin-left 280ms cubic-bezier(.18, .84, .24, 1),
+        margin-right 280ms cubic-bezier(.18, .84, .24, 1),
+        opacity 210ms ease,
+        transform 280ms cubic-bezier(.18, .84, .24, 1);
+      will-change: max-width, opacity, transform;
+    }
+
+    .wp-sort-trigger:hover .wp-sort-current,
+    .wp-sort-trigger:focus-visible .wp-sort-current,
+    .wp-sort-controls.is-open .wp-sort-current {
+      max-width: 42px;
+      margin-left: 6px;
+      margin-right: 5px;
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
     }
 
     .wp-sort-chevron {
@@ -155,6 +195,10 @@ function panelSortStyles() {
       background: var(--wp-chrome-bg-hover);
     }
 
+    .wp-theme-graphite .wp-sort-current {
+      color: rgba(244, 244, 240, 0.76);
+    }
+
     .wp-theme-graphite .wp-sort-option {
       color: rgba(244, 244, 240, 0.66);
     }
@@ -181,6 +225,7 @@ function panelSortStyles() {
 
     @media (prefers-reduced-motion: reduce) {
       .wp-sort-trigger,
+      .wp-sort-current,
       .wp-sort-chevron,
       .wp-sort-menu,
       .wp-sort-option {

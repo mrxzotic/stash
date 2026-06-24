@@ -35,6 +35,8 @@ var PHOSPHOR_LIGHT_ICON_FILES = {
   image: "image-square",
   imageOff: "image-broken",
   tag: "tag",
+  star: "star",
+  searchMinus: "magnifying-glass-minus",
   shoppingBag: "shopping-bag",
   xLogo: "x-logo",
   githubLogo: "github-logo"
@@ -212,6 +214,14 @@ function phosphorImageOffIcon(className = "wp-phosphor") {
 
 function phosphorTagIcon(className = "wp-phosphor") {
   return phosphorIcon("tag", className);
+}
+
+function phosphorStarIcon(className = "wp-phosphor") {
+  return phosphorIcon("star", className);
+}
+
+function phosphorSearchMinusIcon(className = "wp-phosphor") {
+  return phosphorIcon("searchMinus", className);
 }
 
 function phosphorShoppingBagIcon(className = "wp-phosphor") {

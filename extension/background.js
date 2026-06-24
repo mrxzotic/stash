@@ -3,13 +3,14 @@ const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const COMMAND_SAVE_CURRENT = "save-to-tuckio";
 const COMMAND_TOGGLE_PANEL = "toggle-tuckio";
-const CONTENT_SCRIPT_VERSION = "2026-06-22-tuckio-dot-com-v1";
+const CONTENT_SCRIPT_VERSION = "2026-06-24-archive-compact-list-v49";
 const MESSAGE_PING = "TUCKIO_PING_V2";
 const MESSAGE_SAVE = "TUCKIO_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "TUCKIO_TOGGLE_PANEL_V2";
 const CONTENT_SCRIPT_FILES = [
   "content/constants.js",
   "content/lifecycle.js",
+  "content/panel/decisions.js",
   "content/panel/archive.js",
   "content/panel/filter-controls.js",
   "content/panel/sort.js",
@@ -26,6 +27,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/panel/reorder.js",
   "content/panel/search.js",
   "content/panel/filter-events.js",
+  "content/panel/categories.js",
   "content/panel/events.js",
   "content/panel/items.js",
   "content/panel/prices.js",
@@ -46,6 +48,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/extractors/anchors.js",
   "content/extractors/context.js",
   "content/storage.js",
+  "content/storage-quota.js",
   "content/overlay-fields.js",
   "content/overlay-images.js",
   "content/overlay-motion.js",
@@ -66,6 +69,8 @@ const CONTENT_SCRIPT_FILES = [
   "content/styles/panel-save-current.js",
   "content/styles/panel-promo.js",
   "content/styles/panel-release.js",
+  "content/styles/panel-decision-ui.js",
+  "content/styles/panel-decision-motion.js",
   "content/styles/panel-edit.js",
   "content/styles/panel-rebuild-motion.js",
   "content/styles/panel-save-motion.js",

@@ -16,6 +16,8 @@ function panelStyles() {
     panelSaveCurrentStyles(),
     panelPromoStyles(),
     panelReleaseStyles(),
+    panelDecisionUiStyles(),
+    panelDecisionMotionStyles(),
     panelEditStyles(),
     panelRebuildMotionStyles(),
     panelSaveMotionStyles(),

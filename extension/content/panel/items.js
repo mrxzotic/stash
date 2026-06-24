@@ -32,14 +32,8 @@ function normalizePanelPrice(item) {
     compareAtAmount: storedPrice.compareAtAmount ?? item.compareAtPriceAmount,
     compareAtText: storedPrice.compareAtText ?? item.compareAtPriceText
   });
-  const rubAmount =
-    storedPrice.rubAmount ??
-    item.rubPriceAmount ??
-    convertToRubSync(parsed.amount, parsed.currency);
-  const rubText =
-    storedPrice.rubText ||
-    item.rubPriceText ||
-    (Number.isFinite(rubAmount) ? formatRubPrice(rubAmount) : "");
+  const rubAmount = storedPrice.rubAmount ?? item.rubPriceAmount ?? convertToRubSync(parsed.amount, parsed.currency);
+  const rubText = storedPrice.rubText || item.rubPriceText || (Number.isFinite(rubAmount) ? formatRubPrice(rubAmount) : "");
 
   return {
     amount: parsed.amount,

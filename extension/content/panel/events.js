@@ -18,6 +18,7 @@ function bindPanelEvents(root) {
   bindPanelImageSliderEvents(root);
   bindPanelDismissEvents(root);
   bindPanelFilterEvents(root);
+  bindPanelCategoryEvents(root);
   root.querySelector(".wp-items")?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-remove-id]");
     if (!button) {
@@ -30,66 +31,6 @@ function bindPanelEvents(root) {
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = button.dataset.removeId;
     renderTuckioPanel();
-  });
-  root.querySelector("[data-category-form]")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const input = root.querySelector("[data-category-input]");
-    const label = cleanCategoryLabel(input?.value);
-    if (!label) {
-      return;
-    }
-    input.value = "";
-    panelState.categoryComposerOpen = false;
-    closePanelArchivedView();
-    const category = { id: uniquePanelCategoryId(label), label };
-    panelState.activeCategory = category.id;
-    safelyRunPanelAction(() =>
-      savePanelCategories([
-        ...panelState.categories,
-        category
-      ])
-    );
-  });
-  root.querySelector("[data-cancel-category]")?.addEventListener("click", (event) => {
-    event.preventDefault();
-    panelState.categoryComposerOpen = false;
-    renderTuckioPanel();
-  });
-  root.querySelector(".wp-category-list")?.addEventListener("change", (event) => {
-    const input = event.target.closest("[data-category-label]");
-    if (!input) {
-      return;
-    }
-    const id = input.dataset.categoryLabel;
-    safelyRunPanelAction(() =>
-      savePanelCategories(
-        panelState.categories.map((category) =>
-          category.id === id
-            ? { ...category, label: cleanCategoryLabel(input.value) || category.label }
-            : category
-        )
-      )
-    );
-  });
-  root.querySelector(".wp-category-list")?.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-remove-category]");
-    if (!button) {
-      return;
-    }
-    const nextCategories = panelState.categories.filter(
-      (category) => category.id !== button.dataset.removeCategory
-    );
-    safelyRunPanelAction(() =>
-      savePanelCategories(nextCategories.length ? nextCategories : DEFAULT_CATEGORIES)
-    );
-  });
-  root.querySelector("[data-reset-categories]")?.addEventListener("click", () => {
-    safelyRunPanelAction(() => savePanelCategories(DEFAULT_CATEGORIES));
-  });
-  root.querySelector("[data-confirm-delete-category]")?.addEventListener("click", (event) => {
-    const id = event.currentTarget.dataset.confirmDeleteCategory;
-    panelState.deleteCategoryId = "";
-    safelyRunPanelAction(() => deletePanelCategory(id));
   });
   root.querySelector("[data-confirm-delete-item]")?.addEventListener("click", (event) => {
     const id = event.currentTarget.dataset.confirmDeleteItem;
@@ -132,6 +73,11 @@ function bindPanelEvents(root) {
         if (handlePanelSearchEscape(root)) {
           return;
         }
+        if (panelState.decisionItemId) {
+          closePanelDecisionTray();
+          syncPanelDecisionMode(root);
+          return;
+        }
         if (
           panelState.deleteCategoryId ||
           panelState.deleteItemId ||
@@ -143,6 +89,8 @@ function bindPanelEvents(root) {
           panelState.deleteCategoryId = "";
           panelState.deleteItemId = "";
           panelState.editItemId = "";
+          panelState.decisionItemId = "";
+          panelState.decisionDragItemId = "";
           panelState.founderPromoOpen = false;
           closePanelArchivedView();
           panelState.categoryComposerOpen = false;
@@ -181,6 +129,16 @@ function bindPanelEvents(root) {
       if (!target.closest?.("[data-currency-root]")) closePanelCurrencySelect(root);
       if (!target.closest?.("[data-panel-language-root]")) closePanelLanguageMenu(root);
       if (!target.closest?.("[data-panel-sort-root]")) closePanelSortMenu(root);
+      if (
+        panelState.decisionItemId &&
+        !target.closest?.("[data-decision-menu-id]") &&
+        !target.closest?.("[data-decision-drop-tray]") &&
+        !target.closest?.("[data-decision-cancel]")
+      ) {
+        closePanelDecisionTray();
+        syncPanelDecisionMode(root);
+        return;
+      }
 
       if (!target.closest?.("[data-filter-menu-trigger]") && !target.closest?.("[data-filter-menu]")) {
         closePanelFilterMenu(root);
@@ -308,10 +266,14 @@ async function removePanelItem(id) {
   const nextItems = panelState.items.filter((item) => normalizePanelItem(item).id !== id);
   if (nextItems.length === panelState.items.length) return;
 
-  panelState.items = nextItems;
+  const storedItems = await setLocalStorageValue(STORAGE_KEY, nextItems).catch((error) => {
+    error.title = t("Could not delete this item");
+    throw error;
+  });
+  panelState.items = Array.isArray(storedItems) ? storedItems : nextItems;
   panelState.deleteItemId = "";
+  panelState.decisionItemId = "";
   syncPanelArchiveAvailability();
-  await setLocalStorageValue(STORAGE_KEY, panelState.items);
   renderTuckioPanel({ summaryAnimationFrom: previousSummary });
 }
 
@@ -325,26 +287,6 @@ function safelyRunPanelAction(action) {
         removeStaleExtensionRoots();
       }
     });
-}
-
-async function savePanelCategories(nextCategories) {
-  panelState.categories = normalizeCategories(nextCategories);
-  panelState.deleteCategoryId = "";
-  panelState.deleteItemId = "";
-  panelState.categoryComposerOpen = false;
-  if (
-    panelState.activeCategory !== "all" &&
-    !hasCategory(panelState.categories, panelState.activeCategory)
-  ) {
-    panelState.activeCategory = "all";
-  }
-  await setLocalStorageValue(CATEGORY_STORAGE_KEY, panelState.categories);
-  renderTuckioPanel();
-}
-
-async function deletePanelCategory(id) {
-  const nextCategories = panelState.categories.filter((category) => category.id !== id);
-  await savePanelCategories(nextCategories.length ? nextCategories : DEFAULT_CATEGORIES);
 }
 
 async function savePanelSettings(nextSettings, options = {}) {

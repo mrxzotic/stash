@@ -184,6 +184,8 @@ function normalizeImportedBackupItem(item, categories, importedAt) {
     imageUrl: normalized.imageUrls[0] || "",
     imageUrls: normalized.imageUrls,
     category,
+    shortlistedAt: normalizedImportDate(item.shortlistedAt),
+    decision: normalizeImportedDecision(item.decision),
     createdAt: normalizedImportDate(item.createdAt) || importedAt,
     updatedAt: normalizedImportDate(item.updatedAt),
     archivedAt: normalizedImportDate(item.archivedAt)
@@ -213,6 +215,22 @@ function normalizeImportedImageUrls(values, primary = "") {
     "",
     SAVED_IMAGE_URL_LIMIT
   );
+}
+
+function normalizeImportedDecision(value) {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const state = cleanText(value.state).toLowerCase();
+  if (state !== "bought" && state !== "skipped") {
+    return undefined;
+  }
+
+  return compactObject({
+    state,
+    decidedAt: normalizedImportDate(value.decidedAt)
+  });
 }
 
 function importableHttpUrl(value) {
