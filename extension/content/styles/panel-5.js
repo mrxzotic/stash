@@ -278,7 +278,7 @@ function panelStylesChunk5() {
 
     .wp-empty {
       position: absolute;
-      top: 160px;
+      top: var(--wp-items-padding-top, 112px);
       bottom: 48px;
       left: 50%;
       width: min(calc(100% - 48px), 340px);
@@ -328,6 +328,28 @@ function panelStylesChunk5() {
       display: block;
       color: var(--foreground);
       font-size: var(--text-heading);
+    }
+
+    .wp-empty-action {
+      margin-top: 2px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: rgba(8, 11, 16, 0.68);
+      font: inherit;
+      font-size: var(--text-body);
+      font-weight: 760;
+      line-height: 1.2;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .wp-empty-action:hover,
+    .wp-empty-action:focus-visible {
+      outline: 0;
+      color: var(--foreground);
     }
 
     @media (max-width: 560px) {

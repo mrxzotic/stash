@@ -7,8 +7,21 @@ function renderPanelEmpty() {
         ${renderPanelEmptyIcon(state)}
         <strong>${escapeHtml(state.title)}</strong>
         <span>${escapeHtml(state.detail)}</span>
+        ${renderPanelEmptyAction(state)}
       </div>
     </div>
+  `;
+}
+
+function renderPanelEmptyAction(state) {
+  if (!state.action) {
+    return "";
+  }
+
+  return `
+    <button class="wp-empty-action" type="button" ${state.action.attribute}>
+      ${escapeHtml(state.action.label)}
+    </button>
   `;
 }
 
@@ -41,10 +54,26 @@ function panelEmptyState() {
   }
 
   if (!panelActiveItems(panelState.items).length) {
+    const archivedCount = panelArchivedCount(panelState.items);
+    if (archivedCount) {
+      return {
+        icon: true,
+        title: t("No active products"),
+        detail: t("{count} {itemNoun} in archive.", {
+          count: archivedCount,
+          itemNoun: panelItemNoun(archivedCount)
+        }),
+        action: {
+          label: t("View archive"),
+          attribute: "data-archive-view-toggle"
+        }
+      };
+    }
+
     return {
       icon: true,
       title: t("Save your first product"),
-      detail: t("Use the plus button or right-click a product card, image, link, or product page and choose Save to Tuckio.")
+      detail: t("Use + or right-click a product page.")
     };
   }
 

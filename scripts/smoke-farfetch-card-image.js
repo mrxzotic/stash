@@ -10,6 +10,7 @@ const sandbox = {
   window: { innerWidth: 1440, innerHeight: 900 },
   document: {
     querySelectorAll: () => [],
+    querySelector: () => null,
     title: "New in: handpicked daily from the world's best brands and boutiques"
   },
   chrome: {
@@ -49,6 +50,8 @@ vm.createContext(sandbox);
 
 const beltUrl =
   "https://www.farfetch.com/fi/shopping/men/casablanca-logo-buckle-leather-belt-item-36693002.aspx";
+const bagUrl =
+  "https://www.farfetch.com/fi/shopping/men/maison-margiela-buckle-closure-shoulder-bag-item-33769310.aspx";
 const scarfUrl =
   "https://www.farfetch.com/fi/shopping/men/jacquemus-the-supporter-silk-scarf-item-36899995.aspx";
 const amiSneakerUrl =
@@ -63,6 +66,26 @@ const farfetchFavicon = "https://www.farfetch.com/favicon.ico";
 const localSourceFallback = "chrome-extension://tuckio/assets/phosphor-light/globe.svg";
 const scarfCardLines = ["Exclusive", "Jacquemus", "The Supporter silk scarf", "184 €"];
 const amiSneakerCardLines = ["Runway", "AMI Paris", "mesh mirage sneakers", "350 €"];
+
+sandbox.window.getComputedStyle = () => ({
+  display: "block",
+  visibility: "visible",
+  opacity: "1"
+});
+
+function fakePriceElement(text) {
+  return {
+    className: "price",
+    dataset: {},
+    id: "",
+    innerText: text,
+    textContent: text,
+    closest: () => null,
+    getAttribute: () => "",
+    getBoundingClientRect: () => ({ width: 64, height: 16 }),
+    matches: () => false
+  };
+}
 
 assert.equal(
   sandbox.isProductLikeUrl(beltUrl),
@@ -94,6 +117,37 @@ assert.equal(
   "mesh mirage sneakers",
   "Farfetch sneaker titles should not collapse to the brand line"
 );
+
+const farfetchSaleScope = {
+  textContent: "Maison Margiela buckle-closure shoulder bag 2.010 € 1.811 € VAT included -10%",
+  querySelectorAll: () => [
+    fakePriceElement("1.811 € VAT included"),
+    fakePriceElement("2.010 €")
+  ]
+};
+const farfetchSalePrice = sandbox.normalizePrice({
+  text: sandbox.bestVisibleProductPriceText("1.811 € VAT included", farfetchSaleScope),
+  currency: "EUR"
+});
+assert.equal(farfetchSalePrice.amount, 1811);
+assert.equal(farfetchSalePrice.compareAtAmount, 2010);
+assert.equal(farfetchSalePrice.isSale, true);
+
+const farfetchFetchedSale = sandbox.extractPriceFromFetchedDocument(
+  { body: { textContent: "Maison Margiela buckle-closure shoulder bag 2.010 € 1.811 € VAT included -10%" } },
+  bagUrl
+);
+assert.equal(farfetchFetchedSale.priceAmount, 1811);
+assert.equal(farfetchFetchedSale.compareAtPriceAmount, 2010);
+assert.equal(farfetchFetchedSale.isSale, true);
+
+const farfetchFetchedTightSale = sandbox.extractPriceFromFetchedDocument(
+  { body: { textContent: "Maison Margiela buckle-closure shoulder bag 2.010 €1.811 € VAT included -10%" } },
+  bagUrl
+);
+assert.equal(farfetchFetchedTightSale.priceAmount, 1811);
+assert.equal(farfetchFetchedTightSale.compareAtPriceAmount, 2010);
+assert.equal(farfetchFetchedTightSale.isSale, true);
 
 sandbox.findJsonLdProduct = () => ({
   title: "Jersey T-Shirt With Logo",

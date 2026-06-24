@@ -9,14 +9,14 @@ function bindPanelHintEvents(root) {
     return;
   }
 
-  filters.addEventListener("pointerover", (event) => {
+  shell.addEventListener("pointerover", (event) => {
     if (event.pointerType && event.pointerType !== "mouse" && event.pointerType !== "pen") {
       return;
     }
     schedulePanelHint(root, panelHintTarget(event.target), PANEL_HINT_DELAY_MS);
   });
 
-  filters.addEventListener("pointerout", (event) => {
+  shell.addEventListener("pointerout", (event) => {
     const control = panelHintTarget(event.target);
     if (control && event.relatedTarget && control.contains(event.relatedTarget)) {
       return;
@@ -24,11 +24,11 @@ function bindPanelHintEvents(root) {
     hidePanelHint(root);
   });
 
-  filters.addEventListener("focusin", (event) => {
+  shell.addEventListener("focusin", (event) => {
     schedulePanelHint(root, panelHintTarget(event.target), PANEL_HINT_FOCUS_DELAY_MS);
   });
 
-  filters.addEventListener("focusout", (event) => {
+  shell.addEventListener("focusout", (event) => {
     const control = panelHintTarget(event.target);
     if (control && event.relatedTarget && control.contains(event.relatedTarget)) {
       return;
@@ -36,7 +36,7 @@ function bindPanelHintEvents(root) {
     hidePanelHint(root);
   });
 
-  filters.addEventListener("pointerdown", () => hidePanelHint(root), true);
+  shell.addEventListener("pointerdown", () => hidePanelHint(root), true);
   filters.addEventListener("scroll", () => hidePanelHint(root), { passive: true });
   shell.addEventListener("mouseleave", () => hidePanelHint(root));
 }

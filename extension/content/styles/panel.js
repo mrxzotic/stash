@@ -23,6 +23,7 @@ function panelStyles() {
     panelRebuildMotionStyles(),
     panelSaveMotionStyles(),
     panelInteractionMotionStyles(),
+    panelPriceCheckerStyles(),
     panelHintStyles()
   ].join("");
 }

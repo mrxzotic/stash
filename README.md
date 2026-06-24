@@ -6,7 +6,7 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 
 Chrome Web Store listing: https://chromewebstore.google.com/detail/akehcgpjghmmenhicldnppjjelkipfpk
 
-Current extension version: `0.1.432`.
+Current extension version: `0.1.436`.
 
 ## What it does
 

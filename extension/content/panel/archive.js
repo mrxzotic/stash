@@ -48,15 +48,15 @@ function bindPanelArchiveEvents(root) {
       return;
     }
 
-    const archiveToggle = event.target.closest("[data-archive-view-toggle]");
-    if (!archiveToggle) return;
-    event.preventDefault();
-    event.stopPropagation();
-    togglePanelArchivedView();
+    handlePanelArchiveViewToggle(event);
   });
 
   const items = root.querySelector(".wp-items");
   items?.addEventListener("click", (event) => {
+    if (handlePanelArchiveViewToggle(event)) {
+      return;
+    }
+
     const shortlistButton = event.target.closest("[data-shortlist-id]");
     if (shortlistButton) {
       event.preventDefault();
@@ -307,6 +307,18 @@ function endPanelDecisionDrag(root) {
   root.querySelectorAll(".is-decision-drag-source").forEach((item) => {
     item.classList.remove("is-decision-drag-source");
   });
+}
+
+function handlePanelArchiveViewToggle(event) {
+  const archiveToggle = event.target.closest("[data-archive-view-toggle]");
+  if (!archiveToggle) {
+    return false;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  togglePanelArchivedView();
+  return true;
 }
 
 function syncPanelShortlistToggle(id, active) {

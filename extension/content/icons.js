@@ -3,8 +3,10 @@
 var PHOSPHOR_LIGHT_ICON_FILES = {
   search: "magnifying-glass",
   settings: "gear-six",
+  dotsThree: "dots-three",
   dotsThreeVertical: "dots-three-vertical",
   list: "list-bullets",
+  funnelSimple: "funnel-simple",
   grid: "grid-four",
   moon: "moon",
   sun: "sun",
@@ -22,6 +24,7 @@ var PHOSPHOR_LIGHT_ICON_FILES = {
   pencil: "pencil-simple",
   trash: "trash",
   undo: "arrow-u-up-left",
+  refresh: "arrows-clockwise",
   arrowDown: "arrow-down",
   arrowUp: "arrow-up",
   download: "download-simple",
@@ -92,8 +95,16 @@ function phosphorDotsThreeVerticalIcon(className = "wp-phosphor") {
   return phosphorIcon("dotsThreeVertical", className);
 }
 
+function phosphorDotsThreeIcon(className = "wp-phosphor") {
+  return phosphorIcon("dotsThree", className);
+}
+
 function phosphorListIcon(className = "wp-phosphor") {
   return phosphorIcon("list", className);
+}
+
+function phosphorFunnelSimpleIcon(className = "wp-phosphor") {
+  return phosphorIcon("funnelSimple", className);
 }
 
 function phosphorGridIcon(className = "wp-phosphor") {
@@ -162,6 +173,10 @@ function phosphorTrashIcon(className = "wp-phosphor") {
 
 function phosphorUndoIcon(className = "wp-phosphor") {
   return phosphorIcon("undo", className);
+}
+
+function phosphorRefreshIcon(className = "wp-phosphor") {
+  return phosphorIcon("refresh", className);
 }
 
 function phosphorArrowDownIcon(className = "wp-phosphor") {

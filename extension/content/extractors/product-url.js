@@ -8,6 +8,7 @@ function isProductLikeUrl(value) {
     const isFablestoreProduct =
       /(^|\.)fablestore\.ru$/i.test(url.hostname) &&
         /^\/catalog\/[^/]+\/[^/]+\/[^/]+\/?$/i.test(url.pathname);
+    const isNikeProduct = isNikeProductUrl(url.href);
     const isPyeProduct =
       typeof isPyeProductUrl === "function" && isPyeProductUrl(url.href);
     return (
@@ -15,9 +16,19 @@ function isProductLikeUrl(value) {
       isFarfetchProduct ||
       isBrandshopProduct ||
       isFablestoreProduct ||
+      isNikeProduct ||
       isPyeProduct ||
       looksLikeSkuProductPath(url)
     );
+  } catch {
+    return false;
+  }
+}
+
+function isNikeProductUrl(value) {
+  try {
+    const url = new URL(value, location.href);
+    return /(^|\.)nike\.com$/i.test(url.hostname) && /\/t\/[^/]+\/[^/]+\/?$/i.test(url.pathname);
   } catch {
     return false;
   }

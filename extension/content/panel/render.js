@@ -11,6 +11,7 @@ function renderTuckioPanel(options = {}) {
     { id: "all", label: "All" },
     ...panelState.categories
   ];
+  const filtersNav = renderPanelFiltersNav(filterCategories, panelArchivedCount(displayItems));
 
   root.innerHTML = `
     <style>${panelStyles()}</style>
@@ -18,9 +19,7 @@ function renderTuckioPanel(options = {}) {
       ${renderPanelTopbarHtml(summaryItems)}
       ${renderFounderPromoDialog()}
 
-      <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="${escapeAttribute(t("Tuckio categories"))}">
-        ${renderCategoryFilters(filterCategories, panelArchivedCount(displayItems))}
-      </nav>
+      ${filtersNav}
       <div class="wp-hint-layer" aria-hidden="true" hidden data-panel-hint-layer></div>
       ${renderPanelDecisionScrim()}
       ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
@@ -31,6 +30,7 @@ function renderTuckioPanel(options = {}) {
       <section class="wp-items${panelState.compactView ? " is-compact" : ""}${panelState.archivedOpen ? " is-archive-view" : ""}${panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen ? " is-brand-cloud" : ""}" aria-live="polite">
         ${renderPanelItemsHtml(visibleItems)}
       </section>
+      ${renderPanelPriceCheckButton()}
       ${renderPanelDecisionDropTray()}
     </section>
   `;
@@ -63,19 +63,20 @@ function animatePanelSummaryAfterRender(root, displayItems, previousValue) {
 
 function syncPanelItemsTopOffset(root, options = {}) {
   const shell = root.querySelector(".wp-shell");
+  const topbar = root.querySelector(".wp-topbar");
   const filters = root.querySelector(".wp-filters");
   const items = root.querySelector(".wp-items");
-  if (!shell || !filters || !items) {
+  if (!shell || !topbar || !items) {
     return;
   }
 
   const applyOffset = () => {
     const shellTop = shell.getBoundingClientRect().top;
-    const filterBottom = panelVisibleFiltersBottom(filters);
-    const baseTop = panelState.compactView
-      ? 96
-      : 112;
-    const measuredTop = filterBottom - shellTop + 16;
+    const chromeBottom = filters ? panelVisibleFiltersBottom(filters) : topbar.getBoundingClientRect().bottom;
+    const baseTop = filters
+      ? (panelState.compactView ? 96 : 112)
+      : 80;
+    const measuredTop = chromeBottom - shellTop + 16;
     const nextTop = `${roundPanelGridOffset(Math.max(baseTop, measuredTop))}px`;
     if (items.style.getPropertyValue("--wp-items-padding-top") !== nextTop) {
       items.style.setProperty("--wp-items-padding-top", nextTop);
@@ -216,6 +217,7 @@ function renderPanelSummaryHtml(displayItems) {
         ${renderPanelSummaryLead(displayItems)}
         <div class="wp-currency-select" data-currency-root>
           <button class="wp-total" type="button" aria-label="${escapeAttribute(t("Choose summary currency"))}" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
+            ${renderPanelPriceCheckSummaryStatus()}
             <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(valueItems, panelState.summaryCurrency))}</span>
             ${phosphorChevronDownIcon("wp-total-chevron")}
           </button>
@@ -224,11 +226,21 @@ function renderPanelSummaryHtml(displayItems) {
       </span>
     </span>
     <div class="wp-actions">
-      <button class="wp-icon-button wp-search-button" type="button" aria-label="${escapeAttribute(t("Search"))}" aria-expanded="${panelState.searchOpen}" data-panel-search>
-        ${phosphorSearchIcon()}
-      </button>
+      ${renderPanelSearchTrigger()}
       ${renderPanelOverflowMenu()}
     </div>
+  `;
+}
+
+function renderPanelSearchTrigger() {
+  if (!panelShouldShowSearchControl()) {
+    return "";
+  }
+
+  return `
+    <button class="wp-icon-button wp-search-button" type="button" aria-label="${escapeAttribute(t("Search"))}" aria-expanded="${panelState.searchOpen}" data-panel-search>
+      ${phosphorSearchIcon()}
+    </button>
   `;
 }
 
@@ -237,7 +249,7 @@ function renderPanelOverflowMenu() {
   return `
     <div class="wp-overflow${isOpen ? " is-open" : ""}" style="${escapeAttribute(PANEL_OVERFLOW_ROOT_INLINE_STYLE)}" data-panel-overflow-root>
       <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("More options"))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-overflow-trigger>
-        ${phosphorDotsThreeVerticalIcon("wp-overflow-button-icon")}
+        ${phosphorDotsThreeIcon("wp-overflow-button-icon")}
       </button>
       <div class="wp-overflow-menu" style="${escapeAttribute(panelOverflowMenuInlineStyle(isOpen))}" role="menu" ${isOpen ? "" : "hidden"} data-panel-overflow-menu>
         <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitemcheckbox" aria-checked="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME}" data-panel-theme-toggle>
@@ -248,11 +260,8 @@ function renderPanelOverflowMenu() {
         </button>
         ${renderPanelLanguageSelect()}
         <div class="wp-overflow-divider" style="${escapeAttribute(PANEL_OVERFLOW_DIVIDER_INLINE_STYLE)}" role="separator" aria-hidden="true"></div>
-        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitem" data-founder-promo-trigger>
-          ${phosphorInfoIcon("wp-overflow-option-icon")}
-          <span>${escapeHtml(t("About"))}</span>
-          ${phosphorChevronRightIcon("wp-overflow-chevron")}
-        </button>
+        ${panelHasExportableItems() ? `<button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitem" data-export-xlsx>${phosphorDownloadIcon("wp-overflow-option-icon")}<span>${escapeHtml(t("Export to Excel"))}</span></button>` : ""}
+        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitem" data-founder-promo-trigger>${phosphorInfoIcon("wp-overflow-option-icon")}<span>${escapeHtml(t("About"))}</span>${phosphorChevronRightIcon("wp-overflow-chevron")}</button>
       </div>
     </div>
   `;

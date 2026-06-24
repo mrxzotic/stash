@@ -116,8 +116,9 @@ function syncPanelCompactItemNodes(list, visibleItems) {
     return false;
   }
 
-  syncPanelNodeOrder(compactList, panelItemNodesFor(list, visibleItems, "compact"));
-  removePanelStaleItemNodes(compactList, visibleItems);
+  const nodes = panelItemNodesFor(list, visibleItems, "compact");
+  syncPanelNodeOrder(compactList, nodes);
+  removePanelUnselectedItemNodes(compactList, nodes);
   return true;
 }
 
@@ -127,36 +128,55 @@ function syncPanelCardItemNodes(list, visibleItems) {
     return false;
   }
 
-  syncPanelCardColumns(columns, panelItemNodesFor(list, visibleItems, "cards"));
-  columns.forEach((column) => removePanelStaleItemNodes(column, visibleItems));
+  const nodes = panelItemNodesFor(list, visibleItems, "cards");
+  syncPanelCardColumns(columns, nodes);
+  columns.forEach((column) => removePanelUnselectedItemNodes(column, nodes));
   return true;
 }
 
 function panelItemNodesFor(list, visibleItems, mode) {
-  const nodeById = new Map(
-    Array.from(list.querySelectorAll("[data-panel-item-id]"))
-      .map((node) => [node.dataset.panelItemId, node])
-  );
+  const nodesById = panelItemNodesById(list);
+  const selectedNodes = new Set();
 
   return visibleItems.map((item, index) => {
-    const node = nodeById.get(item.id);
     const signature = panelItemRenderSignature(item, mode);
+    const node = panelMatchingItemNode(nodesById.get(item.id), signature, selectedNodes);
     if (node?.dataset.panelRenderSignature === signature) {
       node.dataset.panelRenderSignature = signature;
+      selectedNodes.add(node);
       if (mode === "compact") syncPanelCompactItemNodeIndex(node, index);
       return node;
     }
 
     const nextNode = elementFromHtml(mode === "compact" ? renderPanelCompactItem(item, index) : renderPanelItem(item));
     nextNode.dataset.panelRenderSignature = signature;
+    selectedNodes.add(nextNode);
     return nextNode;
   });
 }
 
-function removePanelStaleItemNodes(parent, visibleItems) {
-  const visibleIds = new Set(visibleItems.map((item) => item.id));
+function panelItemNodesById(list) {
+  return Array.from(list.querySelectorAll("[data-panel-item-id]")).reduce((nodesById, node) => {
+    const id = node.dataset.panelItemId;
+    if (!id) return nodesById;
+    const nodes = nodesById.get(id) || [];
+    nodes.push(node);
+    nodesById.set(id, nodes);
+    return nodesById;
+  }, new Map());
+}
+
+function panelMatchingItemNode(nodes = [], signature, selectedNodes) {
+  return nodes.find((node) =>
+    !selectedNodes.has(node) &&
+    node.dataset.panelRenderSignature === signature
+  );
+}
+
+function removePanelUnselectedItemNodes(parent, nodes) {
+  const selectedNodes = new Set(nodes);
   Array.from(parent.querySelectorAll("[data-panel-item-id]")).forEach((node) => {
-    if (!visibleIds.has(node.dataset.panelItemId)) {
+    if (!selectedNodes.has(node)) {
       node.remove();
     }
   });

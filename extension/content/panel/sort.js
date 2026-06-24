@@ -55,10 +55,14 @@ function panelSortOptionIsSelected(option) {
 }
 
 function panelVisibleItems(items = panelState.items) {
+  return panelSearchableItems(items)
+    .filter(panelItemMatchesSearch);
+}
+
+function panelSearchableItems(items = panelState.items) {
   return panelScopedItems(items)
     .filter(panelItemMatchesShortlistFilter)
     .filter(panelItemMatchesActiveCategory)
-    .filter(panelItemMatchesSearch)
     .filter(panelItemMatchesBrandFilter);
 }
 
@@ -68,6 +72,10 @@ function panelItemMatchesActiveCategory(item) {
 
 function panelShouldShowSortControls(items = panelState.items) {
   return panelVisibleItems(items).length >= 2;
+}
+
+function panelShouldShowSearchControl(items = panelState.items) {
+  return panelState.searchOpen || Boolean(panelState.searchQuery) || panelSearchableItems(items).length >= 3;
 }
 
 function bindPanelSortEvents(root) {

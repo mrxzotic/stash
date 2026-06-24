@@ -134,6 +134,18 @@ const restoreClick = {
     restoreClick.stopped = true;
   }
 };
+const emptyArchiveButton = {
+  closest: (selector) => (selector === "[data-archive-view-toggle]" ? emptyArchiveButton : null)
+};
+const emptyArchiveClick = {
+  target: emptyArchiveButton,
+  preventDefault: () => {
+    emptyArchiveClick.prevented = true;
+  },
+  stopPropagation: () => {
+    emptyArchiveClick.stopped = true;
+  }
+};
 const itemsRoot = {
   addEventListener: (eventName, listener) => {
     clickListeners[eventName] = listener;
@@ -187,6 +199,15 @@ assert.deepEqual(sandbox.dragData, { type: "text/plain", value: "item-1" });
 assert.equal(shellClassList.has("is-decision-dragging"), true);
 
 async function run() {
+  sandbox.viewSyncCount = 0;
+  sandbox.panelState.archivedOpen = false;
+  clickListeners.click(emptyArchiveClick);
+  assert.equal(emptyArchiveClick.prevented, true, "Empty archive CTA should prevent default click behavior");
+  assert.equal(emptyArchiveClick.stopped, true, "Empty archive CTA should not leak to item click handlers");
+  assert.equal(sandbox.panelState.archivedOpen, true, "Empty archive CTA should open archive view");
+  assert.equal(sandbox.viewSyncCount, 1, "Empty archive CTA should sync archive view in place");
+  sandbox.panelState.archivedOpen = false;
+
   sandbox.renderCount = 0;
   sandbox.panelState.items = [{ id: "item-1", title: "Cabin", url: "https://example.com/cabin" }];
   await vm.runInContext("togglePanelShortlistItem('item-1')", sandbox);

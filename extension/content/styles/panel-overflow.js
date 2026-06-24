@@ -60,6 +60,7 @@ function panelOverflowStyles() {
       color: rgba(8, 11, 16, 0.72);
       font-size: var(--text-body);
       font-weight: 720;
+      line-height: 18px;
       text-align: left;
       white-space: nowrap;
       transition:
@@ -72,6 +73,7 @@ function panelOverflowStyles() {
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 18px;
     }
 
     .wp-overflow-option:hover,
@@ -99,6 +101,7 @@ function panelOverflowStyles() {
       color: var(--wp-overflow-option-color, rgba(8, 11, 16, 0.72));
       font-size: var(--text-body);
       font-weight: 720;
+      line-height: 18px;
       white-space: nowrap;
     }
 
@@ -106,6 +109,7 @@ function panelOverflowStyles() {
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 18px;
     }
 
     .wp-overflow-language-trigger {

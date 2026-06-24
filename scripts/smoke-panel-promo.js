@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const promoSource = fs.readFileSync(
@@ -43,6 +44,7 @@ assert.doesNotMatch(promoSource, /<span>@zoticx<\/span>/, "Founder profile shoul
 assert.match(promoSource, /phosphorXLogoIcon/, "Founder popup should use a Phosphor icon for X");
 assert.match(promoSource, /phosphorGithubLogoIcon/, "Founder popup should use a Phosphor icon for GitHub");
 assert.match(promoSource, /data-export-backup/, "Founder popup should expose backup export");
+assert.match(promoSource, /panelHasExportableItems\(\)\s*\?[\s\S]*data-export-backup/, "Founder popup should hide backup export when there are no saved items");
 assert.match(promoSource, /data-import-backup/, "Founder popup should expose backup import");
 assert.match(promoSource, /data-import-backup-file/, "Founder popup should include a JSON file picker");
 assert.match(promoSource, /renderFounderDangerZone/, "Founder popup should render a reset danger zone");
@@ -69,7 +71,7 @@ assert.match(aboutStyles, /\.wp-founder-reset-confirm\s*\{[\s\S]*?grid-template-
 assert.match(aboutStyles, /\.wp-founder-danger\.is-confirming \.wp-founder-reset-confirm\s*\{[\s\S]*?grid-template-rows: 1fr;/, "Reset confirm should open with smooth grid motion");
 assert.match(aboutStyles, /\.wp-founder-reset-confirm-button:not\(:disabled\)\s*\{[\s\S]*?background: #d1242f;/, "Reset confirm should turn red only after hard confirm");
 assert.match(panelStyles, /panelPromoStyles\(\),\s*panelAboutStyles\(\),/, "About styles should override the base promo styles");
-assert.match(backgroundSource, /"content\/panel\/export\.js",\s*"content\/panel\/reset\.js",/, "Reset module should load with the panel data actions");
+assert.match(backgroundSource, /"content\/panel\/export\.js",\s*"content\/panel\/export-xlsx\.js",\s*"content\/panel\/reset\.js",/, "Reset module should load with the panel data actions");
 assert.match(backgroundSource, /"content\/styles\/panel-promo\.js",\s*"content\/styles\/panel-about\.js",/, "About style chunk should be injected after promo styles");
 assert.match(resetSource, /function bindPanelResetEvents/, "About reset controls should bind in a focused reset module");
 assert.match(resetSource, /value\.trim\(\) !== TUCKIO_RESET_CONFIRM_WORD/, "Reset should require the exact hard-confirm word");
@@ -82,5 +84,24 @@ assert.doesNotMatch(promoStyles, /\.wp-founder-person\s*\{[^}]*background: #fff;
 assert.doesNotMatch(promoStyles, /\.wp-founder-link\s*\{[^}]*background: #fff;/, "Founder links should not be separate cards");
 assert.doesNotMatch(promoStyles, /\.wp-founder-link\s*\{[^}]*border: 1px/, "Founder links should not have individual borders");
 assert.doesNotMatch(promoStyles, /backdrop-filter/, "Founder blocks should not rely on transparency blur");
+
+const promoSandbox = {
+  escapeAttribute: (value) => String(value ?? ""),
+  escapeHtml: (value) => String(value ?? ""),
+  panelHasExportableItems: () => false,
+  phosphorDownloadIcon: () => "",
+  phosphorUploadIcon: () => "",
+  t: (key) => key
+};
+vm.createContext(promoSandbox);
+vm.runInContext(promoSource, promoSandbox);
+const emptyBackup = vm.runInContext("renderFounderBackupControls()", promoSandbox);
+assert.doesNotMatch(emptyBackup, /data-export-backup/, "Empty About backup controls should not render export");
+assert.match(emptyBackup, /data-import-backup/, "Empty About backup controls should keep import");
+
+promoSandbox.panelHasExportableItems = () => true;
+const populatedBackup = vm.runInContext("renderFounderBackupControls()", promoSandbox);
+assert.match(populatedBackup, /data-export-backup/, "Populated About backup controls should render export");
+assert.match(populatedBackup, /data-import-backup/, "Populated About backup controls should keep import");
 
 console.log("panel promo smoke passed");

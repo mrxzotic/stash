@@ -1,9 +1,13 @@
 function bindPanelExportEvents(root) {
+  bindPanelExcelExportEvents(root);
+
   root.querySelector("[data-export-backup]")?.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
 
-    safelyRunPanelAction(exportTuckioBackup);
+    if (panelHasExportableItems()) {
+      safelyRunPanelAction(exportTuckioBackup);
+    }
   });
 
   const importInput = root.querySelector("[data-import-backup-file]");

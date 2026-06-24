@@ -107,7 +107,7 @@ function extractFromFetchedProductPage(doc, productUrl) {
   if (pyeProduct.fromPyeProductPage) return pyeProduct;
   const jsonProduct = findJsonLdProductInDocument(doc, productUrl);
   const metaProduct = extractMetaProductFromDocument(doc, productUrl);
-  const priceProduct = extractPriceFromFetchedDocument(doc);
+  const priceProduct = extractPriceFromFetchedDocument(doc, productUrl);
   return mergeProducts([jsonProduct, metaProduct, priceProduct]);
 }
 
