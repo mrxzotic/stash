@@ -46,13 +46,13 @@ assert.match(
 );
 assert.match(
   compactStyles,
-  /grid-template-columns: 28px 78px minmax\(0, 1fr\) minmax\(72px, max-content\);/,
-  "Compact rows should use a narrow numeric index, thumbnail, readable copy, and right price column"
+  /grid-template-columns: 28px 78px minmax\(0, 1fr\) minmax\(82px, 126px\);/,
+  "Compact rows should cap the price column so long prices cannot crush the title"
 );
 assert.match(
   releaseStyles,
-  /grid-template-columns: 28px 78px minmax\(0, 1fr\) minmax\(72px, max-content\);/,
-  "Release styles should preserve the readable compact row template"
+  /grid-template-columns: 28px 78px minmax\(0, 1fr\) minmax\(82px, 126px\);/,
+  "Release styles should preserve the capped compact price column"
 );
 assert.doesNotMatch(
   `${compactStyles}\n${releaseStyles}`,
@@ -61,13 +61,13 @@ assert.doesNotMatch(
 );
 assert.match(
   compactStyles,
-  /\.wp-compact-item \.wp-compact-copy \.wp-item-title\s*\{[\s\S]*?white-space: normal;[\s\S]*?-webkit-line-clamp: unset;/,
-  "Compact titles should use the full copy column instead of ellipsis truncation"
+  /\.wp-compact-item \.wp-compact-copy \.wp-item-title\s*\{[\s\S]*?white-space: normal;[\s\S]*?overflow-wrap: break-word;[\s\S]*?word-break: normal;[\s\S]*?-webkit-line-clamp: unset;/,
+  "Compact titles should wrap naturally instead of collapsing words into vertical letters"
 );
 assert.match(
   compactStyles,
-  /\.wp-compact-price\s*\{[\s\S]*?width: auto;[\s\S]*?align-self: center;[\s\S]*?justify-self: end;[\s\S]*?text-align: right;/,
-  "Compact prices should scan on the right without floating at the top of the row"
+  /\.wp-compact-price\s*\{[\s\S]*?width: auto;[\s\S]*?max-width: 126px;[\s\S]*?align-self: center;[\s\S]*?justify-self: end;[\s\S]*?text-align: right;/,
+  "Compact prices should stay capped on the right without floating at the top of the row"
 );
 assert.match(
   compactStyles,
@@ -83,6 +83,11 @@ assert.match(
   compactStyles,
   /\.wp-compact-actions\s*\{[\s\S]*?grid-column: 3;[\s\S]*?grid-row: 2;[\s\S]*?width: 88px;[\s\S]*?opacity: 1;[\s\S]*?pointer-events: none;/,
   "Compact actions should keep the active star visible while inactive actions stay non-interactive"
+);
+assert.match(
+  releaseStyles,
+  /\.wp-compact-item\.is-archived \.wp-compact-actions \.wp-restore,[\s\S]*?\.wp-compact-item\.is-archived \.wp-compact-actions \.wp-remove\s*\{[\s\S]*?opacity: 0;[\s\S]*?pointer-events: none;/,
+  "Archived compact row actions should stay hover-only instead of covering the decision status"
 );
 assert.match(
   compactStyles,

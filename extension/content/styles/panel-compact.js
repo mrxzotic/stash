@@ -17,7 +17,7 @@ function panelCompactStyles() {
       position: relative;
       min-height: 112px;
       display: grid;
-      grid-template-columns: 28px 78px minmax(0, 1fr) minmax(72px, max-content);
+      grid-template-columns: 28px 78px minmax(0, 1fr) minmax(82px, 126px);
       grid-template-rows: minmax(0, auto) 28px;
       column-gap: 12px;
       row-gap: 6px;
@@ -139,7 +139,8 @@ function panelCompactStyles() {
       overflow: visible;
       text-overflow: clip;
       white-space: normal;
-      overflow-wrap: anywhere;
+      overflow-wrap: break-word;
+      word-break: normal;
     }
 
     .wp-compact-item .wp-compact-copy .wp-item-title {
@@ -148,7 +149,8 @@ function panelCompactStyles() {
       overflow: visible;
       text-overflow: clip;
       white-space: normal;
-      overflow-wrap: anywhere;
+      overflow-wrap: break-word;
+      word-break: normal;
       -webkit-line-clamp: unset;
     }
 
@@ -217,6 +219,7 @@ function panelCompactStyles() {
       grid-row: 1 / span 2;
       width: auto;
       min-width: 0;
+      max-width: 126px;
       align-self: center;
       justify-self: end;
       justify-content: flex-end;
@@ -230,6 +233,7 @@ function panelCompactStyles() {
 
     .wp-compact-price .wp-price-stack {
       width: 100%;
+      min-width: 0;
       display: grid;
       justify-items: end;
       gap: 2px;
@@ -241,11 +245,23 @@ function panelCompactStyles() {
       align-items: baseline;
       justify-content: flex-end;
       gap: 2px 4px;
-      overflow: visible;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .wp-compact-price .wp-native-price {
       flex-basis: 100%;
+    }
+
+    .wp-compact-price .wp-site-price,
+    .wp-compact-price .wp-compare-price,
+    .wp-compact-price .wp-native-price {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .wp-compact-price .wp-site-price,

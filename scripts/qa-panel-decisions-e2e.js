@@ -552,6 +552,27 @@ async function main() {
       const listArchiveOnArchiveView = listArchiveOnItems.classList.contains("is-archive-view");
       const listArchiveOnArchivedRows = listArchiveOnRows.length > 0 && listArchiveOnRows.every((node) => node.classList.contains("is-archived"));
       const listArchiveOnChipActive = root.querySelector("[data-archive-view-toggle]")?.classList.contains("is-active") || false;
+      const archivedLongRow = root.querySelector('[data-panel-item-id="archived-lime-long"]');
+      const archivedLongTitle = archivedLongRow?.querySelector(".wp-compact-copy .wp-item-title");
+      const archivedLongPrice = archivedLongRow?.querySelector(".wp-compact-price");
+      const archivedLongStatusBadge = archivedLongRow?.querySelector(".wp-decision-status");
+      const archivedLongRemove = archivedLongRow?.querySelector(".wp-compact-actions .wp-remove");
+      const archivedLongRestore = archivedLongRow?.querySelector(".wp-compact-actions .wp-restore");
+      const archivedLongActions = Array.from(archivedLongRow?.querySelectorAll(".wp-compact-actions button") || []);
+      const archivedLongRowRect = archivedLongRow?.getBoundingClientRect();
+      const archivedLongTitleRect = archivedLongTitle?.getBoundingClientRect();
+      const archivedLongPriceRect = archivedLongPrice?.getBoundingClientRect();
+      const archivedLongRemoveStyles = archivedLongRemove ? getComputedStyle(archivedLongRemove) : null;
+      const archivedLongRestoreStyles = archivedLongRestore ? getComputedStyle(archivedLongRestore) : null;
+      const archivedLongTitleInsideRow = archivedLongRowRect && archivedLongTitleRect
+        ? archivedLongTitleRect.left >= archivedLongRowRect.left - 1 && archivedLongTitleRect.right <= archivedLongRowRect.right + 1
+        : false;
+      const archivedLongPriceInsideRow = archivedLongRowRect && archivedLongPriceRect
+        ? archivedLongPriceRect.left >= archivedLongRowRect.left - 1 && archivedLongPriceRect.right <= archivedLongRowRect.right + 1
+        : false;
+      const archivedLongTitleBeforePrice = archivedLongTitleRect && archivedLongPriceRect
+        ? archivedLongTitleRect.right <= archivedLongPriceRect.left + 1
+        : false;
       root.querySelector("[data-panel-compact-toggle]").click();
       await sleep(520);
       root.querySelector("[data-archive-view-toggle]")?.click();
@@ -768,6 +789,18 @@ async function main() {
         listArchiveOnArchiveView,
         listArchiveOnArchivedRows,
         listArchiveOnChipActive,
+        archivedLongRowExists: Boolean(archivedLongRow),
+        archivedLongTitleInsideRow,
+        archivedLongPriceInsideRow,
+        archivedLongTitleBeforePrice,
+        archivedLongActionCount: archivedLongActions.length,
+        archivedLongRemoveExists: Boolean(archivedLongRemove),
+        archivedLongRestoreExists: Boolean(archivedLongRestore),
+        archivedLongTitleWidth: Math.round(archivedLongTitleRect?.width || 0),
+        archivedLongPriceWidth: Math.round(archivedLongPriceRect?.width || 0),
+        archivedLongStatusExists: Boolean(archivedLongStatusBadge),
+        archivedLongRemoveOpacity: Number(archivedLongRemoveStyles?.opacity || 0),
+        archivedLongRestoreOpacity: Number(archivedLongRestoreStyles?.opacity || 0),
         archiveToggleClearExists: Boolean(archiveToggle?.querySelector(".wp-chip-clear")),
         decisionStatusText: decisionStatus?.textContent.trim() || "",
         decisionStatusClass: decisionStatus?.className || "",
@@ -978,6 +1011,18 @@ async function main() {
     assert.equal(metrics.listArchiveOnArchiveView, true, "Turning archive on from List view should enter archive scope");
     assert.equal(metrics.listArchiveOnArchivedRows, true, "Turning archive on from List view should show archived rows");
     assert.equal(metrics.listArchiveOnChipActive, true, "Turning archive on from List view should activate the archive chip");
+    assert.equal(metrics.archivedLongRowExists, true, "Archive List view should render the long LIME-style row");
+    assert.equal(metrics.archivedLongTitleInsideRow, true, "Long archived List titles should stay inside the row");
+    assert.equal(metrics.archivedLongPriceInsideRow, true, "Long archived List prices should stay inside the row");
+    assert.equal(metrics.archivedLongTitleBeforePrice, true, "Long archived List titles should not run under the price column");
+    assert.equal(metrics.archivedLongActionCount, 2, "Archived List long row should keep restore and delete actions available");
+    assert.equal(metrics.archivedLongRemoveExists, true, "Archived List long row should keep its delete action");
+    assert.equal(metrics.archivedLongRestoreExists, true, "Archived List long row should keep its restore action");
+    assert.ok(metrics.archivedLongTitleWidth >= 110, `Long archived List title column should stay readable: ${metrics.archivedLongTitleWidth}px`);
+    assert.ok(metrics.archivedLongPriceWidth <= 128, `Long archived List price column should stay capped: ${metrics.archivedLongPriceWidth}px`);
+    assert.equal(metrics.archivedLongStatusExists, true, "Archived List long row should keep its decision status badge");
+    assert.ok(metrics.archivedLongRemoveOpacity <= 0.05, "Archived List delete action should stay hidden until hover or focus");
+    assert.ok(metrics.archivedLongRestoreOpacity <= 0.05, "Archived List restore action should stay hidden until hover or focus");
     assert.equal(metrics.archiveToggleClearExists, true, "Active archive chip should expose an inline close affordance");
     assert.equal(metrics.decisionStatusText, "Bought", "Archived card should display the persisted Bought decision");
     assert.match(metrics.decisionStatusClass, /is-bought/, "Bought decision badge should use bought styling");
@@ -1046,6 +1091,33 @@ function seededItems() {
       title: "Archived Product",
       url: "https://example.com/products/archived-1",
       archivedAt: new Date(Date.UTC(2026, 0, 2)).toISOString()
+    },
+    {
+      id: "archived-lime-long",
+      title: "Прямые Джинсы Со Средней Посадкой",
+      brand: "LIME",
+      url: "https://example.com/products/archived-lime-long",
+      category: "bottoms",
+      price: {
+        amount: 3999,
+        currency: "RUB",
+        originalText: "3 999 ₽",
+        compareAtAmount: 6999,
+        compareAtText: "6 999 ₽",
+        rubAmount: 3999,
+        isSale: true
+      },
+      priceText: "3 999 ₽",
+      priceAmount: 3999,
+      currency: "RUB",
+      imageUrl,
+      imageUrls: [imageUrl],
+      archivedAt: new Date(Date.UTC(2026, 0, 3)).toISOString(),
+      decisionState: "skipped",
+      decision: {
+        state: "skipped",
+        decidedAt: new Date(Date.UTC(2026, 0, 3)).toISOString()
+      }
     }
   ];
 }
