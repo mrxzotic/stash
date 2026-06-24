@@ -71,6 +71,8 @@ assert.match(iconsSource, /function phosphorSearchMinusIcon/, "Search empty stat
 assert.match(emptySource, /panelState\.searchQuery[\s\S]*?icon: "search"[\s\S]*?title: t\("No matches"\)/, "Search no-match empty state should request a search icon");
 assert.match(emptySource, /function renderPanelEmptyIcon\(state\)[\s\S]*?state\.icon === "search"[\s\S]*?phosphorSearchMinusIcon\("wp-empty-state-icon"\)/, "Search no-match empty state should render a Phosphor search-minus icon");
 assert.match(panelEmptyStyles, /\.wp-empty-state-icon\s*\{[\s\S]*?width: 44px;[\s\S]*?color: rgba\(8, 11, 16, 0\.34\);/, "Search empty icon should stay quiet and centered");
+assert.match(emptySource, /function renderPanelEmptyAction\(state\)[\s\S]*?wp-empty-action/, "Contextual empty states should render a real button action");
+assert.match(archiveSource, /function handlePanelArchiveViewToggle\(event\)[\s\S]*?data-archive-view-toggle[\s\S]*?togglePanelArchivedView\(\)/, "Archive toggle handling should be shared by filter chips and empty-state actions");
 assert.match(promoSource, /data-panel-modal/, "Founder dialog should be marked as a trapped modal");
 assert.match(promoSource, /tabindex="-1" aria-hidden="true" data-import-backup-file/, "Hidden import input should not enter tab order");
 assert.match(panelBaseStyles, /:focus-visible/, "Panel should define visible focus states");
@@ -124,7 +126,8 @@ assert.doesNotMatch(filtersSource, /wp-view-toggle"[\s\S]{0,220}title=/, "View t
 assert.doesNotMatch(preferencesSource, /data-panel-view-toggle[\s\S]{0,360}setAttribute\("title"/, "View toggle sync should not re-add immediate native title tooltips");
 assert.doesNotMatch(renderSource, /renderPanelShortlistTopbarAction/, "Topbar should not render the shortlist state");
 assert.doesNotMatch(renderSource, /wp-overflow-menu wp-popover/, "Overflow menu should stay decoupled from generic popover sizing");
-assert.match(renderSource, /phosphorDotsThreeVerticalIcon\("wp-overflow-button-icon"\)/, "Overflow trigger should use the vendored Phosphor menu icon");
+assert.match(renderSource, /phosphorDotsThreeIcon\("wp-overflow-button-icon"\)/, "Overflow trigger should use the calmer horizontal Phosphor menu icon");
+assert.doesNotMatch(renderSource, /phosphorDotsThreeVerticalIcon\("wp-overflow-button-icon"\)/, "Overflow trigger should not use the vertical kebab icon");
 assert.doesNotMatch(renderSource, /wp-overflow-dotmark/, "Overflow trigger should not render a text dotmark");
 assert.match(renderSource, /wp-overflow-button\$\{isOpen \? " is-active" : ""\}/, "Overflow trigger active state should only follow the open menu state");
 assert.match(renderSource, /aria-expanded="\$\{isOpen\}"/, "Overflow trigger should expose the live open state");

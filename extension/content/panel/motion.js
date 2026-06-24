@@ -54,8 +54,13 @@ function syncPanelFiltersState(root) {
   const filters = root?.querySelector?.(".wp-filters");
   if (!filters) return;
   const filterCategories = [{ id: "all", label: "All" }, ...panelState.categories];
-  filters.className = `wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}`;
-  filters.innerHTML = renderCategoryFilters(filterCategories, panelArchivedCount(panelState.items));
+  const content = renderCategoryFilters(filterCategories, panelArchivedCount(panelState.items));
+  if (!content.trim()) {
+    filters.remove();
+    return;
+  }
+  filters.className = panelFiltersClassName();
+  filters.innerHTML = content;
 }
 
 function syncPanelItemsState(root) {

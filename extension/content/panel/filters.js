@@ -1,16 +1,42 @@
 function renderCategoryFilters(filterCategories, archivedCount = 0) {
   const [, ...categoryOptions] = filterCategories;
+  const shortlistChip = renderShortlistFilterChip();
+  const brandChip = renderBrandFilterChip();
+  const filterMenuTrigger = renderFilterMenuTrigger(categoryOptions);
+  const archivedChip = renderArchivedFilter(archivedCount);
+  const viewControls = renderPanelViewControls();
+  const railControls = `${shortlistChip}${brandChip}${filterMenuTrigger}${archivedChip}`;
+  if (!railControls.trim() && !viewControls.trim()) {
+    return "";
+  }
 
   return `
     <div class="wp-filter-rail" data-filter-rail>
-      ${renderShortlistFilterChip()}
-      ${renderBrandFilterChip()}
-      ${renderFilterMenuTrigger(categoryOptions)}
-      ${renderArchivedFilter(archivedCount)}
+      ${shortlistChip}
+      ${brandChip}
+      ${filterMenuTrigger}
+      ${archivedChip}
     </div>
-    ${renderFilterMenu(categoryOptions)}
-    ${renderPanelViewControls()}
+    ${filterMenuTrigger ? renderFilterMenu(categoryOptions) : ""}
+    ${viewControls}
   `;
+}
+
+function renderPanelFiltersNav(filterCategories, archivedCount = 0) {
+  const content = renderCategoryFilters(filterCategories, archivedCount).trim();
+  if (!content) {
+    return "";
+  }
+
+  return `
+    <nav class="${escapeAttribute(panelFiltersClassName())}" aria-label="${escapeAttribute(t("Tuckio categories"))}">
+      ${content}
+    </nav>
+  `;
+}
+
+function panelFiltersClassName() {
+  return `wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}`;
 }
 
 function renderPanelViewControls() {
@@ -79,6 +105,10 @@ function renderShortlistFilterChip() {
 function renderBrandFilterChip() {
   const brandCount = panelBrandFilterCount();
   const hasBrandFilter = Boolean(panelState.brandFilterKey);
+  if (!brandCount && !hasBrandFilter) {
+    return "";
+  }
+
   const isActive = panelState.brandCloudOpen || hasBrandFilter;
   return `
     <button class="wp-brand-chip${isActive ? " is-active" : ""}${hasBrandFilter ? " is-filtered" : ""}" type="button" aria-label="${escapeAttribute(panelBrandChipAriaLabel(brandCount))}" aria-pressed="${isActive}" data-panel-hint="${escapeAttribute(panelBrandChipHint())}" data-brand-cloud-toggle>
@@ -92,15 +122,23 @@ function renderBrandFilterChip() {
 }
 
 function renderFilterMenuTrigger(categories) {
+  if (!panelShouldShowCategoryFilterTrigger()) {
+    return "";
+  }
+
   const isOpen = panelState.filterMenuOpen;
   const hasActiveFilter = panelActiveFilterCount() > 0;
   return `
     <button class="wp-filter wp-filter-trigger${hasActiveFilter ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(panelFilterTriggerAriaLabel(categories))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-hint="${escapeAttribute(panelFilterChipHint(categories))}" data-filter-menu-trigger>
-      ${phosphorListIcon("wp-filter-trigger-icon")}
+      ${phosphorFunnelSimpleIcon("wp-filter-trigger-icon")}
       <span class="wp-filter-trigger-label">${escapeHtml(panelFilterTriggerLabel(categories))}</span>
       ${hasActiveFilter ? renderPanelChipClearIcon("data-filter-clear") : phosphorChevronDownIcon("wp-filter-chevron")}
     </button>
   `;
+}
+
+function panelShouldShowCategoryFilterTrigger(items = panelState.items) {
+  return panelScopedItems(items).length > 0 || panelActiveFilterCount() > 0;
 }
 
 function renderPanelChipClearIcon(attribute = "") {

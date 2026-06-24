@@ -154,12 +154,22 @@ assert.match(
   /function renderShortlistFilterChip\(\)[\s\S]*?panelShortlistCount\(\)[\s\S]*?phosphorStarIcon\("wp-shortlist-chip-icon"\)[\s\S]*?wp-shortlist-chip-count/,
   "Shortlist should render as a count chip in the filter rail"
 );
+assert.match(
+  filtersSource,
+  /function renderBrandFilterChip\(\)[\s\S]*?if \(!brandCount && !hasBrandFilter\) \{[\s\S]*?return "";/,
+  "Brand chip should not render a dead 0-count control"
+);
+assert.match(
+  filtersSource,
+  /function renderFilterMenuTrigger\(categories\)[\s\S]*?panelShouldShowCategoryFilterTrigger\(\)[\s\S]*?return "";/,
+  "Category filter trigger should not render in an empty inactive scope"
+);
 assert.doesNotMatch(filtersSource, /wp-chip-label/, "Brand, shortlist, and archive chips should not render hidden text labels");
 assert.doesNotMatch(filtersSource, /wp-filter-reset|data-panel-filter-reset|renderScopeResetControl/, "Separate undo/reset chip should not render");
 assert.match(
   filtersSource,
-  /phosphorListIcon\("wp-filter-trigger-icon"\)/,
-  "Filter trigger should use a compact Phosphor icon"
+  /phosphorFunnelSimpleIcon\("wp-filter-trigger-icon"\)/,
+  "Filter trigger should use a distinct filter icon, not the list view icon"
 );
 assert.match(
   filtersSource,
