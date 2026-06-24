@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-24-archive-compact-list-v49";
+var CONTENT_VERSION = "2026-06-24-list-decision-cancel-v50";
 
 
 var STORAGE_KEY = "tuckio.items.v1";

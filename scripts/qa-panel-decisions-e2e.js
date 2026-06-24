@@ -202,6 +202,7 @@ async function main() {
       const compactActionsBelowTitle = compactActionsRect.top >= compactTitleRect.bottom - 1;
       const compactCopyWidth = Math.round(compactTitleRect.width);
       const compactStateBeforePrice = compactStateRect.width === 0 || compactStateRect.right <= compactPriceRect.left + 1;
+      const compactVisibleIdsBeforeCancel = Array.from(root.querySelectorAll("[data-panel-item-id]"), (node) => node.dataset.panelItemId);
       const compactTitleWhiteSpace = compactTitleStyles.whiteSpace;
       const compactTitleTextOverflow = compactTitleStyles.textOverflow;
       const compactTitleLineClamp = compactTitleStyles.webkitLineClamp ||
@@ -214,13 +215,23 @@ async function main() {
       compactArchiveButton.focus();
       await sleep(220);
       const compactActionsFocusOpacity = Number(getComputedStyle(compactActions).opacity);
-      compactArchiveButton.click();
+      compactArchiveButton.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, detail: 1 }));
       await sleep(260);
       const compactArchiveDecisionMode = root.querySelector(".wp-shell").classList.contains("is-decision-mode");
       const compactArchiveDropTrayOpacity = Number(getComputedStyle(root.querySelector("[data-decision-drop-tray]")).opacity);
+      const compactArchiveFocusedAfterPointer = root.activeElement === compactArchiveButton;
       root.querySelector("[data-decision-cancel]").click();
-      await sleep(120);
       await sleep(360);
+      const compactDecisionModeAfterCancel = root.querySelector(".wp-shell").classList.contains("is-decision-mode");
+      const compactDraggingModeAfterCancel = root.querySelector(".wp-shell").classList.contains("is-decision-dragging");
+      const compactArchiveExpandedAfterCancel = compactArchiveButton.getAttribute("aria-expanded");
+      const compactInactiveActionOpacityAfterCancel = Number(getComputedStyle(compactArchiveButton).opacity);
+      const compactVisibleIdsAfterCancel = Array.from(root.querySelectorAll("[data-panel-item-id]"), (node) => node.dataset.panelItemId);
+      const compactRestoredOriginalIdsAfterCancel = compactVisibleIdsAfterCancel.join("|") === compactVisibleIdsBeforeCancel.join("|");
+      const compactArchiveFocusedAfterCancel = root.activeElement === compactArchiveButton;
+      const compactDropTrayAfterCancelStyles = getComputedStyle(root.querySelector("[data-decision-drop-tray]"));
+      const compactDropTrayOpacityAfterCancel = Number(compactDropTrayAfterCancelStyles.opacity);
+      const compactDropTrayPointerEventsAfterCancel = compactDropTrayAfterCancelStyles.pointerEvents;
       const compactTopGap = root.querySelector(".wp-compact-thumb").getBoundingClientRect().top -
         root.querySelector(".wp-filters").getBoundingClientRect().bottom;
       root.querySelector("[data-panel-compact-toggle]").click();
@@ -581,6 +592,15 @@ async function main() {
         compactArchiveButtonExists: Boolean(compactArchiveButton),
         compactArchiveDecisionMode,
         compactArchiveDropTrayOpacity,
+        compactArchiveFocusedAfterPointer,
+        compactDecisionModeAfterCancel,
+        compactDraggingModeAfterCancel,
+        compactArchiveExpandedAfterCancel,
+        compactInactiveActionOpacityAfterCancel,
+        compactRestoredOriginalIdsAfterCancel,
+        compactArchiveFocusedAfterCancel,
+        compactDropTrayOpacityAfterCancel,
+        compactDropTrayPointerEventsAfterCancel,
         compactRestoredCardView,
         compactTopbarStableAfterRestore,
         noMatchIconExists: Boolean(noMatchIcon),
@@ -772,6 +792,15 @@ async function main() {
     assert.ok(metrics.compactActionsFocusOpacity >= 0.95, "List actions should reveal on keyboard focus");
     assert.equal(metrics.compactArchiveDecisionMode, true, "List archive action should open decision mode");
     assert.ok(metrics.compactArchiveDropTrayOpacity >= 0.95, "List archive action should show the bottom decision tray");
+    assert.equal(metrics.compactArchiveFocusedAfterPointer, false, "Pointer-clicking List archive should not leave the archive action focused");
+    assert.equal(metrics.compactDecisionModeAfterCancel, false, "Cancelling List archive should close decision mode");
+    assert.equal(metrics.compactDraggingModeAfterCancel, false, "Cancelling List archive should not leave drag mode active");
+    assert.equal(metrics.compactArchiveExpandedAfterCancel, "false", "Cancelling List archive should reset archive action expanded state");
+    assert.ok(metrics.compactInactiveActionOpacityAfterCancel <= 0.05, `Cancelling List archive should restore quiet row actions: ${metrics.compactInactiveActionOpacityAfterCancel}`);
+    assert.equal(metrics.compactRestoredOriginalIdsAfterCancel, true, "Cancelling List archive should keep the original visible list");
+    assert.equal(metrics.compactArchiveFocusedAfterCancel, false, "Cancelling List archive should not leave focus-within stuck on the row");
+    assert.ok(metrics.compactDropTrayOpacityAfterCancel <= 0.05, `Cancelling List archive should hide the drop tray: ${metrics.compactDropTrayOpacityAfterCancel}`);
+    assert.equal(metrics.compactDropTrayPointerEventsAfterCancel, "none", "Cancelling List archive should disable drop tray hit testing");
     assert.equal(metrics.compactRestoredCardView, true, "List view e2e should restore card view before continuing");
     assert.equal(metrics.compactTopbarStableAfterRestore, true, "Leaving list view should not replace the topbar node");
     assert.equal(metrics.noMatchTitle, "No matches", "Search with no results should render the no-match empty state");

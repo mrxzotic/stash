@@ -74,6 +74,9 @@ function bindPanelArchiveEvents(root) {
       event.stopPropagation();
       rememberPanelFocus(decisionButton);
       togglePanelDecisionTray(decisionButton.dataset.decisionMenuId);
+      if (event.detail > 0) {
+        decisionButton.blur();
+      }
       return;
     }
 
