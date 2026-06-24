@@ -1,6 +1,6 @@
 # Tuckio Privacy Policy
 
-Last updated: June 23, 2026
+Last updated: June 24, 2026
 
 Tuckio is a local shopping and product saver. It saves products from pages the user explicitly opens or right-clicks and keeps the product library in local browser storage.
 
@@ -28,6 +28,8 @@ Network activity is limited to user-facing save/open flows:
 - Saved product images can load from their original shop when the panel is open. Rendered image elements use `referrerpolicy="no-referrer"`.
 
 Tuckio does not call remote favicon proxies or perform passive third-party asset lookups for saved shops.
+
+Tuckio packages its UI icons, app artwork, and font files with the extension. It does not fetch remote font CSS, remote UI scripts, or executable assets.
 
 ## Sharing
 

@@ -47,3 +47,41 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Inter
+
+Source: Inter
+
+Used files:
+
+- `extension/fonts/inter-cyrillic-ext-var.woff2`
+- `extension/fonts/inter-cyrillic-var.woff2`
+- `extension/fonts/inter-latin-ext-var.woff2`
+
+License:
+
+SIL Open Font License 1.1
+
+Copyright (c) The Inter Project Authors.
+
+## IBM Plex Mono
+
+Source: IBM Plex
+
+Used files:
+
+- `extension/fonts/ibm-plex-mono-cyrillic-400.woff2`
+- `extension/fonts/ibm-plex-mono-cyrillic-600.woff2`
+- `extension/fonts/ibm-plex-mono-cyrillic-700.woff2`
+- `extension/fonts/ibm-plex-mono-cyrillic-ext-400.woff2`
+- `extension/fonts/ibm-plex-mono-cyrillic-ext-600.woff2`
+- `extension/fonts/ibm-plex-mono-cyrillic-ext-700.woff2`
+- `extension/fonts/ibm-plex-mono-latin-ext-400.woff2`
+- `extension/fonts/ibm-plex-mono-latin-ext-600.woff2`
+- `extension/fonts/ibm-plex-mono-latin-ext-700.woff2`
+
+License:
+
+SIL Open Font License 1.1
+
+Copyright (c) IBM Corp.
