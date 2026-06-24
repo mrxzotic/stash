@@ -6,14 +6,16 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 
 Chrome Web Store listing: https://chromewebstore.google.com/detail/akehcgpjghmmenhicldnppjjelkipfpk
 
+Current extension version: `0.1.432`.
+
 ## What it does
 
 - Saves products from right-clicked product cards, images, links, and product pages.
 - Extracts product data from schema.org JSON-LD, embedded app JSON, Shopify product JSON, OpenGraph, microdata, and DOM context.
 - Stores the library locally in `chrome.storage.local`.
-- Opens as a compact in-page panel with category filters, search, and view/theme toggles.
+- Opens as a compact in-page panel with category filters, shortlist, archive, search, and view/theme toggles.
 - Keeps visible product cards clean: short commercial model name, brand, image, source URL, and original site price.
-- Lets users edit saved brand, name, price, image URL, and category.
+- Lets users edit saved brand, name, price, image URL, category, and item state.
 - Exports and imports local JSON backups.
 - Supports sale display with current price and compare-at price.
 - Converts totals with cached RUB fallback rates while preserving the original site currency on cards.
@@ -81,6 +83,8 @@ Current network behavior is limited to user-triggered save/open flows:
 
 Tuckio does not call a remote favicon proxy or render passive third-party favicon lookups.
 
+UI icons, product app artwork, and bundled Inter/IBM Plex Mono font subsets are packaged with the extension. The panel does not fetch remote font CSS or executable UI assets.
+
 ## Project structure
 
 ```text
@@ -121,9 +125,30 @@ node --check extension/background.js
 find scripts -maxdepth 1 -name 'smoke-*.js' -print | sort | xargs -n1 node
 ```
 
+Playwright QA scripts require a local Chrome-compatible browser and a `playwright` Node module available to Node. Set `CHROME_PATH` if Chrome is not installed at the default macOS path.
+
+```bash
+node scripts/qa-panel-decisions-e2e.js
+node scripts/qa-live-sites-e2e.js
+```
+
+## Release packaging
+
+Chrome Web Store packages are ZIPs built directly from the `extension` folder. `manifest.json` must be at the archive root, not nested inside an `extension/` directory.
+
+```bash
+version=$(node -p "require('./extension/manifest.json').version")
+stamp=$(date +%Y%m%d-%H%M%S)
+mkdir -p output/chrome-web-store
+(cd extension && zip -qr "../output/chrome-web-store/tuckio-chrome-v${version}-${stamp}.zip" . -x '*.DS_Store' '__MACOSX/*')
+unzip -t "output/chrome-web-store/tuckio-chrome-v${version}-${stamp}.zip"
+```
+
+Generated release ZIPs and Playwright screenshots stay local under `output/`; do not commit them.
+
 ## Status
 
-Tuckio v0.1 is published on the Chrome Web Store. It currently focuses on local saving, generic extraction, manual correction, JSON backup export/import, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or background shopping automation.
+Tuckio v0.1 is published on the Chrome Web Store. It currently focuses on local saving, generic extraction, manual correction, JSON backup export/import, archive/state workflows, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or background shopping automation.
 
 ## License
 
