@@ -130,15 +130,16 @@ function extractFromCommonSelectors() {
       imageElement?.getAttribute("title")
   );
   const titleCandidate = isNoiseLine(title) ? imageAltTitle : title || imageAltTitle;
-  const priceText = textFromFirst([
+  const productScope = document.querySelector("main") || document.body;
+  const priceText = bestVisibleProductPriceText(textFromFirst([
     '[data-testid*="price" i]',
     '[data-test*="price" i]',
     '[data-qa*="price" i]',
     '[itemprop="price"]',
     '[class*="price" i]',
     '[class*="amount" i]'
-  ]) || findVisiblePriceText(document.body);
-  const currency = currencyFromText(priceText) || findVisibleCurrencyCode(document.body);
+  ]), productScope);
+  const currency = currencyFromText(priceText) || findVisibleCurrencyCode(productScope);
   const price = normalizePrice({ text: priceText, currency });
   const image =
     bestImageFromElement(imageElement) ||
@@ -170,7 +171,7 @@ function extractFromCommonSelectors() {
 
 function extractFromPagePrice() {
   const scope = document.querySelector("main") || document.body || document;
-  const priceText = findVisiblePriceText(scope);
+  const priceText = visibleSalePriceClusterText(scope) || findVisiblePriceText(scope);
   const currency =
     currencyFromText(priceText) ||
     findVisibleCurrencyCode(scope);

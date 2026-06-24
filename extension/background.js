@@ -3,7 +3,7 @@ const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const COMMAND_SAVE_CURRENT = "save-to-tuckio";
 const COMMAND_TOGGLE_PANEL = "toggle-tuckio";
-const CONTENT_SCRIPT_VERSION = "2026-06-24-empty-archive-cta-v93";
+const CONTENT_SCRIPT_VERSION = "2026-06-25-price-checker-live-sale-v105";
 const MESSAGE_PING = "TUCKIO_PING_V2";
 const MESSAGE_SAVE = "TUCKIO_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "TUCKIO_TOGGLE_PANEL_V2";
@@ -34,7 +34,9 @@ const CONTENT_SCRIPT_FILES = [
   "content/panel/items.js",
   "content/panel/prices.js",
   "content/panel/edit.js",
+  "content/panel/price-checker.js",
   "content/panel/export.js",
+  "content/panel/export-xlsx.js",
   "content/panel/reset.js",
   "content/icons.js",
   "content/source-icons.js",
@@ -79,6 +81,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/styles/panel-rebuild-motion.js",
   "content/styles/panel-save-motion.js",
   "content/styles/panel-interaction-motion.js",
+  "content/styles/panel-price-checker.js",
   "content/styles/panel-hints.js",
   "content/styles/panel.js",
   "content/styles/overlay-fields.js",

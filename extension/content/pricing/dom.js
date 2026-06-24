@@ -27,6 +27,45 @@ function findVisiblePriceText(scope = document) {
   return companion ? `${candidates[0].text} ${companion.text}` : candidates[0].text;
 }
 
+function bestVisibleProductPriceText(primaryText, scope = document) {
+  const primary = cleanText(primaryText);
+  const visible = visibleSalePriceClusterText(scope) || findVisiblePriceText(scope);
+  if (!primary) {
+    return visible;
+  }
+  if (!visible || cleanText(visible) === primary) {
+    return primary;
+  }
+
+  const scopeCurrency = findVisibleCurrencyCode(scope);
+  const primaryPrice = normalizePrice({
+    text: primary,
+    currency: currencyFromText(primary) || scopeCurrency
+  });
+  const visiblePrice = normalizePrice({
+    text: visible,
+    currency: currencyFromText(visible) || primaryPrice.currency || scopeCurrency
+  });
+  const sameCurrency = primaryPrice.currency && primaryPrice.currency === visiblePrice.currency;
+  const sameCurrent = sameCurrency && primaryPrice.amount === visiblePrice.amount;
+  const primaryWasCompareAt = sameCurrency && primaryPrice.amount === visiblePrice.compareAtAmount;
+
+  return visiblePrice.isSale && (sameCurrent || primaryWasCompareAt)
+    ? visible
+    : primary;
+}
+
+function visibleSalePriceClusterText(scope = document) {
+  const text = cleanText(scope?.textContent || "");
+  if (!text || !hasSalePriceEvidence(text)) {
+    return "";
+  }
+
+  const money = `(?:[$€£¥₽₴]\\s*[\\d][\\d\\s.,]*|[\\d][\\d\\s.,]*\\s*(?:[$€£¥₽₴]|\\b${CURRENCY_CODE_PATTERN}\\b)|\\b${CURRENCY_CODE_PATTERN}\\b\\s*[\\d][\\d\\s.,]*)`;
+  const match = text.match(new RegExp(`(${money})\\s*(${money})(?:\\s+(?:VAT|tax)\\s+included)?\\s+-\\s*\\d{1,2}%`, "i"));
+  return cleanText(match?.[0]);
+}
+
 function visiblePriceCandidates(scope = document) {
   return visiblePriceCandidateEntries(scope).map((candidate) => candidate.text);
 }

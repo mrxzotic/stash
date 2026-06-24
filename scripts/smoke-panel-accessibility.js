@@ -156,6 +156,7 @@ assert.match(panelOverflowStyles, /\.wp-overflow-language-trigger\s*\{[\s\S]*?gr
 assert.match(i18nSource, /wp-language-current[\s\S]*?wp-language-flag[\s\S]*?wp-language-chevron/, "Collapsed language trigger should render label, then flag, then chevron");
 assert.match(panelOverflowStyles, /\.wp-overflow-menu\[hidden\]\s*\{[\s\S]*?display: none;/, "Overflow menu hidden state should override its open grid layout");
 assert.match(panelOverflowStyles, /\.wp-overflow-option > span\s*\{[\s\S]*?min-width: 0;[\s\S]*?text-overflow: ellipsis;/, "Overflow menu labels should stay inside the option row");
+assert.match(panelOverflowStyles, /\.wp-overflow-language > span\s*\{[\s\S]*?line-height: 18px;/, "Overflow language label should leave room for descenders like g");
 assert.match(eventsSource, /closePanelOverflowMenu\(root\);[\s\S]*?closePanelSortMenu\(root\);[\s\S]*?closePanelFilterMenu\(root\);[\s\S]*?togglePanelCurrencySelect/, "Opening currency should close competing menus first");
 assert.match(panelEditStyles, /\.wp-edit-category input:focus-visible \+ span/, "Hidden category radios should focus the visible chip");
 assert.match(panelReleaseStyles, /\.wp-item:focus-within \.wp-archive/, "Archive action should reveal for keyboard focus");

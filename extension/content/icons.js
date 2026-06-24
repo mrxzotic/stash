@@ -24,6 +24,7 @@ var PHOSPHOR_LIGHT_ICON_FILES = {
   pencil: "pencil-simple",
   trash: "trash",
   undo: "arrow-u-up-left",
+  refresh: "arrows-clockwise",
   arrowDown: "arrow-down",
   arrowUp: "arrow-up",
   download: "download-simple",
@@ -172,6 +173,10 @@ function phosphorTrashIcon(className = "wp-phosphor") {
 
 function phosphorUndoIcon(className = "wp-phosphor") {
   return phosphorIcon("undo", className);
+}
+
+function phosphorRefreshIcon(className = "wp-phosphor") {
+  return phosphorIcon("refresh", className);
 }
 
 function phosphorArrowDownIcon(className = "wp-phosphor") {

@@ -30,6 +30,7 @@ function renderTuckioPanel(options = {}) {
       <section class="wp-items${panelState.compactView ? " is-compact" : ""}${panelState.archivedOpen ? " is-archive-view" : ""}${panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen ? " is-brand-cloud" : ""}" aria-live="polite">
         ${renderPanelItemsHtml(visibleItems)}
       </section>
+      ${renderPanelPriceCheckButton()}
       ${renderPanelDecisionDropTray()}
     </section>
   `;
@@ -216,6 +217,7 @@ function renderPanelSummaryHtml(displayItems) {
         ${renderPanelSummaryLead(displayItems)}
         <div class="wp-currency-select" data-currency-root>
           <button class="wp-total" type="button" aria-label="${escapeAttribute(t("Choose summary currency"))}" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
+            ${renderPanelPriceCheckSummaryStatus()}
             <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(valueItems, panelState.summaryCurrency))}</span>
             ${phosphorChevronDownIcon("wp-total-chevron")}
           </button>
@@ -258,11 +260,8 @@ function renderPanelOverflowMenu() {
         </button>
         ${renderPanelLanguageSelect()}
         <div class="wp-overflow-divider" style="${escapeAttribute(PANEL_OVERFLOW_DIVIDER_INLINE_STYLE)}" role="separator" aria-hidden="true"></div>
-        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitem" data-founder-promo-trigger>
-          ${phosphorInfoIcon("wp-overflow-option-icon")}
-          <span>${escapeHtml(t("About"))}</span>
-          ${phosphorChevronRightIcon("wp-overflow-chevron")}
-        </button>
+        ${panelHasExportableItems() ? `<button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitem" data-export-xlsx>${phosphorDownloadIcon("wp-overflow-option-icon")}<span>${escapeHtml(t("Export to Excel"))}</span></button>` : ""}
+        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitem" data-founder-promo-trigger>${phosphorInfoIcon("wp-overflow-option-icon")}<span>${escapeHtml(t("About"))}</span>${phosphorChevronRightIcon("wp-overflow-chevron")}</button>
       </div>
     </div>
   `;

@@ -105,7 +105,6 @@ function extractProduct(context) {
     url
   });
   const imageUrls = bestProductImageUrlsFromSources(imageSources, url);
-
   return compactObject({
     source: sourceNameFromUrl(url),
     sourceDomain: sourceDomainFromUrl(url),
@@ -127,30 +126,32 @@ function extractProduct(context) {
 }
 
 function bestProductPrice({ commonSelectorProduct, pagePriceProduct, contextualProduct, priceSources, url }) {
+  if (isNikeProductUrl(url)) {
+    const structuredPrice = bestPriceFromSources(priceSources.filter((source) => source?.fromJsonLd));
+    if (Number.isFinite(structuredPrice.amount) && structuredPrice.currency) {
+      return structuredPrice.isSale ? structuredPrice : priceWithoutCompareAt(structuredPrice);
+    }
+  }
   if (isRimowaProductUrl(url)) {
     const visiblePrice = bestPriceFromSources([pagePriceProduct, commonSelectorProduct]);
     if (Number.isFinite(visiblePrice.amount) && visiblePrice.currency) {
       return priceWithoutCompareAt(visiblePrice);
     }
   }
-
   if (hasVariantSelectionParam(url) || isAllSaintsProductUrl(url)) {
     const visiblePrice = bestPriceFromSources([pagePriceProduct, commonSelectorProduct]);
     if (Number.isFinite(visiblePrice.amount) && visiblePrice.currency) {
       return visiblePrice.isSale ? visiblePrice : priceWithoutCompareAt(visiblePrice);
     }
   }
-
   if (isMrPorterProductUrl(url)) {
     const contextualPrice = bestPriceFromSources([contextualProduct]);
     if (contextualPrice.isSale) {
       return contextualPrice;
     }
   }
-
   return repairKnownInstallmentPrice(bestPriceFromSources(priceSources), url);
 }
-
 function priceWithoutCompareAt(price) {
   return compactObject({
     amount: price.amount,
@@ -158,14 +159,12 @@ function priceWithoutCompareAt(price) {
     originalText: price.originalText
   });
 }
-
 function firstProductTitle(sources, fallbackTitle, brand, productUrl) {
   return sources
     .map((source, index) => titleSourceCandidate(source, index, brand, productUrl, fallbackTitle))
     .filter(Boolean)
     .sort((a, b) => b.score - a.score)[0]?.title || fallbackTitle;
 }
-
 function titleSourceCandidate(source, index, brand, productUrl, fallbackTitle) {
   const cleaned = cleanTitle(source?.title, brand);
   if (!cleaned) {

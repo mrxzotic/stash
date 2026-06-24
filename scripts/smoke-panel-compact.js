@@ -31,6 +31,21 @@ assert.match(compactSource, /syncPanelItemsState\(root\)/, "Compact toggle shoul
 assert.match(reorderSource, /renderPanelCompactItem\(item, index\)/, "In-place compact row sync should render new archive rows with the correct row index");
 assert.match(reorderSource, /syncPanelCompactItemNodeIndex/, "In-place compact row sync should refresh reused row numbers");
 assert.match(reorderSource, /parent\.insertBefore\(node, sibling \|\| null\)/, "Compact row sync should insert newly rendered rows instead of only assigning CSS order");
+assert.match(
+  reorderSource,
+  /const nodes = panelItemNodesFor\(list, visibleItems, "compact"\);[\s\S]*?removePanelUnselectedItemNodes\(compactList, nodes\)/,
+  "Compact sync should remove duplicate stale rows by selected DOM node, not by item id"
+);
+assert.match(
+  reorderSource,
+  /function panelMatchingItemNode\(nodes = \[\], signature, selectedNodes\)[\s\S]*?node\.dataset\.panelRenderSignature === signature/,
+  "In-place sync should prefer an existing row whose active/archive render signature already matches"
+);
+assert.match(
+  reorderSource,
+  /function removePanelUnselectedItemNodes\(parent, nodes\)[\s\S]*?const selectedNodes = new Set\(nodes\)[\s\S]*?!selectedNodes\.has\(node\)[\s\S]*?node\.remove\(\)/,
+  "In-place sync should clean stale duplicates that keep the same data-panel-item-id"
+);
 assert.match(compactSource, /wp-compact-actions/, "Compact row actions should be grouped");
 assert.match(compactSource, /startPanelViewModeSwitch\(items\)/, "Compact toggle should animate only the content area in place");
 assert.match(

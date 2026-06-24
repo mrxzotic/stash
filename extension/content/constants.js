@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-24-empty-archive-cta-v93";
+var CONTENT_VERSION = "2026-06-25-price-checker-live-sale-v105";
 
 
 var STORAGE_KEY = "tuckio.items.v1";
@@ -231,6 +231,10 @@ var panelState = {
   displacedItemId: "",
   highlightTimer: 0
 };
+
+function panelHasExportableItems(items = panelState.items) {
+  return Array.isArray(items) && items.length > 0;
+}
 
 function t(key, replacements = {}) {
   return interpolatePanelText(key, replacements);

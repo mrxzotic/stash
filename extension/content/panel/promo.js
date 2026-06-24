@@ -78,10 +78,10 @@ function renderFounderBackupControls() {
     <div class="wp-founder-backup" aria-label="${escapeAttribute(t("Backup"))}">
       <span class="wp-founder-section-title">${escapeHtml(t("Backup"))}</span>
       <span class="wp-founder-backup-actions">
-      <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Export backup"))}" title="${escapeAttribute(t("Export backup"))}" data-export-backup>
+      ${panelHasExportableItems() ? `<button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Export backup"))}" title="${escapeAttribute(t("Export backup"))}" data-export-backup>
         ${phosphorDownloadIcon("wp-founder-action-icon")}
         <span>${escapeHtml(t("Export"))}</span>
-      </button>
+      </button>` : ""}
       <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Import backup"))}" title="${escapeAttribute(t("Import backup"))}" data-import-backup>
         ${phosphorUploadIcon("wp-founder-action-icon")}
         <span>${escapeHtml(t("Import"))}</span>

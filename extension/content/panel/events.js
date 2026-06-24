@@ -17,6 +17,7 @@ function bindPanelEvents(root) {
   bindPanelFounderPromoEvents(root);
   bindPanelSaveCurrentEvents(root);
   bindPanelImageSliderEvents(root);
+  bindPanelPriceCheckerEvents(root);
   bindPanelDismissEvents(root);
   bindPanelFilterEvents(root);
   bindPanelCategoryEvents(root);
