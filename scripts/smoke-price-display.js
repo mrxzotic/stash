@@ -60,7 +60,9 @@ assert.equal(display.isSale, true);
 
 const panelHtml = vm.runInContext("renderSitePriceHtml(saleItem, 'wp')", sandbox);
 assert.match(panelHtml, /wp-price-stack/);
-assert.match(panelHtml, /wp-price-line[\s\S]*wp-site-price is-sale[^>]*>\$54<[\s\S]*wp-compare-price[\s\S]*\$78[\s\S]*wp-native-price[^>]*>50 \u20ac \(72 \u20ac\)</);
+assert.match(panelHtml, /wp-price-line[\s\S]*wp-site-price is-sale[^>]*>\$54<[\s\S]*wp-compare-price[\s\S]*\$78/);
+assert.match(panelHtml, /wp-native-price[^>]*>50 \u20ac \(72 \u20ac\)</);
+assert.match(panelHtml, /<span class="wp-price-line">[\s\S]*?<\/span>\s*<span class="wp-native-price"/, "Native sale pair should render after the primary price line");
 
 const overlayHtml = vm.runInContext("renderSitePriceHtml(saleItem, 'wl')", sandbox);
 assert.match(overlayHtml, /wl-price-stack/);

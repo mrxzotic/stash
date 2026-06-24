@@ -1,5 +1,5 @@
 function renderPanelPricesOnly(options = {}) {
-  const root = document.getElementById("stash-panel-root")?.shadowRoot;
+  const root = document.getElementById("tuckio-panel-root")?.shadowRoot;
   if (!root) {
     return;
   }
@@ -35,12 +35,12 @@ function syncPanelPriceRow(element, item, options = {}) {
 }
 
 function restartPanelPriceCount(priceRow) {
-  window.clearTimeout(priceRow.__stashPriceCountTimer);
+  window.clearTimeout(priceRow.__tuckioPriceCountTimer);
   priceRow.classList.remove("is-price-recounting");
   void priceRow.offsetWidth;
   priceRow.classList.add("is-price-recounting");
-  priceRow.__stashPriceCountTimer = window.setTimeout(() => {
+  priceRow.__tuckioPriceCountTimer = window.setTimeout(() => {
     priceRow.classList.remove("is-price-recounting");
-    priceRow.__stashPriceCountTimer = 0;
+    priceRow.__tuckioPriceCountTimer = 0;
   }, 760);
 }

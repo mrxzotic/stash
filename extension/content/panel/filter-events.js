@@ -4,11 +4,15 @@ function bindPanelFilterEvents(root) {
       return;
     }
 
-    if (handlePanelFilterMenuTrigger(event, root)) {
+    if (handlePanelViewToggle(event, root)) {
       return;
     }
 
-    if (handlePanelFilterReset(event)) {
+    if (handlePanelFilterClear(event)) {
+      return;
+    }
+
+    if (handlePanelFilterMenuTrigger(event, root)) {
       return;
     }
 
@@ -24,6 +28,31 @@ function bindPanelFilterEvents(root) {
   });
 }
 
+function handlePanelViewToggle(event, root) {
+  const button = event.target.closest("[data-panel-view-toggle]");
+  if (!button) {
+    return false;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation?.();
+  const compactView = !panelState.compactView;
+  closePanelCurrencySelect(root);
+  closePanelLanguageMenu(root);
+  closePanelFilterMenu(root);
+  closePanelSortMenu(root);
+  panelState.settingsOpen = false;
+  syncPanelOverflowMenu(root);
+  safelyRunPanelAction(() =>
+    savePanelSettings(
+      { compactView },
+      { rerender: false, syncViewMode: true, syncSummary: false }
+    )
+  );
+  return true;
+}
+
 function handlePanelFilterMenuTrigger(event, root) {
   const trigger = event.target.closest("[data-filter-menu-trigger]");
   if (!trigger) {
@@ -36,31 +65,27 @@ function handlePanelFilterMenuTrigger(event, root) {
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
+  panelState.decisionItemId = "";
   syncPanelFilterMenu(root);
   return true;
 }
 
-function handlePanelFilterReset(event) {
-  const button = event.target.closest("[data-panel-filter-reset]");
-  if (!button) {
+function handlePanelFilterClear(event) {
+  const button = event.target.closest("[data-filter-clear]");
+  if (!button || panelState.activeCategory === "all") {
     return false;
   }
 
   event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation?.();
   panelState.sortMenuOpen = false;
   panelState.filterMenuOpen = false;
   panelState.categoryComposerOpen = false;
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
-  panelState.brandCloudOpen = false;
-  panelState.brandCloudSortList = false;
-  panelState.brandFilterKey = "";
-  panelState.brandFilterLabel = "";
-  panelState.searchOpen = false;
-  panelState.searchQuery = "";
-  closePanelArchivedView();
   panelState.activeCategory = "all";
-  renderStashPanel();
+  syncPanelViewStateWithMotion();
   return true;
 }
 
@@ -75,10 +100,11 @@ function handlePanelAddCategory(event) {
   panelState.filterMenuOpen = false;
   panelState.categoryComposerOpen = !panelState.categoryComposerOpen;
   panelState.settingsOpen = false;
+  panelState.shortlistOpen = false;
   closePanelArchivedView();
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
-  renderStashPanel();
+  renderTuckioPanel();
   return true;
 }
 
@@ -94,10 +120,11 @@ function handlePanelRemoveCategoryPrompt(event) {
   panelState.sortMenuOpen = false;
   panelState.filterMenuOpen = false;
   panelState.categoryComposerOpen = false;
+  panelState.shortlistOpen = false;
   closePanelArchivedView();
   panelState.deleteCategoryId = button.dataset.removeCategoryPrompt;
   panelState.deleteItemId = "";
-  renderStashPanel();
+  renderTuckioPanel();
   return true;
 }
 
@@ -112,12 +139,9 @@ function handlePanelCategorySelection(event) {
   }
   panelState.sortMenuOpen = false;
   panelState.filterMenuOpen = false;
-  panelState.brandCloudOpen = false;
-  panelState.brandCloudSortList = false;
   panelState.categoryComposerOpen = false;
-  closePanelArchivedView();
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
   panelState.activeCategory = button.dataset.category;
-  renderStashPanel();
+  syncPanelViewStateWithMotion();
 }

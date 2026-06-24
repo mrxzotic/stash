@@ -109,6 +109,33 @@ function panelStylesChunk5() {
         transform 180ms cubic-bezier(.16, 1, .3, 1);
     }
 
+    .wp-brand-cloud.is-sort-list {
+      width: 100%;
+      max-height: min(540px, calc(100svh - var(--wp-items-padding-top, 112px) - 96px));
+      min-height: 0;
+      justify-content: flex-start;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      scroll-behavior: smooth;
+      scroll-padding-block: clamp(84px, 18vh, 128px);
+      scroll-snap-type: y proximity;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 84%, transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0%, #000 16%, #000 84%, transparent 100%);
+    }
+
+    .wp-brand-cloud.is-sort-list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .wp-brand-cloud.is-sort-list .wp-brand-cloud-item {
+      flex: 0 0 auto;
+      min-height: 38px;
+      scroll-snap-align: center;
+    }
+
     .wp-brand-cloud::before {
       content: "";
       position: absolute;
@@ -205,7 +232,9 @@ function panelStylesChunk5() {
 
     .wp-price-stack {
       min-width: 0;
-      display: inline-flex;
+      display: inline-grid;
+      align-items: start;
+      gap: 2px;
       max-width: 100%;
     }
 
@@ -249,31 +278,50 @@ function panelStylesChunk5() {
 
     .wp-empty {
       position: absolute;
-      inset: 0 24px 48px;
-      grid-column: 1 / -1;
+      top: 160px;
+      bottom: 48px;
+      left: 50%;
+      width: min(calc(100% - 48px), 340px);
       min-height: 0;
       display: grid;
       place-items: center;
-      color: rgba(16, 16, 16, 0.46);
+      color: var(--muted);
       text-align: center;
       font-size: var(--text-body);
       line-height: 1.4;
       pointer-events: none;
+      transform: translateX(-50%);
     }
 
     .wp-empty > div {
       display: grid;
       justify-items: center;
       gap: 8px;
+      width: 100%;
     }
 
-    .wp-empty-logo {
-      width: 44px;
-      height: 44px;
-      margin-bottom: 4px;
-      display: block;
-      object-fit: contain;
-      opacity: 0.72;
+    .wp-empty-logo { width: 56px; height: 56px; margin-bottom: 2px; display: block; object-fit: contain; }
+
+    .wp-empty-line-icon {
+      display: none;
+      width: 36px;
+      height: 36px;
+      margin-bottom: 6px;
+      color: rgba(244, 244, 240, 0.68);
+    }
+
+    .wp-empty-state-icon { width: 44px; height: 44px; margin-bottom: 10px; color: rgba(8, 11, 16, 0.34); }
+
+    .wp-theme-graphite .wp-empty-logo {
+      display: none;
+    }
+
+    .wp-theme-graphite .wp-empty-line-icon {
+      display: inline-block;
+    }
+
+    .wp-theme-graphite .wp-empty-state-icon {
+      color: rgba(244, 244, 240, 0.58);
     }
 
     .wp-empty strong {

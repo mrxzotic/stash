@@ -11,6 +11,21 @@ function panelImageSliderAttributes(item) {
   return `data-image-slider-id="${escapeAttribute(item.id)}" data-image-index="0" data-image-initial-url="${escapeAttribute(urls[0])}"`;
 }
 
+function renderPanelCardMedia(item) {
+  const imageUrls = panelCardImageUrls(item);
+  const itemLabel = panelItemAccessibleName(item);
+
+  return `
+    <div class="wp-media" ${panelImageSliderAttributes(item)}>
+      <a class="wp-media-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(t("Open {item}", { item: itemLabel }))}">
+        ${renderPanelCardImageFrame(item, { slider: false })}
+      </a>
+      ${imageUrls.length > 1 ? renderPanelImageSliderControls(imageUrls, item) : ""}
+      ${renderPanelCardActions(item)}
+    </div>
+  `;
+}
+
 function renderPanelCardImageFrame(item, options = {}) {
   const urls = panelCardImageUrls(item);
   const imageUrl = urls[0] || "";
@@ -27,11 +42,11 @@ function renderPanelCardImageFrame(item, options = {}) {
 
 function renderMissingProductImage(namespace = "wp") {
   const className = namespace === "wl" ? "wl-image-missing" : "wp-image-missing";
-  const logoClass = namespace === "wl" ? "wl-image-missing-logo" : "wp-image-missing-logo";
   const textClass = namespace === "wl" ? "wl-image-missing-text" : "wp-image-missing-text";
+  const iconClass = namespace === "wl" ? "wl-image-missing-icon" : "wp-image-missing-icon";
   return `
     <span class="${className}" role="img" aria-label="${escapeAttribute(t("Oops, image missing"))}">
-      <img class="${logoClass}" src="${escapeAttribute(stashedGreyscaleLogoUrl())}" alt="" aria-hidden="true">
+      ${phosphorImageOffIcon(iconClass)}
       <span class="${textClass}">${escapeHtml(t("Oops, image missing"))}</span>
     </span>
   `;
@@ -74,7 +89,7 @@ function renderPanelImageDeleteButton(item = null) {
 
 function bindPanelImageSliderEvents(root) {
   const items = root.querySelector(".wp-items");
-  if (!items || items.__stashImageSliderBound) {
+  if (!items || items.__tuckioImageSliderBound) {
     return;
   }
 
@@ -100,7 +115,7 @@ function bindPanelImageSliderEvents(root) {
       button.blur();
     }
   });
-  items.__stashImageSliderBound = true;
+  items.__tuckioImageSliderBound = true;
 }
 
 function slidePanelCardImage(media, direction) {
@@ -116,16 +131,23 @@ function slidePanelCardImage(media, direction) {
 }
 
 function setPanelCardImageIndex(media, index, urls = panelMediaImageUrls(media)) {
-  const imageUrl = urls[index] || urls[0] || "";
-  const image = media.querySelector(".wp-image-frame > img");
-  if (!image || image.src === imageUrl) {
+  if (!media || !urls.length) {
     return;
   }
 
-  image.src = imageUrl;
-  media.dataset.imageIndex = String(index);
+  const nextIndex = clamp(index, 0, urls.length - 1);
+  const imageUrl = urls[nextIndex] || urls[0] || "";
+  const image = media.querySelector(".wp-image-frame > img");
+  if (!image || !imageUrl) {
+    return;
+  }
+
+  if (image.getAttribute("src") !== imageUrl) {
+    image.setAttribute("src", imageUrl);
+  }
+  media.dataset.imageIndex = String(nextIndex);
   media.querySelectorAll(".wp-image-slider-dot").forEach((dot, dotIndex) => {
-    dot.classList.toggle("is-active", dotIndex === index);
+    dot.classList.toggle("is-active", dotIndex === nextIndex);
   });
 }
 
@@ -173,18 +195,16 @@ function deletePanelCardImage(media) {
 
   const currentIndex = clamp(Number(media.dataset.imageIndex) || 0, 0, urls.length - 1);
   const imageUrl = urls[currentIndex] || urls[0] || "";
-  const remaining = urls.filter((_, index) => index !== currentIndex);
-  const nextImageUrl = remaining[Math.min(currentIndex, remaining.length - 1)] || remaining[0] || "";
-  const root = media.getRootNode?.();
   safelyRunPanelAction(() =>
-    removePanelCardImage(media.dataset.imageSliderId, imageUrl, nextImageUrl, root)
+    removePanelCardImage(media.dataset.imageSliderId, imageUrl, currentIndex, media)
   );
 }
 
-async function removePanelCardImage(id, imageUrl, nextImageUrl, root) {
+async function removePanelCardImage(id, imageUrl, removedIndex, media) {
   const removedKey = normalizeUrl(imageUrl);
-  const nextKey = normalizeUrl(nextImageUrl);
   let changed = false;
+  let updatedItem = null;
+  let nextImageIndex = 0;
   const nextItems = panelState.items.map((item) => {
     const normalized = normalizePanelItem(item);
     if (normalized.id !== id) {
@@ -196,15 +216,17 @@ async function removePanelCardImage(id, imageUrl, nextImageUrl, root) {
       return item;
     }
 
-    const primary = remaining.find((url) => normalizeUrl(url) === nextKey) || remaining[0];
+    const primary = remaining[0];
+    nextImageIndex = clamp(removedIndex, 0, remaining.length - 1);
     changed = true;
-    return {
+    updatedItem = {
       ...item,
       id: normalized.id,
       imageUrl: primary,
       imageUrls: normalizeProductImageUrls(remaining, primary, SAVED_IMAGE_URL_LIMIT),
       updatedAt: new Date().toISOString()
     };
+    return updatedItem;
   });
 
   if (!changed) {
@@ -213,11 +235,45 @@ async function removePanelCardImage(id, imageUrl, nextImageUrl, root) {
 
   panelState.items = nextItems;
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderPanelItemsOnly(root?.querySelector ? root : document.getElementById("stash-panel-root")?.shadowRoot);
+  replacePanelCardImageMedia(media, updatedItem, nextImageIndex);
+}
+
+function replacePanelCardImageMedia(media, item, imageIndex = 0) {
+  const template = document.createElement("template");
+  template.innerHTML = renderPanelCardMedia(item).trim();
+  const nextMedia = template.content.firstElementChild;
+  if (!nextMedia || !media?.isConnected) {
+    return;
+  }
+
+  const shouldRestoreHover = Boolean(media.matches?.(":hover") || media.closest?.(".wp-item")?.matches?.(":hover"));
+  media.replaceWith(nextMedia);
+  const urls = panelMediaImageUrls(nextMedia);
+  const nextIndex = urls.length ? clamp(imageIndex, 0, urls.length - 1) : 0;
+  if (urls.length > 1) {
+    setPanelCardImageIndex(nextMedia, nextIndex, urls);
+    nextMedia.dataset.imageInitialUrl = urls[nextIndex] || urls[0] || "";
+  }
+  restorePanelMediaHover(nextMedia, shouldRestoreHover);
+  bindImageFallbacks(nextMedia);
+}
+
+function restorePanelMediaHover(media, shouldRestore = false) {
+  const item = media?.closest?.(".wp-item");
+  if (!media || (!shouldRestore && !item?.matches?.(":hover"))) {
+    return;
+  }
+
+  media.classList.add("is-hover-restored");
+  const clearHover = () => {
+    media.classList.remove("is-hover-restored");
+    media.removeEventListener("pointerleave", clearHover);
+  };
+  media.addEventListener("pointerleave", clearHover);
 }
 
 function panelMediaImageUrls(media) {
-  return Array.from(media.querySelectorAll("[data-image-url]"))
+  return Array.from(media?.querySelectorAll("[data-image-url]") || [])
     .map((dot) => dot.dataset.imageUrl)
     .filter(Boolean);
 }

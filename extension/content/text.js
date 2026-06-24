@@ -1,6 +1,6 @@
 function isNoiseLine(value) {
   const text = cleanText(value);
-  return /^(new|new in|new season|exclusive|runway|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|add to wish\s?list|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|email\*?|shipping|returns|details|all details|product details|composition|care|composition and care|skip to main content|man|men|mens|women|womens|unisex|collections?|free delivery(?:\s+from\b.*)?|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging|powered by onetrust|accept all cookies|your cookie settings|cookie settings|cookie preferences|privacy preferences|manage cookies|slide\s+\d+|carousel\s+slide\s+\d+|image\s+\d+|цвет\s*[:#-].*|коллекци(?:я|и)|состав\s+и\s+уход|гид\s+по\s+размерам|таблица\s+размеров|размеры|доставка|возврат|доставка\s+и\s+возврат|оплата|добавить(?:\s+в)?\s+корзину|в\s+корзину|купить)$/i.test(
+  return /^(new|new in|new season|exclusive|runway|available in|sale|regular price|sale price|unit price|sold out|add to cart|add to bag|add to basket|add to wish\s?list|wish\s?list|save|size|sizes|size guide|select size|item added|item added view cart|view cart|recommended|sponsored|popular products|copy|copied|email\*?|shipping|returns|details|all details|product details|composition|care|composition and care|skip to main content|man|men|mens|women|womens|unisex|collections?|download (?:the )?app(?:\s+for\s+\d{1,2}%\s+off)?|app-only.*|free delivery(?:\s+from\b.*)?|free shipping(?:\s+in\b.*)?|free(?:\s+online)?\s+returns?|free shipping and returns|find\s*(?:&|and)\s*reserve(?:\s+in\s+store)?|our signature packaging|signature packaging|powered by onetrust|accept all cookies|your cookie settings|cookie settings|cookie preferences|privacy preferences|manage cookies|slide\s+\d+|carousel\s+slide\s+\d+|image\s+\d+|цвет\s*[:#-].*|коллекци(?:я|и)|состав\s+и\s+уход|гид\s+по\s+размерам|таблица\s+размеров|размеры|доставка|возврат|доставка\s+и\s+возврат|оплата|добавить(?:\s+в)?\s+корзину|в\s+корзину|купить)$/i.test(
     text
   ) || /^(?:sku|article|арт(?:икул)?\.?)\s*[:#-]?\s*[\p{L}0-9][\p{L}0-9\s._-]*$/iu.test(
     text
@@ -18,14 +18,14 @@ function looksLikeMeasurementLine(value) {
   const text = cleanText(value);
   return (
     /^\d+(?:[.,]\d+)?\s*x\s*\d+(?:[.,]\d+)?(?:\s*x\s*\d+(?:[.,]\d+)?)?(?:\s*(?:cm|mm|in|inch|inches))?$/i.test(text) ||
-    /\b\d+(?:[.,]\d+)?\s*(?:cm|mm|in|inch|inches|kg|g)\b/i.test(text) ||
+    /^\d+(?:[.,]\d+)?\s*(?:cm|mm|in|inch|inches|kg|g)\b$/i.test(text) ||
     /^(?:(?:xxs|xs|s|m|l|xl|xxl|xxxl)(?:\s*(?:-|\/|to)\s*(?:xxs|xs|s|m|l|xl|xxl|xxxl))?|one size|os)$/i.test(text)
   );
 }
 
 function looksLikeProductName(value) {
   const text = cleanText(value);
-  return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|bombers?|blousons?|windbreakers?|coats?|joggers?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|buckets?|totes?|backpacks?|luggage|suitcases?|cabins?|check[\s-]?in|glasses|sunglasses|frames?|caps?|hats?|beanies?|belts?|wallets?|scar(?:f|ves)|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
+  return /\b(?:sneakers?|shoes?|boots?|sandals?|loafers?|hoodies?|jackets?|bombers?|blousons?|windbreakers?|coats?|joggers?|trousers?|pants|chinos|jeans|shorts?|shirts?|t-shirts?|tees?|polos?|sweaters?|sweatshirts?|cardigans?|bags?|buckets?|totes?|backpacks?|luggage|suitcases?|cabins?|check[\s-]?in|glasses|sunglasses|frames?|watches?|caps?|hats?|beanies?|belts?|wallets?|scar(?:f|ves)|dresses?|skirts?|blazers?|zips?|pullovers?|crew(?:neck)?|alpaca|cloudmonster|cloudsolo|charms?|dice|necklaces?|джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)\b/i.test(
     text
   ) || /(?:джемпер|толстовка|брюки|шорты|рубашка|футболка|кроссовки|ботинки|куртка|сумка|очки|худи)/i.test(text);
 }
@@ -377,13 +377,13 @@ function stripLeadingBrandFromTitle(value, brand) {
     return text;
   }
 
-  const normalizedText = normalizeComparableText(text);
-  const normalizedBrand = normalizeComparableText(brandText);
-  if (!normalizedBrand || !normalizedText.startsWith(normalizedBrand)) {
+  const escapedBrand = brandText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const brandPrefix = text.match(new RegExp(`^\\s*${escapedBrand}(?:[-–—:|,\\s]+|$)`, "i"));
+  if (!brandPrefix) {
     return text;
   }
 
-  const rest = text.slice(brandText.length).replace(/^[-–—:|,\s]+/, "");
+  const rest = text.slice(brandPrefix[0].length).replace(/^[-–—:|,\s]+/, "");
   return rest || text;
 }
 

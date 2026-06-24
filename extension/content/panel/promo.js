@@ -2,7 +2,7 @@ function renderFounderPromoTrigger() {
   return `
     <span class="wp-brand-cluster">
       ${renderPanelSaveCurrentTrigger()}
-      <button class="wp-topbar-info" type="button" aria-label="${escapeAttribute(t("About Stashed"))}" aria-expanded="${panelState.founderPromoOpen}" title="${escapeAttribute(t("About Stashed"))}" data-founder-promo-trigger>
+      <button class="wp-topbar-info" type="button" aria-label="${escapeAttribute(t("About Tuckio"))}" aria-expanded="${panelState.founderPromoOpen}" title="${escapeAttribute(t("About Tuckio"))}" data-founder-promo-trigger>
         ${phosphorInfoIcon("wp-topbar-info-icon")}
       </button>
     </span>
@@ -21,8 +21,9 @@ function renderFounderPromoDialog() {
         ${phosphorXIcon("wp-founder-close-icon")}
       </button>
       ${renderFounderAppIntro(version)}
-      ${renderFounderBackupActions()}
+      ${renderFounderBackupControls()}
       ${renderFounderPrivateContacts()}
+      ${renderFounderDangerZone()}
     </section>
   `;
 }
@@ -30,13 +31,13 @@ function renderFounderPromoDialog() {
 function renderFounderAppIntro(version) {
   return `
     <div class="wp-founder-app">
-      <img class="wp-founder-app-logo" src="${escapeAttribute(stashedLogoUrl())}" alt="Stashed">
+      <img class="wp-founder-app-logo" src="${escapeAttribute(tuckioLogoUrl())}" alt="Tuckio">
       <div class="wp-founder-app-copy">
-        <strong id="wp-founder-app-title">Stashed</strong>
+        <strong id="wp-founder-app-title">Tuckio</strong>
         <p>${escapeHtml(t("Save products from any shop into a compact local wishlist."))}</p>
         <span class="wp-founder-meta">
           ${version ? `<span class="wp-founder-version">${escapeHtml(version)}</span>` : ""}
-          <a class="wp-founder-site" href="https://getstash.app" target="_blank" rel="noreferrer">getstash.app</a>
+          <a class="wp-founder-site" href="https://tuckio.com" target="_blank" rel="noreferrer">tuckio.com</a>
         </span>
       </div>
     </div>
@@ -45,16 +46,15 @@ function renderFounderAppIntro(version) {
 
 function renderFounderPrivateContacts() {
   return `
-    <div class="wp-founder-section wp-founder-private" aria-label="${escapeAttribute(t("Founder contacts"))}">
-      <span class="wp-founder-section-title">${escapeHtml(t("Founder"))}</span>
+    <div class="wp-founder-section wp-founder-private" aria-label="${escapeAttribute(t("Author contacts"))}">
+      <span class="wp-founder-section-title">${escapeHtml(t("Author"))}</span>
       <div class="wp-founder-person">
         <img class="wp-founder-photo" src="${escapeAttribute(founderPhotoUrl())}" alt="Alex Kornev">
         <span class="wp-founder-person-copy">
           <strong>Alex Kornev</strong>
-          <span class="wp-founder-handle">@zoticx</span>
         </span>
       </div>
-      <div class="wp-founder-contact-icons" aria-label="${escapeAttribute(t("Founder contact links"))}">
+      <div class="wp-founder-contact-icons" aria-label="${escapeAttribute(t("Author contact links"))}">
         ${renderFounderContactIcon("X", "@zoticx", "https://x.com/zoticx", phosphorXLogoIcon("wp-founder-link-icon"))}
         ${renderFounderContactIcon("Telegram", "t.me/zoticx", "https://t.me/zoticx", phosphorSendIcon("wp-founder-link-icon"))}
         ${renderFounderContactIcon("Email", "a.kornev@me.com", "mailto:a.kornev@me.com", phosphorMailIcon("wp-founder-link-icon"))}
@@ -73,25 +73,49 @@ function renderFounderContactIcon(label, value, href, icon) {
   `;
 }
 
-function renderFounderBackupActions() {
+function renderFounderBackupControls() {
   return `
-    <div class="wp-founder-backup" aria-label="${escapeAttribute(t("JSON backup"))}">
-      <div class="wp-founder-backup-copy">
-        <span>${escapeHtml(t("Backup"))}</span>
-        <strong>${escapeHtml(t("Local JSON backup"))}</strong>
-        <small>${escapeHtml(t("Import merges with saved items."))}</small>
-      </div>
-      <div class="wp-founder-backup-actions">
-        <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Export Stashed JSON"))}" title="${escapeAttribute(t("Export Stashed JSON"))}" data-export-backup>
-          ${phosphorDownloadIcon("wp-founder-action-icon")}
-          <span>${escapeHtml(t("Export JSON"))}</span>
-        </button>
-        <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Import Stashed JSON"))}" title="${escapeAttribute(t("Import Stashed JSON"))}" data-import-backup>
-          ${phosphorUploadIcon("wp-founder-action-icon")}
-          <span>${escapeHtml(t("Import JSON"))}</span>
-        </button>
-      </div>
+    <div class="wp-founder-backup" aria-label="${escapeAttribute(t("Backup"))}">
+      <span class="wp-founder-section-title">${escapeHtml(t("Backup"))}</span>
+      <span class="wp-founder-backup-actions">
+      <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Export backup"))}" title="${escapeAttribute(t("Export backup"))}" data-export-backup>
+        ${phosphorDownloadIcon("wp-founder-action-icon")}
+        <span>${escapeHtml(t("Export"))}</span>
+      </button>
+      <button class="wp-founder-backup-action" type="button" aria-label="${escapeAttribute(t("Import backup"))}" title="${escapeAttribute(t("Import backup"))}" data-import-backup>
+        ${phosphorUploadIcon("wp-founder-action-icon")}
+        <span>${escapeHtml(t("Import"))}</span>
+      </button>
       <input class="wp-founder-import-input" type="file" accept="application/json,.json" tabindex="-1" aria-hidden="true" data-import-backup-file>
+      </span>
+    </div>
+  `;
+}
+
+function renderFounderDangerZone() {
+  return `
+    <div class="wp-founder-danger" aria-label="${escapeAttribute(t("Danger zone"))}" aria-expanded="false" data-reset-confirm-root>
+      <div class="wp-founder-danger-head">
+        <span class="wp-founder-danger-copy">
+          <span>${escapeHtml(t("Danger zone"))}</span>
+          <strong>${escapeHtml(t("Reset Tuckio"))}</strong>
+          <small>${escapeHtml(t("Clear all local Tuckio data in this browser."))}</small>
+        </span>
+        <button class="wp-founder-reset-start" type="button" aria-label="${escapeAttribute(t("Reset Tuckio"))}" title="${escapeAttribute(t("Reset Tuckio"))}" aria-expanded="false" aria-controls="wp-founder-reset-confirm" data-reset-start>
+          ${phosphorTrashIcon("wp-founder-reset-icon")}
+          <span>${escapeHtml(t("Reset"))}</span>
+        </button>
+      </div>
+      <div id="wp-founder-reset-confirm" class="wp-founder-reset-confirm" aria-hidden="true" data-reset-confirm-panel>
+        <div class="wp-founder-reset-confirm-inner">
+          <label class="wp-founder-reset-label" for="wp-founder-reset-input">${escapeHtml(t("Type delete to confirm."))}</label>
+          <div class="wp-founder-reset-row">
+            <input id="wp-founder-reset-input" class="wp-founder-reset-input" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="${escapeAttribute(TUCKIO_RESET_CONFIRM_WORD)}" disabled data-reset-confirm-input>
+            <button class="wp-founder-reset-confirm-button" type="button" disabled data-reset-confirm>${escapeHtml(t("Delete all"))}</button>
+          </div>
+          <button class="wp-founder-reset-cancel" type="button" disabled data-reset-cancel>${escapeHtml(t("Cancel"))}</button>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -105,6 +129,7 @@ function bindPanelFounderPromoEvents(root) {
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
+      closePanelOverflowMenu(button.getRootNode());
       panelState.founderPromoOpen = false;
       syncPanelFounderPromoDialog(button.getRootNode());
     });
@@ -112,7 +137,7 @@ function bindPanelFounderPromoEvents(root) {
 }
 
 function bindPanelFounderPromoTrigger(button) {
-  if (!button || button.__stashFounderPromoBound) {
+  if (!button || button.__tuckioFounderPromoBound) {
     return;
   }
 
@@ -122,13 +147,14 @@ function bindPanelFounderPromoTrigger(button) {
     if (!panelState.founderPromoOpen) {
       rememberPanelFocus(button);
     }
+    closePanelOverflowMenu(button.getRootNode());
     panelState.founderPromoOpen = !panelState.founderPromoOpen;
     syncPanelFounderPromoDialog(button.getRootNode());
   });
-  button.__stashFounderPromoBound = true;
+  button.__tuckioFounderPromoBound = true;
 }
 
-function syncPanelFounderPromoDialog(root = document.getElementById("stash-panel-root")?.shadowRoot) {
+function syncPanelFounderPromoDialog(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   const existing = root?.querySelector?.("[data-founder-promo-dialog]");
   if (!root || !panelState.founderPromoOpen) {
     existing?.remove();
@@ -158,9 +184,9 @@ function founderPhotoUrl() {
   }
 }
 
-function stashedLogoUrl() {
+function tuckioLogoUrl() {
   try {
-    return chrome.runtime.getURL("icons/stashed-lock-48.png");
+    return chrome.runtime.getURL("assets/tuckio-app-open.png");
   } catch {
     return "";
   }

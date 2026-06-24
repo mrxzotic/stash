@@ -1,6 +1,6 @@
 # Motion System
 
-Motion in Stashed is product feedback, not decoration. It should make saves feel immediate and legible without adding noise, blocking controls, or changing layout.
+Motion in Tuckio is product feedback, not decoration. It should make saves feel immediate and legible without adding noise, blocking controls, or changing layout.
 
 ## Hard Rules
 
@@ -75,12 +75,12 @@ Files:
 - `extension/content/panel/render.js`
 - `extension/content/styles/panel.js`
 
-Opening Stashed must replay the panel opening animation every time the app opens.
+Opening Tuckio must replay the panel opening animation every time the app opens.
 
 Contract:
 
-- `openStashPanel()` sets `panelState.hasRenderedPanel = false` before `renderStashPanel()`.
-- `renderStashPanel()` applies `is-static` only after the first render.
+- `openTuckioPanel()` sets `panelState.hasRenderedPanel = false` before `renderTuckioPanel()`.
+- `renderTuckioPanel()` applies `is-static` only after the first render.
 - The shell opening animation should run on open, not on every internal panel rerender.
 - Closing the panel clears `hasRenderedPanel`, `highlightedItemId`, and `displacedItemId`.
 
@@ -94,7 +94,7 @@ Files:
 - `extension/content/panel/compact-view.js`
 - `extension/content/panel/events.js`
 
-This covers interaction rebuilds while Stashed is already open: card/list mode changes and light/graphite theme changes.
+This covers interaction rebuilds while Tuckio is already open: card/list mode changes and light/graphite theme changes.
 
 Contract:
 
@@ -163,7 +163,7 @@ This covers persistent interaction feel after the panel is already open.
 
 Contract:
 
-- Hover must not call `renderStashPanel()` or replace panel HTML.
+- Hover must not call `renderTuckioPanel()` or replace panel HTML.
 - Hover-driven filter controls should not write layout state when visibility did not change.
 - Item hover transforms should stay on composited layers and must not override `is-layout-moving` or `is-layout-settling`.
 - The card-list top offset must be measured from visible filter children, not the full filter container, so hidden controls cannot create phantom rows.

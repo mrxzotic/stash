@@ -11,14 +11,28 @@ const compactStyles = fs.readFileSync(
   path.join(root, "extension/content/styles/panel-compact.js"),
   "utf8"
 );
+const filterEventsSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/filter-events.js"),
+  "utf8"
+);
+const reorderSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/reorder.js"),
+  "utf8"
+);
 const releaseStyles = fs.readFileSync(
   path.join(root, "extension/content/styles/panel-release.js"),
   "utf8"
 );
 
-assert.match(compactSource, /wp-compact-index/, "Compact rows should render an item index");
-assert.match(compactSource, /#\$\{index \+ 1\}/, "Compact item index should use # numbering");
+assert.match(compactSource, /function renderPanelCompactItem\(item, index = 0\)/, "Compact rows should receive their visible row index");
+assert.match(compactSource, /<span class="wp-compact-index" aria-hidden="true">\$\{index \+ 1\}<\/span>/, "Compact rows should show a simple numeric index");
+assert.doesNotMatch(compactSource, /#\$\{index \+ 1\}/, "Compact row index should not include a hash prefix");
+assert.match(compactSource, /syncPanelItemsState\(root\)/, "Compact toggle should use the shared item sync path so archive rows switch modes cleanly");
+assert.match(reorderSource, /renderPanelCompactItem\(item, index\)/, "In-place compact row sync should render new archive rows with the correct row index");
+assert.match(reorderSource, /syncPanelCompactItemNodeIndex/, "In-place compact row sync should refresh reused row numbers");
+assert.match(reorderSource, /parent\.insertBefore\(node, sibling \|\| null\)/, "Compact row sync should insert newly rendered rows instead of only assigning CSS order");
 assert.match(compactSource, /wp-compact-actions/, "Compact row actions should be grouped");
+assert.match(compactSource, /startPanelViewModeSwitch\(items\)/, "Compact toggle should animate only the content area in place");
 assert.match(
   compactSource,
   /<div class="wp-price-row wp-compact-price\$\{priceHtml \? "" : " is-empty"\}/,
@@ -30,34 +44,34 @@ assert.match(
   "Empty compact price cells should stay hidden from assistive tech"
 );
 assert.match(
-  compactSource,
-  /savePanelSettings\(\s*\{\s*compactView: !panelState\.compactView\s*\},[\s\S]*?syncViewMode:\s*true/,
-  "Compact toggle should save and synchronize the requested view mode"
+  filterEventsSource,
+  /const compactView = !panelState\.compactView;[\s\S]*?savePanelSettings\(\s*\{\s*compactView\s*\},[\s\S]*?syncViewMode:\s*true/,
+  "Compact view control should save and synchronize the toggled view mode"
 );
 assert.match(
   compactStyles,
-  /grid-template-columns: 32px 56px minmax\(0, 1fr\) 104px 56px;/,
-  "Compact rows should reserve a fixed price column"
+  /grid-template-columns: 28px 78px minmax\(0, 1fr\) minmax\(82px, 126px\);/,
+  "Compact rows should cap the price column so long prices cannot crush the title"
 );
 assert.match(
   releaseStyles,
-  /grid-template-columns: 32px 56px minmax\(0, 1fr\) 104px 56px;/,
-  "Release styles should not override the fixed compact price column"
+  /grid-template-columns: 28px 78px minmax\(0, 1fr\) minmax\(82px, 126px\);/,
+  "Release styles should preserve the capped compact price column"
 );
 assert.doesNotMatch(
   `${compactStyles}\n${releaseStyles}`,
-  /minmax\(72px, max-content\)/,
-  "Compact price columns should not size from row content"
+  /32px 56px|width: 104px/,
+  "Compact rows should not keep the old square thumb or fixed price column"
 );
 assert.match(
   compactStyles,
-  /\.wp-compact-item \.wp-compact-copy \.wp-item-title\s*\{[\s\S]*?-webkit-line-clamp: 1;/,
-  "Compact titles should truncate before colliding with the price column"
+  /\.wp-compact-item \.wp-compact-copy \.wp-item-title\s*\{[\s\S]*?white-space: normal;[\s\S]*?overflow-wrap: break-word;[\s\S]*?word-break: normal;[\s\S]*?-webkit-line-clamp: unset;/,
+  "Compact titles should wrap naturally instead of collapsing words into vertical letters"
 );
 assert.match(
   compactStyles,
-  /\.wp-compact-price\s*\{[\s\S]*?width: 104px;[\s\S]*?justify-self: stretch;[\s\S]*?text-align: left;/,
-  "Compact prices should fill the fixed scan column"
+  /\.wp-compact-price\s*\{[\s\S]*?width: auto;[\s\S]*?max-width: 126px;[\s\S]*?padding-right: 10px;[\s\S]*?box-sizing: border-box;[\s\S]*?align-self: center;[\s\S]*?justify-self: end;[\s\S]*?text-align: right;/,
+  "Compact prices should stay capped and visually inset from the right edge"
 );
 assert.match(
   compactStyles,
@@ -66,8 +80,28 @@ assert.match(
 );
 assert.match(
   compactStyles,
-  /\.wp-compact-actions\s*\{[\s\S]*?display: inline-flex;[\s\S]*?gap: 0;/,
-  "Compact actions should sit next to each other"
+  /\.wp-compact-state\s*\{[\s\S]*?grid-column: 3;[\s\S]*?grid-row: 2;[\s\S]*?justify-content: flex-start;/,
+  "Compact decision status should sit below the copy instead of crowding the title"
+);
+assert.match(
+  compactStyles,
+  /\.wp-compact-actions\s*\{[\s\S]*?grid-column: 3;[\s\S]*?grid-row: 2;[\s\S]*?width: 88px;[\s\S]*?opacity: 1;[\s\S]*?pointer-events: none;/,
+  "Compact actions should keep the active star visible while inactive actions stay non-interactive"
+);
+assert.match(
+  releaseStyles,
+  /\.wp-compact-item\.is-archived \.wp-compact-actions \.wp-restore,[\s\S]*?\.wp-compact-item\.is-archived \.wp-compact-actions \.wp-remove\s*\{[\s\S]*?opacity: 0;[\s\S]*?pointer-events: none;/,
+  "Archived compact row actions should stay hover-only instead of covering the decision status"
+);
+assert.match(
+  compactStyles,
+  /\.wp-compact-thumb\s*\{[\s\S]*?width: 78px;[\s\S]*?height: 98px;/,
+  "Compact thumbnails should be taller so saved products are easier to inspect"
+);
+assert.match(
+  compactStyles,
+  /\.wp-items\.is-view-mode-switching \.wp-compact-item,[\s\S]*?@keyframes wpCompactViewSwitch/,
+  "Compact view switching should use a restrained content-only transition"
 );
 assert.match(
   compactStyles,

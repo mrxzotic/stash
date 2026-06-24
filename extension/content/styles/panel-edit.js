@@ -44,7 +44,7 @@ function panelEditStyles() {
 
     .wp-edit-head h3 {
       margin: 0;
-      font-size: 17px;
+      font-size: var(--text-heading);
       line-height: 1.15;
       font-weight: 780;
     }
@@ -63,7 +63,7 @@ function panelEditStyles() {
     .wp-edit-close-icon {
       width: 18px;
       height: 18px;
-      font-size: 18px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;

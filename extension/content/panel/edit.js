@@ -114,8 +114,9 @@ function bindPanelEditEvents(root) {
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = "";
+    panelState.decisionItemId = "";
     panelState.settingsOpen = false;
-    renderStashPanel();
+    renderTuckioPanel();
   });
 
   root.querySelector("[data-edit-item-form]")?.addEventListener("submit", (event) => {
@@ -126,7 +127,7 @@ function bindPanelEditEvents(root) {
   root.querySelectorAll("[data-cancel-edit-item]").forEach((button) => {
     button.addEventListener("click", () => {
       panelState.editItemId = "";
-      renderStashPanel();
+      renderTuckioPanel();
     });
   });
 }
@@ -136,7 +137,7 @@ async function savePanelEditedItem(form) {
   const index = panelState.items.findIndex((item) => normalizePanelItem(item).id === id);
   if (index < 0) {
     panelState.editItemId = "";
-    renderStashPanel();
+    renderTuckioPanel();
     return;
   }
 
@@ -177,7 +178,7 @@ async function savePanelEditedItem(form) {
   );
   panelState.editItemId = "";
   await setLocalStorageValue(STORAGE_KEY, panelState.items);
-  renderStashPanel();
+  renderTuckioPanel();
 }
 
 function editedBrand(formData, current) {

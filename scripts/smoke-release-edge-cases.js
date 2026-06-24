@@ -32,7 +32,7 @@ function storageApi(store) {
 
 async function smokeRateFallback() {
   const store = {
-    "stash.rubRates.v1": {
+    "tuckio.rubRates.v1": {
       EUR: { value: 100, source: "cached", updatedAt: Date.now() }
     }
   };
@@ -84,7 +84,7 @@ async function smokeCategoryMigration() {
     { id: "shoes", label: "Shoes" },
     { id: "bags", label: "Bags" }
   ];
-  const store = { "stash.categories.v1": oldDefaults };
+  const store = { "tuckio.categories.v1": oldDefaults };
   const sandbox = runFiles(
     {
       URL,
@@ -105,7 +105,29 @@ async function smokeCategoryMigration() {
     sandbox
   );
   assert.match(ids, /accessories/);
-  assert.equal(store["stash.categories.schema.v1"], 2);
+  assert.equal(store["tuckio.categories.schema.v1"], 2);
+}
+
+async function smokeLegacyStorageKeyMigration() {
+  const legacyItems = [{ id: "legacy-item", title: "Legacy", url: "https://example.com/legacy" }];
+  const store = { "stash.items.v1": legacyItems };
+  const sandbox = runFiles(
+    {
+      URL,
+      console,
+      location: new URL("https://shop.example/products/legacy-storage-test"),
+      chrome: { storage: storageApi(store) }
+    },
+    [
+      "extension/content/constants.js",
+      "extension/content/utils.js",
+      "extension/content/storage.js"
+    ]
+  );
+
+  const stored = await vm.runInContext("getLocalStorageValue(STORAGE_KEY)", sandbox);
+  assert.equal(stored["tuckio.items.v1"][0].id, "legacy-item");
+  assert.equal(JSON.stringify(store["tuckio.items.v1"]), JSON.stringify(legacyItems));
 }
 
 function smokePanelThreeHundredItems() {
@@ -122,7 +144,7 @@ function smokePanelThreeHundredItems() {
         querySelectorAll: () => []
       },
       chrome: {
-        runtime: { getURL: (assetPath) => `chrome-extension://stash/${assetPath}` }
+        runtime: { getURL: (assetPath) => `chrome-extension://tuckio/${assetPath}` }
       }
     },
     [
@@ -246,11 +268,12 @@ function smokeLazyImageAndMissingFallback() {
       window: { innerWidth: 1440, innerHeight: 900 },
       normalizeProductImageUrls: () => [],
       escapeAttribute: (value) => String(value || "").replace(/"/g, "&quot;"),
-      stashedGreyscaleLogoUrl: () => "chrome-extension://stash/icons/stashed-lock-greyscale-128.png"
+      tuckioMonochromeLogoUrl: () => "chrome-extension://tuckio/assets/tuckio-app-black.png"
     },
     [
       "extension/content/constants.js",
       "extension/content/utils.js",
+      "extension/content/icons.js",
       "extension/content/text.js",
       "extension/content/media.js",
       "extension/content/extractors/context.js",
@@ -285,13 +308,14 @@ function smokeLazyImageAndMissingFallback() {
   );
 
   const missing = vm.runInContext('renderPanelCardImageFrame({}, { slider: false, alt: "Missing" })', sandbox);
-  assert.match(missing, /stashed-lock-greyscale-128\.png/);
+  assert.match(missing, /image-broken\.svg/);
   assert.match(missing, /Oops, image missing/);
 
   const overlaySource = fs.readFileSync(path.join(root, "extension/content/overlay-images.js"), "utf8");
   const renderSource = fs.readFileSync(path.join(root, "extension/content/panel/render.js"), "utf8");
   assert.match(overlaySource, /renderMissingProductImage\("wl"\)/);
-  assert.match(renderSource, /renderMissingProductImage\("wp"\)/);
+  assert.match(renderSource, /renderMissingProductImage\(namespace\)/);
+  assert.match(renderSource, /image\.complete && !image\.naturalWidth/);
 }
 
 function smokeBrandNoiseFilter() {
@@ -344,6 +368,7 @@ function smokeBrandNoiseFilter() {
 (async () => {
   await smokeRateFallback();
   await smokeCategoryMigration();
+  await smokeLegacyStorageKeyMigration();
   smokePanelThreeHundredItems();
   await smokeEnrichmentFailureKeepsProduct();
   smokeLazyImageAndMissingFallback();

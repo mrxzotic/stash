@@ -4,6 +4,11 @@ function extractFromEmbeddedJson(context = {}) {
     return pyeProduct;
   }
 
+  const fablestoreProduct = extractFablestoreBitrixProduct();
+  if (fablestoreProduct.title || fablestoreProduct.priceText || fablestoreProduct.imageUrl) {
+    return fablestoreProduct;
+  }
+
   const scripts = Array.from(
     document.querySelectorAll(
       'script[type="application/json"], script[type="application/ld+json"], script[id*="__NEXT_DATA__"], script[id*="__NUXT_DATA__"]'
@@ -30,6 +35,76 @@ function extractFromEmbeddedJson(context = {}) {
     .sort((a, b) => productScore(b) - productScore(a))[0];
 
   return candidate || {};
+}
+
+function extractFablestoreBitrixProduct() {
+  if (!/(^|\.)fablestore\.ru$/i.test(location.hostname)) {
+    return {};
+  }
+
+  const script = Array.from(document.querySelectorAll("script"))
+    .map((node) => node.textContent || "")
+    .find((text) => /JCCatalogElement\(|'ITEM_PRICES'\s*:/i.test(text));
+  if (!script) {
+    return {};
+  }
+
+  const price = fablestoreBitrixPrice(script);
+  const title =
+    bitrixPropertyValue(script, "NAIMENOVANIE_TOVARA_NA_SAYTE") ||
+    bitrixObjectValue(script, "PRODUCT", "NAME");
+  const brand = sourceNameFromUrl(location.href);
+  const image = bitrixObjectValue(script, "DETAIL_PICTURE", "SRC") ||
+    bitrixObjectValue(script, "PREVIEW_PICTURE", "SRC");
+
+  return compactObject({
+    title: cleanProductTitle(title, brand, location.href),
+    brand: cleanBrandName(brand),
+    url: normalizeUrl(location.href),
+    priceText: price.originalText,
+    priceAmount: price.amount,
+    currency: price.currency,
+    compareAtPriceText: price.compareAtText,
+    compareAtPriceAmount: price.compareAtAmount,
+    isSale: price.isSale,
+    imageUrl: toAbsoluteUrl(image)
+  });
+}
+
+function fablestoreBitrixPrice(source) {
+  const block = source.match(/'ITEM_PRICES'\s*:\s*\[\s*\{([\s\S]*?)\}\s*\]/)?.[1] || "";
+  const amount = numericPrice(bitrixValue(block, "PRICE") || bitrixValue(block, "RATIO_PRICE"));
+  const compareAtAmount = numericPrice(bitrixValue(block, "BASE_PRICE") || bitrixValue(block, "RATIO_BASE_PRICE"));
+  const currency = bitrixValue(block, "CURRENCY") || "RUB";
+  return normalizePrice({
+    amount,
+    currency,
+    compareAtAmount: compareAtAmount > amount ? compareAtAmount : undefined
+  });
+}
+
+function bitrixObjectValue(source, objectName, key) {
+  const match = source.match(new RegExp(`'${objectName}'\\s*:\\s*\\{[\\s\\S]*?'${key}'\\s*:\\s*'((?:\\\\'|[^'])*)'`));
+  return decodeBitrixString(match?.[1]);
+}
+
+function bitrixPropertyValue(source, code) {
+  const match = source.match(new RegExp(`'${code}'\\s*:\\s*\\{[\\s\\S]*?'VALUE'\\s*:\\s*'((?:\\\\'|[^'])*)'`));
+  return decodeBitrixString(match?.[1]);
+}
+
+function bitrixValue(source, key) {
+  const match = source.match(new RegExp(`'${key}'\\s*:\\s*'((?:\\\\'|[^'])*)'`));
+  return decodeBitrixString(match?.[1]);
+}
+
+function decodeBitrixString(value) {
+  return cleanText(String(value || "")
+    .replace(/\\u([\da-f]{4})/gi, (_, code) => String.fromCharCode(Number.parseInt(code, 16)))
+    .replace(/\\\//g, "/")
+    .replace(/\\[nrt]/g, " ")
+    .replace(/\\'/g, "'")
+    .replace(/\\"/g, '"'));
 }
 
 function collectProductLikeObjects(node, candidates, depth) {

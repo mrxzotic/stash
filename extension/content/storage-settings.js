@@ -87,6 +87,7 @@ function normalizePanelSettings(value) {
       ? backgroundTheme
       : DEFAULT_SETTINGS.backgroundTheme,
     compactView: Boolean(value?.compactView),
+    hoverHints: value?.hoverHints !== false,
     language: isPanelLanguage(language) ? language : DEFAULT_SETTINGS.language
   };
 }

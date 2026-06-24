@@ -14,6 +14,11 @@ function panelStylesChunk1() {
       --text-body: 13px;
       --text-ui: 14px;
       --text-heading: 16px;
+      --space-1: 8px;
+      --space-2: 16px;
+      --space-3: 24px;
+      --space-4: 32px;
+      --space-5: 40px;
       --wp-pill-height: 28px;
       --wp-pill-icon-size: 12px;
       --background: #fbfbf8;
@@ -49,6 +54,29 @@ function panelStylesChunk1() {
       --primary: #050505;
       --primary-foreground: #ffffff;
       --radius: 8px;
+    }
+
+    .wp-count-figure,
+    .wp-brand-chip-count,
+    .wp-shortlist-chip-count,
+    .wp-archive-count,
+    .wp-brand-cloud-count,
+    .wp-compact-index {
+      font-family: var(--figure-font) !important;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: 0;
+    }
+
+    .wp-total,
+    .wp-total-value,
+    .wp-site-price,
+    .wp-compare-price,
+    .wp-native-price {
+      font-family: var(--figure-font) !important;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: 0;
     }
 
     * {
@@ -288,10 +316,6 @@ function panelStylesChunk1() {
 
     .wp-topbar.is-searching {
       display: flex;
-    }
-
-    .wp-settings h2 {
-      margin: 0;
     }
 
     .wp-actions {

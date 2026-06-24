@@ -202,8 +202,6 @@ function renderSitePriceHtml(item, namespace) {
   const lineClass = namespace === "wl" ? "wl-price-line" : "wp-price-line";
   const nativeClass = namespace === "wl" ? "wl-native-price" : "wp-native-price";
   const nativeLine = renderNativePriceHtml(display, nativeClass, isOverlay);
-  const inlineNativeLine = isOverlay ? "" : nativeLine;
-  const stackedNativeLine = isOverlay ? nativeLine : "";
 
   if (!display.primaryText) {
     return "";
@@ -215,9 +213,8 @@ function renderSitePriceHtml(item, namespace) {
         <span class="${lineClass}">
           <span class="${baseClass} is-sale">${escapeHtml(display.primaryText)}</span>
           <span class="${compareClass}">(<s>${escapeHtml(display.primaryCompareAtText)}</s>)</span>
-          ${inlineNativeLine}
         </span>
-        ${stackedNativeLine}
+        ${nativeLine}
       </span>
     `;
   }
@@ -226,9 +223,8 @@ function renderSitePriceHtml(item, namespace) {
     <span class="${stackClass}">
       <span class="${lineClass}">
         <span class="${baseClass}">${escapeHtml(display.primaryText)}</span>
-        ${inlineNativeLine}
       </span>
-      ${stackedNativeLine}
+      ${nativeLine}
     </span>
   `;
 }

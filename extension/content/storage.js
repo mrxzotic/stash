@@ -8,24 +8,162 @@ async function upsertItem(item) {
     ...currentItems.filter((existing) => existing.url !== item.url)
   ].slice(0, 300);
 
-  await setLocalStorageValue(STORAGE_KEY, nextItems);
-  return nextItems;
+  const storedItems = await setLocalStorageValue(STORAGE_KEY, nextItems);
+  return Array.isArray(storedItems) ? storedItems : nextItems;
 }
 
 async function setLocalStorageValue(key, value) {
   assertKnownStorageKeys(key);
-  const sanitized = sanitizeStorageValue(value);
+  const sanitized = sanitizeStorageValue(storageValueForWrite(key, value));
   try {
     await chrome.storage.local.set({ [key]: sanitized });
+    return sanitized;
   } catch (error) {
+    if (shouldRetryStorageQuotaWrite(key, value, error)) {
+      return retryQuotaStorageWrite(key, value, sanitized, error);
+    }
     throw normalizeExtensionError(error);
   }
 }
 
+async function removeStorageKeys(keys) {
+  const removable = keys.filter(Boolean);
+  if (!removable.length || typeof chrome.storage.local.remove !== "function") {
+    return;
+  }
+
+  try {
+    await chrome.storage.local.remove(removable);
+  } catch {
+  }
+}
+
+function storageValueForWrite(key, value, options = {}) {
+  if (key !== STORAGE_KEY || !Array.isArray(value) || !canCompactSavedItems()) {
+    return value;
+  }
+
+  return value
+    .map((item) => compactSavedItemForStorage(item, options))
+    .filter(Boolean)
+    .slice(0, 300);
+}
+
+function canCompactSavedItems() {
+  return typeof normalizePanelItem === "function" &&
+    typeof normalizeProductImageUrls === "function" &&
+    typeof sourceNameFromUrl === "function" &&
+    typeof cleanText === "function";
+}
+
+function compactSavedItemForStorage(item, options = {}) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+  const normalized = normalizePanelItem(item);
+  const imageUrls = normalizeProductImageUrls(normalized.imageUrls, normalized.imageUrl, SAVED_IMAGE_URL_LIMIT);
+  const price = normalized.price || {};
+  const source = cleanText(item.source) || sourceNameFromUrl(normalized.url);
+  const storedPrice = compactStorageObject({
+    amount: price.amount,
+    currency: price.currency,
+    originalText: price.originalText,
+    compareAtAmount: price.compareAtAmount,
+    compareAtText: price.compareAtText,
+    isSale: price.isSale,
+    rubAmount: price.rubAmount,
+    rubText: price.rubText,
+    rate: item.price?.rate,
+    rateSource: item.price?.rateSource
+  });
+  const coreItem = compactStorageObject({
+    id: normalized.id,
+    source,
+    sourceDomain: normalized.sourceDomain,
+    url: normalized.url,
+    title: normalized.title,
+    brand: normalized.brand,
+    price: storedPrice,
+    category: normalized.category,
+    shortlistedAt: compactStorageDate(item.shortlistedAt),
+    decision: compactStorageDecision(item.decision),
+    createdAt: compactStorageDate(item.createdAt),
+    updatedAt: compactStorageDate(item.updatedAt),
+    archivedAt: compactStorageDate(item.archivedAt)
+  });
+
+  if (options.mode === "tiny") {
+    return coreItem;
+  }
+
+  if (options.mode === "lean") {
+    return compactStorageObject({
+      ...coreItem,
+      imageUrl: imageUrls[0] || ""
+    });
+  }
+
+  return compactStorageObject({
+    ...coreItem,
+    faviconUrl: normalized.faviconUrl,
+    priceText: price.originalText,
+    priceAmount: price.amount,
+    currency: price.currency,
+    compareAtPriceText: price.compareAtText,
+    compareAtPriceAmount: price.compareAtAmount,
+    isSale: price.isSale,
+    rubPriceText: price.rubText,
+    rubPriceAmount: price.rubAmount,
+    imageUrl: imageUrls[0] || "",
+    imageUrls,
+    category: normalized.category,
+    shortlistedAt: compactStorageDate(item.shortlistedAt),
+    decision: compactStorageDecision(item.decision),
+    createdAt: compactStorageDate(item.createdAt),
+    updatedAt: compactStorageDate(item.updatedAt),
+    archivedAt: compactStorageDate(item.archivedAt)
+  });
+}
+
+function compactStorageObject(object) {
+  return Object.fromEntries(
+    Object.entries(object)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+}
+
+function compactStorageDate(value) {
+  return cleanText(value).slice(0, 40) || undefined;
+}
+
+function compactStorageDecision(value) {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const state = cleanText(value.state).toLowerCase();
+  if (state !== "bought" && state !== "skipped") {
+    return undefined;
+  }
+
+  return compactStorageObject({
+    state,
+    decidedAt: compactStorageDate(value.decidedAt)
+  });
+}
+
 async function getLocalStorageValue(keys) {
   assertKnownStorageKeys(keys);
+  const keyList = storageKeyList(keys);
+  const storageKeys = [...new Set([
+    ...keyList,
+    ...keyList.map((key) => LEGACY_STORAGE_KEYS.get(key)).filter(Boolean)
+  ])];
   try {
-    return await chrome.storage.local.get(keys);
+    const stored = await chrome.storage.local.get(storageKeys);
+    await migrateLegacyStorageValues(stored, keyList);
+    return stored;
   } catch (error) {
     throw normalizeExtensionError(error);
   }
@@ -34,24 +172,46 @@ async function getLocalStorageValue(keys) {
 function normalizeExtensionError(error) {
   if (/extension context invalidated/i.test(String(error?.message || error))) {
     removeStaleExtensionRoots();
-    return new Error(t("Stashed was reloaded. Refresh this page and try again."));
+    return new Error(t("Tuckio was reloaded. Refresh this page and try again."));
   }
   return error;
 }
 
 function assertKnownStorageKeys(keys) {
-  const keyList = Array.isArray(keys)
+  const keyList = storageKeyList(keys);
+
+  for (const key of keyList) {
+    if (!ALLOWED_STORAGE_KEYS.has(key)) {
+      throw new Error(t("Unexpected Tuckio storage key."));
+    }
+  }
+}
+
+function storageKeyList(keys) {
+  return Array.isArray(keys)
     ? keys
     : typeof keys === "string"
       ? [keys]
       : keys && typeof keys === "object"
         ? Object.keys(keys)
         : [];
+}
 
-  for (const key of keyList) {
-    if (!ALLOWED_STORAGE_KEYS.has(key)) {
-      throw new Error(t("Unexpected Stashed storage key."));
+async function migrateLegacyStorageValues(stored, keyList) {
+  const migrated = {};
+  const migratedLegacyKeys = [];
+  keyList.forEach((key) => {
+    const legacyKey = LEGACY_STORAGE_KEYS.get(key);
+    if (stored[key] === undefined && legacyKey && stored[legacyKey] !== undefined) {
+      stored[key] = storageValueForWrite(key, stored[legacyKey]);
+      migrated[key] = stored[key];
+      migratedLegacyKeys.push(legacyKey);
     }
+  });
+
+  if (Object.keys(migrated).length) {
+    await chrome.storage.local.set(sanitizeStorageValue(migrated));
+    await removeStorageKeys(migratedLegacyKeys);
   }
 }
 
@@ -102,13 +262,13 @@ function sanitizeStorageObjectKey(key) {
 
 async function normalizeItem(product, category, categories) {
   const url = normalizeUrl(product.url || location.href);
-  const price = normalizePrice({
+  const price = repairKnownInstallmentPrice(normalizePrice({
     amount: product.priceAmount,
     currency: product.currency,
     text: product.priceText,
     compareAtAmount: product.compareAtPriceAmount,
     compareAtText: product.compareAtPriceText
-  });
+  }), url);
   const rubPrice = await convertPriceToRub(price);
   const title =
     cleanProductTitle(stripPriceFromText(product.title), product.brand, url) ||

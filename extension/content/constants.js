@@ -1,18 +1,29 @@
-var CONTENT_VERSION = "2026-06-22-release-qa-parser-pill-v1";
+var CONTENT_VERSION = "2026-06-24-filter-crowding-resize-v89";
 
 
-var STORAGE_KEY = "stash.items.v1";
-var RATE_STORAGE_KEY = "stash.rubRates.v1";
-var CATEGORY_STORAGE_KEY = "stash.categories.v1";
-var CATEGORY_SCHEMA_STORAGE_KEY = "stash.categories.schema.v1";
+var STORAGE_KEY = "tuckio.items.v1";
+var RATE_STORAGE_KEY = "tuckio.rubRates.v1";
+var CATEGORY_STORAGE_KEY = "tuckio.categories.v1";
+var CATEGORY_SCHEMA_STORAGE_KEY = "tuckio.categories.schema.v1";
 var CATEGORY_SCHEMA_VERSION = 2;
-var SETTINGS_STORAGE_KEY = "stash.settings.v1";
+var SETTINGS_STORAGE_KEY = "tuckio.settings.v1";
+var LEGACY_STORAGE_KEYS = new Map([
+  [STORAGE_KEY, "stash.items.v1"],
+  [RATE_STORAGE_KEY, "stash.rubRates.v1"],
+  [CATEGORY_STORAGE_KEY, "stash.categories.v1"],
+  [CATEGORY_SCHEMA_STORAGE_KEY, "stash.categories.schema.v1"],
+  [SETTINGS_STORAGE_KEY, "stash.settings.v1"]
+]);
+var BACKUP_SCHEMA = "tuckio.backup.v1";
+var LEGACY_BACKUP_SCHEMA = "stash.backup.v1";
+var TUCKIO_RESET_CONFIRM_WORD = "delete";
 var ALLOWED_STORAGE_KEYS = new Set([
   STORAGE_KEY,
   RATE_STORAGE_KEY,
   CATEGORY_STORAGE_KEY,
   CATEGORY_SCHEMA_STORAGE_KEY,
-  SETTINGS_STORAGE_KEY
+  SETTINGS_STORAGE_KEY,
+  ...LEGACY_STORAGE_KEYS.values()
 ]);
 var STORAGE_MAX_DEPTH = 8;
 var STORAGE_MAX_ARRAY_LENGTH = 500;
@@ -23,6 +34,7 @@ var DEFAULT_SETTINGS = {
   summaryCurrency: "USD",
   backgroundTheme: "warm",
   compactView: false,
+  hoverHints: true,
   language: "en"
 };
 var PANEL_LANGUAGE_EN = "en";
@@ -38,18 +50,18 @@ var PANEL_LANGUAGE_OPTIONS = [
   { id: PANEL_LANGUAGE_RU, label: "Russian", flag: "🇷🇺" }
 ];
 var PANEL_OVERFLOW_ROOT_INLINE_STYLE = "position:relative;display:inline-flex;flex:0 0 auto;";
-var PANEL_OVERFLOW_MENU_INLINE_STYLE = "position:absolute;top:calc(100% + 8px);right:0;z-index:14;width:250px;max-width:calc(100vw - 32px);gap:3px;padding:6px;border:1px solid var(--wp-popover-border);border-radius:var(--radius);background:var(--wp-popover-bg);-webkit-backdrop-filter:var(--wp-popover-blur);backdrop-filter:var(--wp-popover-blur);box-shadow:var(--wp-popover-shadow);transform-origin:100% 0;box-sizing:border-box;";
+var PANEL_OVERFLOW_MENU_INLINE_STYLE = "position:absolute;top:calc(100% + var(--space-1,8px));right:0;z-index:14;width:344px;max-width:calc(100vw - var(--space-4,32px));gap:var(--space-1,8px);padding:var(--space-1,8px);border:1px solid var(--wp-popover-border);border-radius:var(--radius);background:var(--wp-popover-bg);-webkit-backdrop-filter:var(--wp-popover-blur);backdrop-filter:var(--wp-popover-blur);box-shadow:var(--wp-popover-shadow);transform-origin:100% 0;box-sizing:border-box;";
 var PANEL_OVERFLOW_GRAPHITE_MENU_INLINE_STYLE = "--wp-overflow-option-color:rgba(244,244,240,0.72);--wp-overflow-option-hover-color:rgba(255,255,250,0.96);--wp-overflow-divider-bg:rgba(255,255,255,0.1);--wp-overflow-switch-bg:rgba(255,255,255,0.14);--wp-overflow-switch-border:rgba(255,255,255,0.1);--wp-overflow-switch-on-bg:rgba(244,244,240,0.9);--wp-overflow-switch-on-border:rgba(255,255,255,0.42);--wp-overflow-switch-knob-bg:rgba(255,255,255,0.96);--wp-overflow-switch-knob-shadow:rgba(0,0,0,0.34);--wp-overflow-switch-knob-on-bg:rgba(8,11,16,0.92);--wp-overflow-select-bg:rgba(255,255,255,0.1);--wp-overflow-select-border:rgba(255,255,255,0.16);--wp-overflow-select-color:rgba(255,255,250,0.92);";
-var PANEL_OVERFLOW_OPTION_INLINE_STYLE = "width:100%;height:34px;display:grid;grid-template-columns:20px minmax(0,1fr) 34px;align-items:center;gap:8px;padding:0 9px;border:0;border-radius:7px;background:transparent;color:var(--wp-overflow-option-color,rgba(8,11,16,0.72));font-family:var(--ui-font);font-size:13px;font-weight:720;line-height:1;text-align:left;white-space:nowrap;box-shadow:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;";
-var PANEL_OVERFLOW_LANGUAGE_INLINE_STYLE = "position:relative;width:100%;height:34px;display:grid;grid-template-columns:20px minmax(0,1fr) 122px;align-items:center;gap:8px;padding:0 9px;border-radius:7px;color:var(--wp-overflow-option-color,rgba(8,11,16,0.72));font-family:var(--ui-font);font-size:13px;font-weight:720;line-height:1;white-space:nowrap;box-sizing:border-box;";
-var PANEL_OVERFLOW_LANGUAGE_TRIGGER_INLINE_STYLE = "width:122px;height:28px;display:grid;grid-template-columns:20px minmax(0,1fr) 14px;align-items:center;gap:6px;padding:0 7px;border:1px solid var(--wp-overflow-select-border,rgba(8,11,16,0.12));border-radius:8px;background:var(--wp-overflow-select-bg,rgba(255,255,255,0.68));color:var(--wp-overflow-select-color,currentColor);font:inherit;font-size:12px;font-weight:720;text-align:left;box-sizing:border-box;";
-var PANEL_OVERFLOW_LANGUAGE_MENU_INLINE_STYLE = "position:absolute;top:calc(100% + 6px);right:9px;z-index:16;width:162px;gap:4px;padding:6px;border:1px solid var(--wp-popover-border);border-radius:var(--radius);background:var(--wp-popover-bg);-webkit-backdrop-filter:var(--wp-popover-blur);backdrop-filter:var(--wp-popover-blur);box-shadow:var(--wp-popover-shadow);transform-origin:100% 0;box-sizing:border-box;";
-var PANEL_OVERFLOW_LANGUAGE_OPTION_INLINE_STYLE = "width:100%;height:34px;display:grid;grid-template-columns:18px minmax(0,1fr) 24px;align-items:center;gap:8px;padding:0 8px;border:0;border-radius:var(--radius);background:transparent;color:var(--foreground);font:inherit;font-size:13px;font-weight:700;text-align:left;white-space:nowrap;box-sizing:border-box;";
-var PANEL_OVERFLOW_DIVIDER_INLINE_STYLE = "height:1px;margin:3px 4px;background:var(--wp-overflow-divider-bg,rgba(8,11,16,0.1));";
-var PANEL_OVERFLOW_SWITCH_INLINE_STYLE = "position:relative;width:30px;height:18px;justify-self:end;border-radius:999px;background:var(--wp-overflow-switch-bg,rgba(8,11,16,0.14));box-shadow:inset 0 0 0 1px var(--wp-overflow-switch-border,rgba(8,11,16,0.08));overflow:visible;box-sizing:border-box;";
+var PANEL_OVERFLOW_OPTION_INLINE_STYLE = "width:100%;height:var(--space-5,40px);display:grid;grid-template-columns:var(--space-3,24px) minmax(0,1fr) var(--space-5,40px);align-items:center;gap:var(--space-2,16px);padding:0 var(--space-1,8px);border:0;border-radius:var(--radius);background:transparent;color:var(--wp-overflow-option-color,rgba(8,11,16,0.72));font-family:var(--ui-font);font-size:var(--text-body);font-weight:720;line-height:1;text-align:left;white-space:nowrap;box-shadow:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_INLINE_STYLE = "position:relative;width:100%;height:var(--space-5,40px);display:grid;grid-template-columns:var(--space-3,24px) minmax(0,1fr) 144px;align-items:center;gap:var(--space-2,16px);padding:0 var(--space-1,8px);border-radius:var(--radius);color:var(--wp-overflow-option-color,rgba(8,11,16,0.72));font-family:var(--ui-font);font-size:var(--text-body);font-weight:720;line-height:1;white-space:nowrap;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_TRIGGER_INLINE_STYLE = "width:144px;height:var(--space-4,32px);display:grid;grid-template-columns:minmax(0,1fr) 20px 16px;align-items:center;gap:var(--space-1,8px);padding:0 var(--space-1,8px);border:1px solid var(--wp-overflow-select-border,rgba(8,11,16,0.12));border-radius:var(--radius);background:var(--wp-overflow-select-bg,rgba(255,255,255,0.68));color:var(--wp-overflow-select-color,currentColor);font:inherit;font-size:var(--text-control);font-weight:720;text-align:left;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_MENU_INLINE_STYLE = "position:absolute;top:calc(100% + var(--space-1,8px));right:var(--space-1,8px);z-index:16;width:232px;gap:var(--space-1,8px);padding:var(--space-1,8px);border:1px solid var(--wp-popover-border);border-radius:var(--radius);background:var(--wp-popover-bg);-webkit-backdrop-filter:var(--wp-popover-blur);backdrop-filter:var(--wp-popover-blur);box-shadow:var(--wp-popover-shadow);transform-origin:100% 0;box-sizing:border-box;";
+var PANEL_OVERFLOW_LANGUAGE_OPTION_INLINE_STYLE = "width:100%;height:var(--space-5,40px);display:grid;grid-template-columns:var(--space-3,24px) minmax(0,1fr) var(--space-3,24px);align-items:center;gap:var(--space-1,8px);padding:0 var(--space-1,8px);border:0;border-radius:var(--radius);background:transparent;color:var(--foreground);font:inherit;font-size:var(--text-body);font-weight:700;text-align:left;white-space:nowrap;box-sizing:border-box;";
+var PANEL_OVERFLOW_DIVIDER_INLINE_STYLE = "height:1px;margin:var(--space-1,8px) 0;background:var(--wp-overflow-divider-bg,rgba(8,11,16,0.1));";
+var PANEL_OVERFLOW_SWITCH_INLINE_STYLE = "position:relative;width:var(--space-5,40px);height:var(--space-3,24px);justify-self:end;border-radius:999px;background:var(--wp-overflow-switch-bg,rgba(8,11,16,0.14));box-shadow:inset 0 0 0 1px var(--wp-overflow-switch-border,rgba(8,11,16,0.08));overflow:visible;box-sizing:border-box;";
 var PANEL_OVERFLOW_SWITCH_ON_INLINE_STYLE = "background:var(--wp-overflow-switch-on-bg,rgba(8,11,16,0.84));box-shadow:inset 0 0 0 1px var(--wp-overflow-switch-on-border,rgba(8,11,16,0.16));";
-var PANEL_OVERFLOW_SWITCH_KNOB_INLINE_STYLE = "position:absolute;top:3px;left:3px;width:12px;height:12px;border-radius:999px;background:var(--wp-overflow-switch-knob-bg,rgba(255,255,255,0.96));box-shadow:0 1px 3px var(--wp-overflow-switch-knob-shadow,rgba(8,11,16,0.24));";
-var PANEL_OVERFLOW_SWITCH_KNOB_ON_INLINE_STYLE = "transform:translateX(12px);background:var(--wp-overflow-switch-knob-on-bg,var(--wp-overflow-switch-knob-bg,rgba(255,255,255,0.96)));";
+var PANEL_OVERFLOW_SWITCH_KNOB_INLINE_STYLE = "position:absolute;top:4px;left:4px;width:var(--space-2,16px);height:var(--space-2,16px);border-radius:999px;background:var(--wp-overflow-switch-knob-bg,rgba(255,255,255,0.96));box-shadow:0 1px 3px var(--wp-overflow-switch-knob-shadow,rgba(8,11,16,0.24));";
+var PANEL_OVERFLOW_SWITCH_KNOB_ON_INLINE_STYLE = "transform:translateX(var(--space-2,16px));background:var(--wp-overflow-switch-knob-on-bg,var(--wp-overflow-switch-knob-bg,rgba(255,255,255,0.96)));";
 var GRAPHITE_BACKGROUND_THEME = "graphite";
 var DEFAULT_CATEGORIES = [
   { id: "tops", label: "Tops" },
@@ -148,6 +160,10 @@ var BRAND_ALIASES = new Map([
   ["tomfordfashion", "Tom Ford"],
   ["tom ford fashion", "Tom Ford"],
   ["tomford", "Tom Ford"],
+  ["d1milano", "D1 Milano"],
+  ["d1 milano", "D1 Milano"],
+  ["fablestore", "F | ABLE"],
+  ["fable store", "F | ABLE"],
   ["loewe", "Loewe"],
   ["p448", "P448"],
   ["rimowa", "RIMOWA"],
@@ -179,6 +195,9 @@ var panelState = {
   deleteCategoryId: "",
   deleteItemId: "",
   editItemId: "",
+  decisionItemId: "",
+  decisionDragItemId: "",
+  shortlistOpen: false,
   archivedOpen: false,
   brandCloudOpen: false,
   brandCloudSortList: false,
@@ -203,6 +222,7 @@ var panelState = {
   summaryRateLoading: "",
   backgroundTheme: DEFAULT_SETTINGS.backgroundTheme,
   compactView: DEFAULT_SETTINGS.compactView,
+  hoverHints: DEFAULT_SETTINGS.hoverHints,
   language: DEFAULT_SETTINGS.language,
   hasRenderedPanel: false,
   rebuildMotion: "",

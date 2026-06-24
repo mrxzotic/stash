@@ -50,7 +50,7 @@ function panelSearchStyles() {
       width: 20px;
       height: 20px;
       color: rgba(8, 11, 16, 0.78);
-      font-size: 20px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -124,7 +124,7 @@ function panelSearchStyles() {
     .wp-clear-search-icon {
       width: 16px;
       height: 16px;
-      font-size: 16px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.2;
       stroke-linecap: round;

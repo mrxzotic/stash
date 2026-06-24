@@ -1,4 +1,6 @@
 .DS_Store
+xcuserdata/
+*.xcuserstate
 
 # Local secrets and credentials
 .env
@@ -9,6 +11,7 @@
 
 # Local tooling artifacts
 .playwright-cli/
+.wrangler/
 node_modules/
 npm-debug.log*
 

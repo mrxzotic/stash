@@ -1,14 +1,16 @@
-# Stashed
+# Tuckio
 
-Stashed is a plain Manifest V3 Chrome/Arc extension for saving products from any shop into a private local stash.
+Tuckio is a plain Manifest V3 Chrome/Arc extension for saving products from any shop into a private local library.
 
-The v0.1 promise is intentionally narrow: save products cleanly from arbitrary shops, keep the library local, and make saved data easy to correct or back up.
+The v0.1 promise is intentionally narrow: save products cleanly from arbitrary shops, keep the library local, and make saved data easy to correct or back up. The public product domain is `tuckio.com`.
+
+Chrome Web Store listing: https://chromewebstore.google.com/detail/akehcgpjghmmenhicldnppjjelkipfpk
 
 ## What it does
 
 - Saves products from right-clicked product cards, images, links, and product pages.
 - Extracts product data from schema.org JSON-LD, embedded app JSON, Shopify product JSON, OpenGraph, microdata, and DOM context.
-- Stores the stash locally in `chrome.storage.local`.
+- Stores the library locally in `chrome.storage.local`.
 - Opens as a compact in-page panel with category filters, search, and view/theme toggles.
 - Keeps visible product cards clean: short commercial model name, brand, image, source URL, and original site price.
 - Lets users edit saved brand, name, price, image URL, and category.
@@ -16,22 +18,59 @@ The v0.1 promise is intentionally narrow: save products cleanly from arbitrary s
 - Supports sale display with current price and compare-at price.
 - Converts totals with cached RUB fallback rates while preserving the original site currency on cards.
 
+## Install
+
+Install the published extension from the Chrome Web Store:
+
+https://chromewebstore.google.com/detail/akehcgpjghmmenhicldnppjjelkipfpk
+
 ## Install locally
+
+Use the local install flow for development and release checks:
 
 1. Open `chrome://extensions` in Chrome or Arc.
 2. Enable Developer mode.
 3. Choose **Load unpacked**.
 4. Select the `extension` folder from this repo.
-5. Click the Stashed extension icon to open the in-page panel.
-6. Open a product page or product grid, right click an item/image/card, then choose **Save to Stashed**.
+5. Click the Tuckio extension icon to open the in-page panel.
+6. Open a product page or product grid, right click an item/image/card, then choose **Save to Tuckio**.
+
+## Safari local wrapper
+
+The Safari wrapper lives in `safari/Tuckio` and references the canonical `extension` folder instead of copying it.
+
+Regenerate it with:
+
+```bash
+xcrun safari-web-extension-packager extension \
+  --project-location safari \
+  --app-name Tuckio \
+  --bundle-identifier com.tuckio.tuckio \
+  --swift \
+  --macos-only \
+  --no-open \
+  --no-prompt
+```
+
+Build it with:
+
+```bash
+xcodebuild -project safari/Tuckio/Tuckio.xcodeproj \
+  -scheme Tuckio \
+  -configuration Debug \
+  -destination 'platform=macOS' \
+  build
+```
+
+For local runtime testing in Safari, enable Safari Settings -> Advanced -> Show features for web developers, then Safari Settings -> Developer -> Allow unsigned extensions. A distributable Safari build needs an Apple code-signing identity configured in Xcode.
 
 ## Privacy
 
-Stashed has no backend, accounts, telemetry, or hidden collection. Saved items stay in local browser storage.
+Tuckio has no backend, accounts, telemetry, or hidden collection. Saved items stay in local browser storage.
 
 The publishable privacy policy is in [PRIVACY.md](PRIVACY.md).
 
-Stashed uses `activeTab`, `contextMenus`, `scripting`, and `storage`. It does not request persistent all-site host access. Content scripts are injected only after the user clicks the extension action or chooses **Save to Stashed** from the context menu on an HTTP/HTTPS page.
+Tuckio uses `activeTab`, `contextMenus`, `scripting`, and `storage`. It does not request persistent all-site host access. Content scripts are injected only after the user clicks the extension action or chooses **Save to Tuckio** from the context menu on an HTTP/HTTPS page.
 
 Current network behavior is limited to user-triggered save/open flows:
 
@@ -40,7 +79,7 @@ Current network behavior is limited to user-triggered save/open flows:
 - Currency totals can fetch RUB exchange rates from `https://open.er-api.com/v6/latest/<currency>` and cache the numeric rate locally.
 - Saved product images can load from the original shop when the panel is open, with `referrerpolicy="no-referrer"` on rendered image elements.
 
-Stashed does not call a remote favicon proxy or render passive third-party favicon lookups.
+Tuckio does not call a remote favicon proxy or render passive third-party favicon lookups.
 
 ## Project structure
 
@@ -71,7 +110,7 @@ This repo intentionally has no build step.
 - Keep `extension/content/constants.js` first and `extension/content/bootstrap.js` last in the content-script order.
 - When changing content-script behavior, bump `CONTENT_VERSION` in `extension/content/constants.js`.
 - When changing extension behavior or assets, bump the patch version in `extension/manifest.json`.
-- Keep storage keys namespaced under `stash.*`; schema changes need explicit versioning or migration.
+- Keep storage keys namespaced under `tuckio.*`; schema changes need explicit versioning or migration.
 - Run the cheapest relevant check after edits, usually `node --check` for changed JS files.
 
 Useful checks:
@@ -84,7 +123,7 @@ find scripts -maxdepth 1 -name 'smoke-*.js' -print | sort | xargs -n1 node
 
 ## Status
 
-Stashed is approaching a v0.1 public release. It currently focuses on local saving, generic extraction, manual correction, JSON backup export/import, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or Chrome Web Store packaging automation yet.
+Tuckio v0.1 is published on the Chrome Web Store. It currently focuses on local saving, generic extraction, manual correction, JSON backup export/import, and a polished in-page panel. It does not include sync, accounts, price tracking, store-specific adapters, or background shopping automation.
 
 ## License
 

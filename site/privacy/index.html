@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tuckio Privacy Policy</title>
+    <meta
+      name="description"
+      content="Tuckio privacy policy for the Chrome Web Store listing."
+    >
+    <link rel="icon" href="/assets/tuckio-icon-128.png">
+    <link rel="apple-touch-icon" href="/assets/tuckio-icon-128.png">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="policy">
+      <header class="topbar policy-header" aria-label="Site navigation">
+        <a class="wordmark" href="/" aria-label="Tuckio home">Tuckio</a>
+        <nav class="nav">
+          <a href="/guides/">Guides</a>
+          <a href="/privacy">Privacy</a>
+        </nav>
+      </header>
+
+      <article class="policy-copy">
+        <h1>Tuckio Privacy Policy</h1>
+        <p class="updated">Last updated: June 23, 2026</p>
+
+        <p>
+          Tuckio is a local shopping and product saver. It saves products from pages the user
+          explicitly opens or right-clicks and keeps the product library in local browser storage.
+        </p>
+
+        <h2>Data Tuckio Handles</h2>
+        <p>
+          Tuckio can save product URLs, source domains, product names, brands, prices, image URLs,
+          categories, archive state, settings, cached currency rates, and JSON backups imported by
+          the user.
+        </p>
+        <p>
+          Tuckio does not collect accounts, passwords, payment details, emails, contacts, precise
+          location, health data, or browsing history unrelated to a user-triggered save, open, import,
+          or export flow.
+        </p>
+
+        <h2>Storage</h2>
+        <p>
+          Saved items, categories, settings, archive state, and cached currency rates are stored in
+          <code>chrome.storage.local</code> on the user's device.
+        </p>
+        <p>Tuckio has no backend account system and does not sync saved items to a server.</p>
+
+        <h2>Network Use</h2>
+        <p>
+          Tuckio does not use analytics, telemetry, advertising identifiers, tracking pixels, or
+          remote executable code.
+        </p>
+        <ul>
+          <li>Product-page enrichment can fetch the same-origin product page when saved card data is incomplete.</li>
+          <li>Shopify enrichment can fetch <code>/products/&lt;handle&gt;.js</code> on the origin of the user-selected product URL.</li>
+          <li>Currency totals can fetch RUB exchange rates from <code>https://open.er-api.com/v6/latest/&lt;currency&gt;</code> and cache numeric rates locally.</li>
+          <li>Saved product images can load from their original shop when the panel is open. Rendered image elements use <code>referrerpolicy="no-referrer"</code>.</li>
+        </ul>
+        <p>
+          Tuckio does not call remote favicon proxies or perform passive third-party asset lookups
+          for saved shops.
+        </p>
+
+        <h2>Sharing</h2>
+        <p>
+          Tuckio does not sell user data, transfer user data for advertising, or allow humans to
+          read saved user data.
+        </p>
+        <p>
+          The only data sent to third parties is the minimal request data required by the user-facing
+          network behavior above. For example, an exchange-rate request includes the selected
+          currency code, and a product enrichment request goes to the same shop origin for the product
+          the user chose to save.
+        </p>
+        <h2>User Control</h2>
+        <p>
+          Users can edit or delete saved items inside Tuckio. Users can export a local JSON backup or
+          import a JSON backup file. Removing the extension or clearing extension storage removes
+          locally stored Tuckio data from that browser profile.
+        </p>
+
+        <h2>Limited Use Statement</h2>
+        <p>
+          Tuckio's use of information received from Google APIs adheres to the Chrome Web Store User
+          Data Policy, including the Limited Use requirements.
+        </p>
+      </article>
+    </main>
+  </body>
+</html>

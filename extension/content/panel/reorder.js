@@ -64,6 +64,124 @@ function finishPanelListReorder(list) {
   });
 }
 
+function syncPanelItemsContent(root, list, visibleItems) {
+  const mode = panelItemsRenderMode();
+  const currentMode = panelCurrentItemsRenderMode(list);
+  const previousItemRects = capturePanelItemLayout(root);
+  list.classList.add("is-reordering");
+
+  const synced = currentMode === mode && (
+    mode === "brand-cloud"
+      ? reorderPanelBrandCloudItems(list, panelVisibleItems(panelState.items))
+      : syncPanelItemNodes(list, visibleItems, mode)
+  );
+
+  if (!synced) {
+    list.innerHTML = renderPanelItemsHtml(visibleItems);
+  }
+
+  bindImageFallbacks(root);
+  animatePanelItemLayout(root, previousItemRects);
+  finishPanelListReorder(list);
+}
+
+function panelItemsRenderMode() {
+  if (panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen) {
+    return "brand-cloud";
+  }
+  return panelState.compactView ? "compact" : "cards";
+}
+
+function panelCurrentItemsRenderMode(list) {
+  if (list.querySelector(".wp-brand-cloud")) return "brand-cloud";
+  if (list.querySelector(".wp-compact-list")) return "compact";
+  if (list.querySelector("[data-panel-column]")) return "cards";
+  return "";
+}
+
+function syncPanelItemNodes(list, visibleItems, mode) {
+  if (!visibleItems.length) {
+    list.innerHTML = renderPanelEmpty();
+    return true;
+  }
+
+  return mode === "compact"
+    ? syncPanelCompactItemNodes(list, visibleItems)
+    : syncPanelCardItemNodes(list, visibleItems);
+}
+
+function syncPanelCompactItemNodes(list, visibleItems) {
+  const compactList = list.querySelector(".wp-compact-list");
+  if (!compactList) {
+    return false;
+  }
+
+  syncPanelNodeOrder(compactList, panelItemNodesFor(list, visibleItems, "compact"));
+  removePanelStaleItemNodes(compactList, visibleItems);
+  return true;
+}
+
+function syncPanelCardItemNodes(list, visibleItems) {
+  const columns = panelCardColumns(list);
+  if (!columns) {
+    return false;
+  }
+
+  syncPanelCardColumns(columns, panelItemNodesFor(list, visibleItems, "cards"));
+  columns.forEach((column) => removePanelStaleItemNodes(column, visibleItems));
+  return true;
+}
+
+function panelItemNodesFor(list, visibleItems, mode) {
+  const nodeById = new Map(
+    Array.from(list.querySelectorAll("[data-panel-item-id]"))
+      .map((node) => [node.dataset.panelItemId, node])
+  );
+
+  return visibleItems.map((item, index) => {
+    const node = nodeById.get(item.id);
+    const signature = panelItemRenderSignature(item, mode);
+    if (node?.dataset.panelRenderSignature === signature) {
+      node.dataset.panelRenderSignature = signature;
+      if (mode === "compact") syncPanelCompactItemNodeIndex(node, index);
+      return node;
+    }
+
+    const nextNode = elementFromHtml(mode === "compact" ? renderPanelCompactItem(item, index) : renderPanelItem(item));
+    nextNode.dataset.panelRenderSignature = signature;
+    return nextNode;
+  });
+}
+
+function removePanelStaleItemNodes(parent, visibleItems) {
+  const visibleIds = new Set(visibleItems.map((item) => item.id));
+  Array.from(parent.querySelectorAll("[data-panel-item-id]")).forEach((node) => {
+    if (!visibleIds.has(node.dataset.panelItemId)) {
+      node.remove();
+    }
+  });
+}
+
+function panelItemRenderSignature(item, mode) {
+  const price = item.price || {};
+  return [
+    mode,
+    item.id,
+    isPanelItemArchived(item) ? "archived" : "active",
+    panelItemIsShortlisted(item) ? "shortlist" : "",
+    panelItemDecisionState(item),
+    item.title,
+    item.brand,
+    item.category,
+    price.amount,
+    price.currency,
+    price.rubAmount,
+    price.compareAtAmount,
+    (item.imageUrls || []).join("|"),
+    item.imageUrl || ""
+  ].join("::");
+}
+
 function reorderPanelCardItems(list, visibleItems) {
   const columns = panelCardColumns(list);
   if (!columns) {
@@ -90,11 +208,14 @@ function reorderPanelCompactItems(list, visibleItems) {
     return false;
   }
 
+  nodes.forEach(syncPanelCompactItemNodeIndex);
   syncPanelNodeOrder(compactList, nodes);
-  nodes.forEach((node, index) => {
-    syncPanelCompactIndex(node, index);
-  });
   return true;
+}
+
+function syncPanelCompactItemNodeIndex(node, index) {
+  const label = node?.querySelector?.(".wp-compact-index");
+  if (label) label.textContent = String(index + 1);
 }
 
 function reorderPanelBrandCloudItems(list, visibleItems) {
@@ -165,20 +286,14 @@ function panelCurrentItemNodes(list, visibleItems) {
   return nodes.every(Boolean) ? nodes : null;
 }
 
-function syncPanelCompactIndex(node, index) {
-  const indexNode = node.querySelector(".wp-compact-index");
-  if (!indexNode) {
-    return;
-  }
-
-  indexNode.textContent = `#${index + 1}`;
-  indexNode.setAttribute("aria-label", `Item ${index + 1}`);
-}
-
 function syncPanelNodeOrder(parent, nodes) {
   const ordered = new Set(nodes);
   nodes.forEach((node, index) => {
     node.style.order = String(index);
+    const sibling = parent.children[index];
+    if (node.parentElement !== parent || sibling !== node) {
+      parent.insertBefore(node, sibling || null);
+    }
   });
   Array.from(parent.children).forEach((node) => {
     if (!ordered.has(node) && (node.dataset?.panelItemId || node.dataset?.brandFilterKey)) {

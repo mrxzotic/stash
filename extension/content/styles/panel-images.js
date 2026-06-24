@@ -16,6 +16,7 @@ function panelImageStyles() {
     }
 
     .wp-item:hover .wp-image-slider-tray,
+    .wp-media.is-hover-restored .wp-image-slider-tray,
     .wp-media:focus-within .wp-image-slider-tray {
       opacity: 1;
       pointer-events: auto;
@@ -37,6 +38,7 @@ function panelImageStyles() {
     }
 
     .wp-item:hover .wp-image-slider,
+    .wp-media.is-hover-restored .wp-image-slider,
     .wp-media:focus-within .wp-image-slider {
       opacity: 0.5;
     }
@@ -72,6 +74,7 @@ function panelImageStyles() {
     }
 
     .wp-item:hover .wp-image-slider-button,
+    .wp-media.is-hover-restored .wp-image-slider-button,
     .wp-media:focus-within .wp-image-slider-button {
       opacity: 0.5;
       pointer-events: auto;
@@ -93,7 +96,7 @@ function panelImageStyles() {
     .wp-image-slider-icon {
       width: 18px;
       height: 18px;
-      font-size: 18px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -142,7 +145,7 @@ function panelImageStyles() {
     .wp-image-delete-icon {
       width: 16px;
       height: 16px;
-      font-size: 16px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;

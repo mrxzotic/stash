@@ -14,7 +14,7 @@ const contentScriptFiles = Array.from(
   (entry) => entry[1]
 );
 
-const storageKey = "stash.items.v1";
+const storageKey = "tuckio.items.v1";
 const chromePath = process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const minPassingLiveSites = Number(process.env.QA_MIN_LIVE_SITES || 10);
 const maxLiveSites = Number(process.env.QA_MAX_LIVE_SITES || 15);
@@ -47,7 +47,7 @@ main().catch((error) => {
 });
 
 async function main() {
-  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "wishlisted-live-qa-"));
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "tuckio-live-qa-"));
   const qaExtensionDir = path.join(tempRoot, "extension");
   const screenshotPath = path.join(tempRoot, "panel-pill-widths.png");
   fs.cpSync(extensionDir, qaExtensionDir, { recursive: true });
@@ -152,12 +152,12 @@ async function saveActiveTab(worker) {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files });
     const response = await chrome.tabs.sendMessage(tab.id, {
-      type: "STASH_SAVE_V2",
+      type: "TUCKIO_SAVE_V2",
       contentVersion: version,
       category: "auto",
       context: { pageUrl: tab.url }
     });
-    const stored = await chrome.storage.local.get("stash.items.v1");
+    const stored = await chrome.storage.local.get("tuckio.items.v1");
     return { response, stored };
   }, { files: contentScriptFiles, version: contentVersion });
 }
@@ -192,11 +192,11 @@ async function smokePanelEdgeCases(page, worker, screenshotPath) {
   await worker.evaluate(async ({ files, version }) => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files });
-    await chrome.tabs.sendMessage(tab.id, { type: "STASH_TOGGLE_PANEL_V2", contentVersion: version });
+    await chrome.tabs.sendMessage(tab.id, { type: "TUCKIO_TOGGLE_PANEL_V2", contentVersion: version });
   }, { files: contentScriptFiles, version: contentVersion });
-  await page.waitForFunction(() => document.getElementById("stash-panel-root")?.shadowRoot?.querySelector(".wp-shell"));
+  await page.waitForFunction(() => document.getElementById("tuckio-panel-root")?.shadowRoot?.querySelector(".wp-shell"));
   const metrics = await page.evaluate(() => {
-    const root = document.getElementById("stash-panel-root").shadowRoot;
+    const root = document.getElementById("tuckio-panel-root").shadowRoot;
     const read = (selector) => {
       const element = root.querySelector(selector);
       return {

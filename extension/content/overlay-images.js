@@ -44,7 +44,7 @@ function renderSavedOverlayImageControls(urls, item) {
 
 function bindSavedOverlayImageEvents(root, item) {
   unbindSavedOverlayImageEvents(root);
-  root.__stashOverlayImageClick = (event) => {
+  root.__tuckioOverlayImageClick = (event) => {
     const deleteButton = event.target.closest?.("[data-overlay-image-delete]");
     if (deleteButton && root.contains(deleteButton)) {
       event.preventDefault();
@@ -67,16 +67,16 @@ function bindSavedOverlayImageEvents(root, item) {
       button.blur();
     }
   };
-  root.addEventListener("click", root.__stashOverlayImageClick);
+  root.addEventListener("click", root.__tuckioOverlayImageClick);
 }
 
 function unbindSavedOverlayImageEvents(root) {
-  if (!root.__stashOverlayImageClick) {
+  if (!root.__tuckioOverlayImageClick) {
     return;
   }
 
-  root.removeEventListener("click", root.__stashOverlayImageClick);
-  root.__stashOverlayImageClick = null;
+  root.removeEventListener("click", root.__tuckioOverlayImageClick);
+  root.__tuckioOverlayImageClick = null;
 }
 
 function slideSavedOverlayImage(media, direction, item) {
@@ -125,10 +125,8 @@ function deleteSavedOverlayImage(root, media, item) {
 
   const currentIndex = clamp(Number(media.dataset.overlayImageIndex) || 0, 0, urls.length - 1);
   const imageUrl = urls[currentIndex] || urls[0] || "";
-  const remaining = urls.filter((_, index) => index !== currentIndex);
-  const nextImageUrl = remaining[Math.min(currentIndex, remaining.length - 1)] || remaining[0] || "";
   safelyRunPanelAction(() =>
-    removeSavedOverlayImage(root, media, item, imageUrl, nextImageUrl)
+    removeSavedOverlayImage(root, media, item, imageUrl, currentIndex)
   );
 }
 
@@ -148,20 +146,21 @@ async function saveSavedOverlayImageChoice(item, imageUrl) {
   });
 
   if (result && panelState.open) {
-    renderStashPanel();
+    renderTuckioPanel();
   }
 }
 
-async function removeSavedOverlayImage(root, media, item, imageUrl, nextImageUrl) {
+async function removeSavedOverlayImage(root, media, item, imageUrl, removedIndex) {
   const removedKey = normalizeUrl(imageUrl);
-  const nextKey = normalizeUrl(nextImageUrl);
+  let nextImageIndex = 0;
   const result = await updateSavedOverlayStoredItem(item, (savedItem, urls) => {
     const remaining = urls.filter((url) => normalizeUrl(url) !== removedKey);
     if (!remaining.length || remaining.length === urls.length) {
       return null;
     }
 
-    const primary = remaining.find((url) => normalizeUrl(url) === nextKey) || remaining[0];
+    const primary = remaining[0];
+    nextImageIndex = clamp(removedIndex, 0, remaining.length - 1);
     return {
       ...savedItem,
       id: savedItem.id || savedOverlayItemIdentity(item).id,
@@ -175,9 +174,9 @@ async function removeSavedOverlayImage(root, media, item, imageUrl, nextImageUrl
     return;
   }
 
-  replaceSavedOverlayImageMedia(root, media, result.item);
+  replaceSavedOverlayImageMedia(root, media, result.item, nextImageIndex);
   if (panelState.open) {
-    renderStashPanel();
+    renderTuckioPanel();
   }
 }
 
@@ -214,7 +213,7 @@ async function updateSavedOverlayStoredItem(item, updater) {
   return { item: updatedItem, items: nextItems };
 }
 
-function replaceSavedOverlayImageMedia(root, media, item) {
+function replaceSavedOverlayImageMedia(root, media, item, imageIndex = 0) {
   const template = document.createElement("template");
   template.innerHTML = renderSavedOverlayImage(item).trim();
   const nextMedia = template.content.firstElementChild;
@@ -222,8 +221,29 @@ function replaceSavedOverlayImageMedia(root, media, item) {
     return;
   }
 
+  const shouldRestoreHover = Boolean(media?.matches?.(":hover"));
   media.replaceWith(nextMedia);
+  const urls = savedOverlayImageUrls(nextMedia);
+  const nextIndex = urls.length ? clamp(imageIndex, 0, urls.length - 1) : 0;
+  if (urls.length > 1) {
+    setSavedOverlayImageIndex(nextMedia, nextIndex, urls);
+    nextMedia.dataset.overlayImageInitialUrl = urls[nextIndex] || urls[0] || "";
+  }
+  restoreSavedOverlayImageHover(nextMedia, shouldRestoreHover);
   bindImageFallbacks(root);
+}
+
+function restoreSavedOverlayImageHover(media, shouldRestore = false) {
+  if (!media || (!shouldRestore && !media.matches?.(":hover"))) {
+    return;
+  }
+
+  media.classList.add("is-hover-restored");
+  const clearHover = () => {
+    media.classList.remove("is-hover-restored");
+    media.removeEventListener("pointerleave", clearHover);
+  };
+  media.addEventListener("pointerleave", clearHover);
 }
 
 function savedOverlayImageUrls(media) {

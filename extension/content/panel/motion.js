@@ -1,7 +1,7 @@
 var PANEL_REBUILD_MOTION_MS = 620;
 
 function panelRebuildMotionKind(kind) {
-  return ["view", "theme"].includes(kind) ? kind : "";
+  return kind === "view" ? kind : "";
 }
 
 function panelRebuildMotionClass(kind) {
@@ -9,19 +9,73 @@ function panelRebuildMotionClass(kind) {
   return motionKind ? ` is-rebuilding is-${motionKind}-rebuild` : "";
 }
 
-function renderStashPanelWithMotion(kind, options = {}) {
+function renderTuckioPanelWithMotion(kind, options = {}) {
   panelState.rebuildMotion = panelRebuildMotionKind(kind);
-  renderStashPanel(options);
+  renderTuckioPanel(options);
+}
+
+function startPanelViewModeSwitch(items) {
+  if (!items || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+    return;
+  }
+
+  window.clearTimeout(items.__tuckioViewModeSwitchTimer);
+  items.classList.remove("is-view-mode-switching");
+  void items.offsetWidth;
+  items.classList.add("is-view-mode-switching");
+  items.__tuckioViewModeSwitchTimer = window.setTimeout(() => {
+    items.classList.remove("is-view-mode-switching");
+  }, 420);
+}
+
+function syncPanelViewStateWithMotion(options = {}) {
+  const root = document.getElementById("tuckio-panel-root")?.shadowRoot;
+  if (!root) {
+    renderTuckioPanel(options);
+    return;
+  }
+
+  clearPanelRebuildMotion(root);
+  syncPanelViewState(root, options);
+}
+
+function syncPanelViewState(root, options = {}) {
+  syncPanelFiltersState(root);
+  syncPanelItemsState(root);
+  syncPanelDecisionMode(root);
+  if (options.syncSummary !== false) {
+    renderPanelSummaryOnly({ animate: Boolean(options.animateSummary) });
+  }
+  syncPanelFilterRail(root);
+  syncPanelItemsTopOffset(root);
+}
+
+function syncPanelFiltersState(root) {
+  const filters = root?.querySelector?.(".wp-filters");
+  if (!filters) return;
+  const filterCategories = [{ id: "all", label: "All" }, ...panelState.categories];
+  filters.className = `wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}`;
+  filters.innerHTML = renderCategoryFilters(filterCategories, panelArchivedCount(panelState.items));
+}
+
+function syncPanelItemsState(root) {
+  const list = root?.querySelector?.(".wp-items");
+  if (!list) return;
+  list.classList.toggle("is-compact", panelState.compactView);
+  list.classList.toggle("is-archive-view", panelState.archivedOpen);
+  list.classList.toggle("is-brand-cloud", panelState.brandCloudOpen && !panelState.brandFilterKey && !panelState.archivedOpen);
+  syncPanelItemsContent(root, list, panelSortedItems(panelVisibleItems(panelState.items)));
+  bindImageFallbacks(root);
 }
 
 function renderPanelTopbarOnly(root, kind = "search") {
   const topbar = root?.querySelector(".wp-topbar");
   if (!topbar) {
     if (kind === "search") {
-      renderStashPanel();
+      renderTuckioPanel();
       return;
     }
-    renderStashPanelWithMotion(kind);
+    renderTuckioPanelWithMotion(kind);
     return;
   }
 
@@ -60,8 +114,8 @@ function syncPanelWithRebuildMotion(root, kind, update) {
   }
 
   clearPanelRebuildMotion(root);
-  update();
   shell.classList.add("is-rebuilding", `is-${motionKind}-rebuild`);
+  update();
   schedulePanelRebuildMotionClear(root);
 }
 
@@ -77,7 +131,7 @@ function finishPanelRebuildMotion(root) {
 function schedulePanelRebuildMotionClear(root) {
   window.clearTimeout(panelState.rebuildMotionTimer);
   panelState.rebuildMotionTimer = window.setTimeout(() => {
-    clearPanelRebuildMotion(root || document.getElementById("stash-panel-root")?.shadowRoot);
+    clearPanelRebuildMotion(root || document.getElementById("tuckio-panel-root")?.shadowRoot);
   }, PANEL_REBUILD_MOTION_MS);
 }
 
@@ -155,7 +209,7 @@ function settlePanelMovedItem(element) {
       finishPanelMovedItem(element);
     }
   };
-  element.__stashLayoutMotionEnd = finish;
+  element.__tuckioLayoutMotionEnd = finish;
   element.addEventListener("transitionend", finish);
 }
 
@@ -165,9 +219,9 @@ function finishPanelMovedItem(element) {
   }
 
   const isHovered = panelElementHasPointerHover(element);
-  if (element.__stashLayoutMotionEnd) {
-    element.removeEventListener("transitionend", element.__stashLayoutMotionEnd);
-    element.__stashLayoutMotionEnd = null;
+  if (element.__tuckioLayoutMotionEnd) {
+    element.removeEventListener("transitionend", element.__tuckioLayoutMotionEnd);
+    element.__tuckioLayoutMotionEnd = null;
   }
 
   element.classList.remove("is-layout-settling");
@@ -182,9 +236,9 @@ function finishPanelMovedItem(element) {
 function clearPanelMovedItemCleanup(element) {
   element.classList.remove("is-layout-resting");
   element.classList.remove("is-layout-positioned");
-  if (element.__stashLayoutMotionEnd) {
-    element.removeEventListener("transitionend", element.__stashLayoutMotionEnd);
-    element.__stashLayoutMotionEnd = null;
+  if (element.__tuckioLayoutMotionEnd) {
+    element.removeEventListener("transitionend", element.__tuckioLayoutMotionEnd);
+    element.__tuckioLayoutMotionEnd = null;
   }
   clearPanelLayoutHoverMute(element);
 }
@@ -193,15 +247,15 @@ function mutePanelLayoutHoverUntilExit(element) {
   clearPanelLayoutHoverMute(element);
   element.classList.add("is-layout-hover-muted");
   const finish = () => clearPanelLayoutHoverMute(element);
-  element.__stashLayoutHoverMuteEnd = finish;
+  element.__tuckioLayoutHoverMuteEnd = finish;
   element.addEventListener("pointerleave", finish, { once: true });
 }
 
 function clearPanelLayoutHoverMute(element) {
   element.classList.remove("is-layout-hover-muted");
-  if (element.__stashLayoutHoverMuteEnd) {
-    element.removeEventListener("pointerleave", element.__stashLayoutHoverMuteEnd);
-    element.__stashLayoutHoverMuteEnd = null;
+  if (element.__tuckioLayoutHoverMuteEnd) {
+    element.removeEventListener("pointerleave", element.__tuckioLayoutHoverMuteEnd);
+    element.__tuckioLayoutHoverMuteEnd = null;
   }
 }
 

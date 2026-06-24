@@ -3,7 +3,7 @@ function bindPanelExportEvents(root) {
     event.preventDefault();
     event.stopPropagation();
 
-    safelyRunPanelAction(exportStashBackup);
+    safelyRunPanelAction(exportTuckioBackup);
   });
 
   const importInput = root.querySelector("[data-import-backup-file]");
@@ -21,13 +21,15 @@ function bindPanelExportEvents(root) {
       return;
     }
 
-    safelyRunPanelAction(() => importStashBackupFile(file));
+    safelyRunPanelAction(() => importTuckioBackupFile(file));
   });
+
+  bindPanelResetEvents(root);
 }
 
-function exportStashBackup() {
+function exportTuckioBackup() {
   const backup = {
-    schema: "stash.backup.v1",
+    schema: BACKUP_SCHEMA,
     exportedAt: new Date().toISOString(),
     extensionVersion: chrome.runtime?.getManifest?.().version || "",
     items: Array.isArray(panelState.items) ? panelState.items : [],
@@ -36,6 +38,7 @@ function exportStashBackup() {
       summaryCurrency: panelState.summaryCurrency,
       backgroundTheme: panelState.backgroundTheme,
       compactView: panelState.compactView,
+      hoverHints: panelState.hoverHints,
       language: panelState.language
     })
   };
@@ -46,7 +49,7 @@ function exportStashBackup() {
   const link = document.createElement("a");
 
   link.href = url;
-  link.download = `stash-backup-${backup.exportedAt.slice(0, 10)}.json`;
+  link.download = `tuckio-backup-${backup.exportedAt.slice(0, 10)}.json`;
   link.rel = "noreferrer";
   document.body.append(link);
   link.click();
@@ -54,13 +57,13 @@ function exportStashBackup() {
   window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-async function importStashBackupFile(file) {
+async function importTuckioBackupFile(file) {
   if (file.size > 6 * 1024 * 1024) {
-    throw importBackupError(t("Choose a Stashed JSON backup under 6 MB."));
+    throw importBackupError(t("Choose a Tuckio JSON backup under 6 MB."));
   }
 
   const importedAt = new Date().toISOString();
-  const parsed = parseStashBackupJson(await file.text());
+  const parsed = parseTuckioBackupJson(await file.text());
   const source = Array.isArray(parsed) ? { items: parsed } : parsed;
   const categories = mergeImportedCategories(source?.categories);
   const importedItems = normalizeImportedBackupItems(source?.items, categories, importedAt);
@@ -69,6 +72,7 @@ async function importStashBackupFile(file) {
     summaryCurrency: panelState.summaryCurrency,
     backgroundTheme: panelState.backgroundTheme,
     compactView: panelState.compactView,
+    hoverHints: panelState.hoverHints,
     language: panelState.language,
     ...(source?.settings || {})
   });
@@ -80,6 +84,7 @@ async function importStashBackupFile(file) {
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
+  panelState.hoverHints = settings.hoverHints;
   panelState.language = settings.language;
   panelState.founderPromoOpen = false;
   panelState.searchOpen = false;
@@ -102,21 +107,21 @@ async function importStashBackupFile(file) {
     setLocalStorageValue(CATEGORY_SCHEMA_STORAGE_KEY, CATEGORY_SCHEMA_VERSION),
     setLocalStorageValue(SETTINGS_STORAGE_KEY, settings)
   ]);
-  renderStashPanel({ summaryAnimationFrom: previousSummary });
+  renderTuckioPanel({ summaryAnimationFrom: previousSummary });
 }
 
-function parseStashBackupJson(text) {
+function parseTuckioBackupJson(text) {
   try {
     const parsed = JSON.parse(text);
     if (!parsed || (typeof parsed !== "object" && !Array.isArray(parsed))) {
       throw new Error();
     }
-    if (parsed.schema && parsed.schema !== "stash.backup.v1") {
+    if (parsed.schema && parsed.schema !== BACKUP_SCHEMA && parsed.schema !== LEGACY_BACKUP_SCHEMA) {
       throw new Error();
     }
     return parsed;
   } catch {
-    throw importBackupError(t("Choose a valid Stashed JSON backup."));
+    throw importBackupError(t("Choose a valid Tuckio JSON backup."));
   }
 }
 
@@ -184,6 +189,8 @@ function normalizeImportedBackupItem(item, categories, importedAt) {
     imageUrl: normalized.imageUrls[0] || "",
     imageUrls: normalized.imageUrls,
     category,
+    shortlistedAt: normalizedImportDate(item.shortlistedAt),
+    decision: normalizeImportedDecision(item.decision),
     createdAt: normalizedImportDate(item.createdAt) || importedAt,
     updatedAt: normalizedImportDate(item.updatedAt),
     archivedAt: normalizedImportDate(item.archivedAt)
@@ -213,6 +220,22 @@ function normalizeImportedImageUrls(values, primary = "") {
     "",
     SAVED_IMAGE_URL_LIMIT
   );
+}
+
+function normalizeImportedDecision(value) {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const state = cleanText(value.state).toLowerCase();
+  if (state !== "bought" && state !== "skipped") {
+    return undefined;
+  }
+
+  return compactObject({
+    state,
+    decidedAt: normalizedImportDate(value.decidedAt)
+  });
 }
 
 function importableHttpUrl(value) {

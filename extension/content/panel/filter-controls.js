@@ -1,5 +1,5 @@
 function showPanelFilterControls(root) {
-  root.__stashFilterPointerInside = true;
+  root.__tuckioFilterPointerInside = true;
   setPanelFilterControlsVisible(root, true);
 }
 
@@ -14,14 +14,14 @@ function syncPanelFilterPointerBounds(root, event) {
   }
 
   if (isPointNearPanelFilters(filters, event.clientX, event.clientY)) {
-    root.__stashFilterPointerInside = true;
+    root.__tuckioFilterPointerInside = true;
     if (!filters.classList?.contains?.("is-controls-visible")) {
       setPanelFilterControlsVisible(root, true);
     }
     return;
   }
 
-  if (root.__stashFilterPointerInside || filters.classList?.contains?.("is-controls-visible")) {
+  if (root.__tuckioFilterPointerInside || filters.classList?.contains?.("is-controls-visible")) {
     hidePanelFilterControls(root);
   }
 }
@@ -34,7 +34,7 @@ function clearPanelFilterPointerFocus(filters) {
 }
 
 function panelFilterControlsShouldStayVisible(root, filters) {
-  return Boolean(root.__stashFilterPointerInside || hasPanelFilterKeyboardFocus(filters));
+  return Boolean(root.__tuckioFilterPointerInside || hasPanelFilterKeyboardFocus(filters));
 }
 
 function hasPanelFilterKeyboardFocus(filters) {
@@ -47,7 +47,7 @@ function hasPanelFilterKeyboardFocus(filters) {
 }
 
 function setPanelFilterControlsVisible(root, visible) {
-  window.clearTimeout(root.__stashFilterControlsHideTimer);
+  window.clearTimeout(root.__tuckioFilterControlsHideTimer);
   const filters = root.querySelector(".wp-filters");
   if (!filters) {
     return;
@@ -87,7 +87,7 @@ function setPanelFilterRemoveShell(filters, activeShell) {
 }
 
 function schedulePanelFilterControlsHide(root, event) {
-  window.clearTimeout(root.__stashFilterControlsHideTimer);
+  window.clearTimeout(root.__tuckioFilterControlsHideTimer);
   if (!hasPanelPointerPoint(event)) {
     hidePanelFilterControls(root);
     return;
@@ -100,14 +100,14 @@ function schedulePanelFilterControlsHide(root, event) {
       return;
     }
 
-    root.__stashFilterPointerInside = false;
+    root.__tuckioFilterPointerInside = false;
     hidePanelFilterControls(root);
   });
 }
 
 function hidePanelFilterControls(root) {
-  window.clearTimeout(root.__stashFilterControlsHideTimer);
-  root.__stashFilterPointerInside = false;
+  window.clearTimeout(root.__tuckioFilterControlsHideTimer);
+  root.__tuckioFilterPointerInside = false;
   const filters = root.querySelector(".wp-filters");
   if (hasPanelFilterKeyboardFocus(filters)) {
     setPanelFilterControlsVisible(root, true);

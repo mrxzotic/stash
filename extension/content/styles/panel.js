@@ -15,10 +15,14 @@ function panelStyles() {
     panelSortStyles(),
     panelSaveCurrentStyles(),
     panelPromoStyles(),
+    panelAboutStyles(),
     panelReleaseStyles(),
+    panelDecisionUiStyles(),
+    panelDecisionMotionStyles(),
     panelEditStyles(),
     panelRebuildMotionStyles(),
     panelSaveMotionStyles(),
-    panelInteractionMotionStyles()
+    panelInteractionMotionStyles(),
+    panelHintStyles()
   ].join("");
 }

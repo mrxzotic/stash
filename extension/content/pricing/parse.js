@@ -90,7 +90,7 @@ function priceSourceScore(source, price, index) {
 }
 
 function parsePricesFromText(value) {
-  const text = cleanText(value);
+  const text = cleanText(normalizePriceText(value));
   if (!text || isInstallmentPriceText(text)) {
     return [];
   }
@@ -190,7 +190,7 @@ function normalizePrice({ amount, currency, text, compareAtAmount, compareAtText
 }
 
 function parsePriceFromText(value, fallbackCurrency) {
-  const text = cleanText(value);
+  const text = cleanText(normalizePriceText(value));
   if (!text || isInstallmentPriceText(text)) {
     return {};
   }
@@ -394,6 +394,6 @@ function parseLocalizedNumber(value) {
 }
 
 function isInstallmentPriceText(value) {
-  const text = cleanText(value);
-  return /\b(?:klarna|afterpay|clearpay|affirm|installments?|instalments?|monthly|pay\s+in\s+\d|split\s+payments?)\b|(?:\/|\bper\s+)(?:month|mo|mth)\b/i.test(text);
+  const text = cleanText(normalizePriceText(value));
+  return /\b(?:klarna|afterpay|clearpay|affirm|installments?|instalments?|monthly|pay\s+in\s+\d|split\s+payments?)\b|(?:\/|\bper\s+)(?:month|mo|mth)\b|(?:долями|подели|сплит|рассроч|плат[её]ж|частями|по\s+[\d\s.,]+\s*₽\s*[x×х]\s*\d)/i.test(text);
 }

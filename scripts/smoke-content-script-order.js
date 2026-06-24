@@ -35,7 +35,7 @@ const sandbox = {
   location: new URL("https://www.loewe.com/eur/en/women/bags/bucket-bags"),
   chrome: {
     runtime: {
-      getURL: (assetPath) => `chrome-extension://stash/${assetPath}`
+      getURL: (assetPath) => `chrome-extension://tuckio/${assetPath}`
     },
     storage: {
       local: {},

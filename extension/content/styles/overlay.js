@@ -13,48 +13,40 @@ function extensionFontUrl(path) {
   return String(extensionAssetUrl(path) || "").replace(/["'\\\n\r]/g, "");
 }
 
+function extensionFontFace(family, path, weight, unicodeRange) {
+  const url = extensionFontUrl(path);
+  if (!url) {
+    return "";
+  }
+  return `
+    @font-face {
+      font-family: "${family}";
+      src: url("${url}") format("woff2");
+      font-weight: ${weight};
+      font-style: normal;
+      font-display: block;
+      unicode-range: ${unicodeRange};
+    }`;
+}
+
 function extensionFontFaceStyles() {
-  const interUrl = extensionFontUrl("fonts/inter-latin-var.woff2");
-  const plexRegularUrl = extensionFontUrl("fonts/ibm-plex-mono-latin-400.woff2");
-  const plexSemiBoldUrl = extensionFontUrl("fonts/ibm-plex-mono-latin-600.woff2");
-  const plexBoldUrl = extensionFontUrl("fonts/ibm-plex-mono-latin-700.woff2");
+  const latin = "U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD";
+  const latinExt = "U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF";
+  const cyrillic = "U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116";
+  const cyrillicExt = "U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F";
+  const plexFaces = [400, 600, 700].flatMap((weight) => [
+    extensionFontFace("IBM Plex Mono", `fonts/ibm-plex-mono-latin-${weight}.woff2`, weight, latin),
+    extensionFontFace("IBM Plex Mono", `fonts/ibm-plex-mono-latin-ext-${weight}.woff2`, weight, latinExt),
+    extensionFontFace("IBM Plex Mono", `fonts/ibm-plex-mono-cyrillic-${weight}.woff2`, weight, cyrillic),
+    extensionFontFace("IBM Plex Mono", `fonts/ibm-plex-mono-cyrillic-ext-${weight}.woff2`, weight, cyrillicExt)
+  ]).join("");
 
   return `
-    ${interUrl ? `
-    @font-face {
-      font-family: "Inter";
-      src: url("${interUrl}") format("woff2");
-      font-weight: 100 900;
-      font-style: normal;
-      font-display: swap;
-    }` : ""}
-
-    ${plexRegularUrl ? `
-    @font-face {
-      font-family: "IBM Plex Mono";
-      src: url("${plexRegularUrl}") format("woff2");
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }` : ""}
-
-    ${plexSemiBoldUrl ? `
-    @font-face {
-      font-family: "IBM Plex Mono";
-      src: url("${plexSemiBoldUrl}") format("woff2");
-      font-weight: 600;
-      font-style: normal;
-      font-display: swap;
-    }` : ""}
-
-    ${plexBoldUrl ? `
-    @font-face {
-      font-family: "IBM Plex Mono";
-      src: url("${plexBoldUrl}") format("woff2");
-      font-weight: 700 900;
-      font-style: normal;
-      font-display: swap;
-    }` : ""}
+    ${extensionFontFace("Inter", "fonts/inter-latin-var.woff2", "100 900", latin)}
+    ${extensionFontFace("Inter", "fonts/inter-latin-ext-var.woff2", "100 900", latinExt)}
+    ${extensionFontFace("Inter", "fonts/inter-cyrillic-var.woff2", "100 900", cyrillic)}
+    ${extensionFontFace("Inter", "fonts/inter-cyrillic-ext-var.woff2", "100 900", cyrillicExt)}
+    ${plexFaces}
     .wp-phosphor {
       display: inline-block;
       flex: 0 0 auto;
@@ -84,6 +76,22 @@ function overlayStyles() {
       --text-body: 13px;
       --text-ui: 14px;
       --text-heading: 16px;
+    }
+
+    .wl-countdown {
+      font-family: var(--figure-font) !important;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: 0;
+    }
+
+    .wl-site-price,
+    .wl-compare-price,
+    .wl-native-price {
+      font-family: var(--figure-font) !important;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: 0;
     }
 
     * {
@@ -183,7 +191,7 @@ function overlayStyles() {
     .wl-close-icon {
       width: 17px;
       height: 17px;
-      font-size: 17px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -284,7 +292,7 @@ function overlayStyles() {
     .wl-timer-icon {
       width: 12px;
       height: 12px;
-      font-size: 12px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;

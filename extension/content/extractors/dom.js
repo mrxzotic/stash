@@ -3,9 +3,7 @@ function itemProp(scope, name) {
     return "";
   }
 
-  const element = scope.matches?.(`[itemprop="${name}"]`)
-    ? scope
-    : scope.querySelector?.(`[itemprop="${name}"]`);
+  const element = itemPropElement(scope, name);
 
   if (!element) {
     return "";
@@ -20,6 +18,29 @@ function itemProp(scope, name) {
   );
 }
 
+function itemPropElement(scope, name) {
+  if (scope.matches?.(`[itemprop="${name}"]`)) {
+    return scope;
+  }
+
+  return Array.from(scope.querySelectorAll?.(`[itemprop="${name}"]`) || [])
+    .find((element) => {
+      const ownerScope = itemPropOwnerScope(element);
+      return ownerScope === scope || (!ownerScope && !scope.hasAttribute?.("itemscope"));
+    }) || null;
+}
+
+function itemPropOwnerScope(element) {
+  let node = element?.parentElement || null;
+  while (node) {
+    if (node.hasAttribute?.("itemscope")) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+  return null;
+}
+
 function extractFromMicrodata() {
   const product =
     document.querySelector('[itemscope][itemtype*="schema.org/Product" i]') ||
@@ -29,6 +50,7 @@ function extractFromMicrodata() {
     return {};
   }
 
+  const offer = product.querySelector('[itemprop="offers"]');
   const title =
     itemProp(product, "name") ||
     product.querySelector("h1, h2, h3")?.textContent;
@@ -42,19 +64,22 @@ function extractFromMicrodata() {
     bestImageFromElement(product.querySelector("img"));
   const priceText =
     itemProp(product, "price") ||
+    itemProp(offer, "price") ||
     product.querySelector('[itemprop="price"]')?.textContent ||
     findVisiblePriceText(product);
   const currency =
     itemProp(product, "priceCurrency") ||
+    itemProp(offer, "priceCurrency") ||
     currencyFromText(priceText) ||
     findVisibleCurrencyCode(product);
   const price = normalizePrice({ text: priceText, currency });
+  const url = itemProp(product, "url") || itemProp(offer, "url");
 
   return compactObject({
-    title: cleanProductTitle(title, brand, itemProp(product, "url") || location.href),
+    title: cleanProductTitle(title, brand, url || location.href),
     brand: cleanBrandName(brand),
     url: normalizeUrl(
-      itemProp(product, "url") ||
+      url ||
         product.querySelector("a[href]")?.href ||
         document.querySelector('link[rel="canonical"]')?.href ||
         location.href
@@ -66,7 +91,8 @@ function extractFromMicrodata() {
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
     imageUrl: toAbsoluteUrl(image),
-    rawCategory: itemProp(product, "category")
+    rawCategory: itemProp(product, "category"),
+    fromMicrodata: true
   });
 }
 

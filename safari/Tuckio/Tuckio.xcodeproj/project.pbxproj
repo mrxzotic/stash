@@ -1,0 +1,617 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FA2A21152FEB0D7600746A5F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2A21142FEB0D7600746A5F /* AppDelegate.swift */; };
+		FA2A21192FEB0D7600746A5F /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = FA2A21172FEB0D7600746A5F /* Main.html */; };
+		FA2A211B2FEB0D7600746A5F /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FA2A211A2FEB0D7600746A5F /* Icon.png */; };
+		FA2A211D2FEB0D7600746A5F /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = FA2A211C2FEB0D7600746A5F /* Style.css */; };
+		FA2A211F2FEB0D7600746A5F /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = FA2A211E2FEB0D7600746A5F /* Script.js */; };
+		FA2A21212FEB0D7600746A5F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2A21202FEB0D7600746A5F /* ViewController.swift */; };
+		FA2A21242FEB0D7600746A5F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA2A21222FEB0D7600746A5F /* Main.storyboard */; };
+		FA2A21262FEB0D7700746A5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA2A21252FEB0D7700746A5F /* Assets.xcassets */; };
+		FA2A212D2FEB0D7700746A5F /* Tuckio Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FA2A212C2FEB0D7700746A5F /* Tuckio Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FA2A21322FEB0D7700746A5F /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2A21312FEB0D7700746A5F /* SafariWebExtensionHandler.swift */; };
+		FA2A21442FEB0D7800746A5F /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = FA2A213E2FEB0D7800746A5F /* background.js */; };
+		FA2A21452FEB0D7800746A5F /* content in Resources */ = {isa = PBXBuildFile; fileRef = FA2A213F2FEB0D7800746A5F /* content */; };
+		FA2A21462FEB0D7800746A5F /* icons in Resources */ = {isa = PBXBuildFile; fileRef = FA2A21402FEB0D7800746A5F /* icons */; };
+		FA2A21472FEB0D7800746A5F /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = FA2A21412FEB0D7800746A5F /* manifest.json */; };
+		FA2A21482FEB0D7800746A5F /* fonts in Resources */ = {isa = PBXBuildFile; fileRef = FA2A21422FEB0D7800746A5F /* fonts */; };
+		FA2A21492FEB0D7800746A5F /* assets in Resources */ = {isa = PBXBuildFile; fileRef = FA2A21432FEB0D7800746A5F /* assets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		FA2A212E2FEB0D7700746A5F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FA2A21092FEB0D7600746A5F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FA2A212B2FEB0D7700746A5F;
+			remoteInfo = "Tuckio Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FA2A21392FEB0D7700746A5F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FA2A212D2FEB0D7700746A5F /* Tuckio Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		FA2A21112FEB0D7600746A5F /* Tuckio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tuckio.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA2A21142FEB0D7600746A5F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FA2A21182FEB0D7600746A5F /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = Base.lproj/Main.html; sourceTree = "<group>"; };
+		FA2A211A2FEB0D7600746A5F /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		FA2A211C2FEB0D7600746A5F /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		FA2A211E2FEB0D7600746A5F /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		FA2A21202FEB0D7600746A5F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		FA2A21232FEB0D7600746A5F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		FA2A21252FEB0D7700746A5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FA2A21272FEB0D7700746A5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FA2A212C2FEB0D7700746A5F /* Tuckio Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Tuckio Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA2A21312FEB0D7700746A5F /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		FA2A21332FEB0D7700746A5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FA2A213E2FEB0D7800746A5F /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.js; path = ../../../extension/background.js; sourceTree = "<group>"; };
+		FA2A213F2FEB0D7800746A5F /* content */ = {isa = PBXFileReference; lastKnownFileType = folder; name = content; path = ../../../extension/content; sourceTree = "<group>"; };
+		FA2A21402FEB0D7800746A5F /* icons */ = {isa = PBXFileReference; lastKnownFileType = folder; name = icons; path = ../../../extension/icons; sourceTree = "<group>"; };
+		FA2A21412FEB0D7800746A5F /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../../extension/manifest.json; sourceTree = "<group>"; };
+		FA2A21422FEB0D7800746A5F /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../../../extension/fonts; sourceTree = "<group>"; };
+		FA2A21432FEB0D7800746A5F /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../extension/assets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FA2A210E2FEB0D7600746A5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA2A21292FEB0D7700746A5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FA2A21082FEB0D7600746A5F = {
+			isa = PBXGroup;
+			children = (
+				FA2A21132FEB0D7600746A5F /* Tuckio */,
+				FA2A21302FEB0D7700746A5F /* Tuckio Extension */,
+				FA2A21122FEB0D7600746A5F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FA2A21122FEB0D7600746A5F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FA2A21112FEB0D7600746A5F /* Tuckio.app */,
+				FA2A212C2FEB0D7700746A5F /* Tuckio Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FA2A21132FEB0D7600746A5F /* Tuckio */ = {
+			isa = PBXGroup;
+			children = (
+				FA2A21142FEB0D7600746A5F /* AppDelegate.swift */,
+				FA2A21202FEB0D7600746A5F /* ViewController.swift */,
+				FA2A21222FEB0D7600746A5F /* Main.storyboard */,
+				FA2A21252FEB0D7700746A5F /* Assets.xcassets */,
+				FA2A21272FEB0D7700746A5F /* Info.plist */,
+				FA2A21162FEB0D7600746A5F /* Resources */,
+			);
+			path = Tuckio;
+			sourceTree = "<group>";
+		};
+		FA2A21162FEB0D7600746A5F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FA2A21172FEB0D7600746A5F /* Main.html */,
+				FA2A211A2FEB0D7600746A5F /* Icon.png */,
+				FA2A211C2FEB0D7600746A5F /* Style.css */,
+				FA2A211E2FEB0D7600746A5F /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FA2A21302FEB0D7700746A5F /* Tuckio Extension */ = {
+			isa = PBXGroup;
+			children = (
+				FA2A213D2FEB0D7800746A5F /* Resources */,
+				FA2A21312FEB0D7700746A5F /* SafariWebExtensionHandler.swift */,
+				FA2A21332FEB0D7700746A5F /* Info.plist */,
+			);
+			path = "Tuckio Extension";
+			sourceTree = "<group>";
+		};
+		FA2A213D2FEB0D7800746A5F /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FA2A213E2FEB0D7800746A5F /* background.js */,
+				FA2A213F2FEB0D7800746A5F /* content */,
+				FA2A21402FEB0D7800746A5F /* icons */,
+				FA2A21412FEB0D7800746A5F /* manifest.json */,
+				FA2A21422FEB0D7800746A5F /* fonts */,
+				FA2A21432FEB0D7800746A5F /* assets */,
+			);
+			name = Resources;
+			path = "Tuckio Extension";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FA2A21102FEB0D7600746A5F /* Tuckio */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FA2A213A2FEB0D7700746A5F /* Build configuration list for PBXNativeTarget "Tuckio" */;
+			buildPhases = (
+				FA2A210D2FEB0D7600746A5F /* Sources */,
+				FA2A210E2FEB0D7600746A5F /* Frameworks */,
+				FA2A210F2FEB0D7600746A5F /* Resources */,
+				FA2A21392FEB0D7700746A5F /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FA2A212F2FEB0D7700746A5F /* PBXTargetDependency */,
+			);
+			name = Tuckio;
+			packageProductDependencies = (
+			);
+			productName = Tuckio;
+			productReference = FA2A21112FEB0D7600746A5F /* Tuckio.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FA2A212B2FEB0D7700746A5F /* Tuckio Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FA2A21362FEB0D7700746A5F /* Build configuration list for PBXNativeTarget "Tuckio Extension" */;
+			buildPhases = (
+				FA2A21282FEB0D7700746A5F /* Sources */,
+				FA2A21292FEB0D7700746A5F /* Frameworks */,
+				FA2A212A2FEB0D7700746A5F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Tuckio Extension";
+			packageProductDependencies = (
+			);
+			productName = "Tuckio Extension";
+			productReference = FA2A212C2FEB0D7700746A5F /* Tuckio Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FA2A21092FEB0D7600746A5F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2650;
+				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					FA2A21102FEB0D7600746A5F = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					FA2A212B2FEB0D7700746A5F = {
+						CreatedOnToolsVersion = 26.5;
+					};
+				};
+			};
+			buildConfigurationList = FA2A210C2FEB0D7600746A5F /* Build configuration list for PBXProject "Tuckio" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FA2A21082FEB0D7600746A5F;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = FA2A21122FEB0D7600746A5F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FA2A21102FEB0D7600746A5F /* Tuckio */,
+				FA2A212B2FEB0D7700746A5F /* Tuckio Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FA2A210F2FEB0D7600746A5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA2A211B2FEB0D7600746A5F /* Icon.png in Resources */,
+				FA2A21242FEB0D7600746A5F /* Main.storyboard in Resources */,
+				FA2A211F2FEB0D7600746A5F /* Script.js in Resources */,
+				FA2A21192FEB0D7600746A5F /* Main.html in Resources */,
+				FA2A21262FEB0D7700746A5F /* Assets.xcassets in Resources */,
+				FA2A211D2FEB0D7600746A5F /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA2A212A2FEB0D7700746A5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA2A21472FEB0D7800746A5F /* manifest.json in Resources */,
+				FA2A21482FEB0D7800746A5F /* fonts in Resources */,
+				FA2A21462FEB0D7800746A5F /* icons in Resources */,
+				FA2A21492FEB0D7800746A5F /* assets in Resources */,
+				FA2A21452FEB0D7800746A5F /* content in Resources */,
+				FA2A21442FEB0D7800746A5F /* background.js in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FA2A210D2FEB0D7600746A5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA2A21212FEB0D7600746A5F /* ViewController.swift in Sources */,
+				FA2A21152FEB0D7600746A5F /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA2A21282FEB0D7700746A5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FA2A21322FEB0D7700746A5F /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FA2A212F2FEB0D7700746A5F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FA2A212B2FEB0D7700746A5F /* Tuckio Extension */;
+			targetProxy = FA2A212E2FEB0D7700746A5F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		FA2A21172FEB0D7600746A5F /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FA2A21182FEB0D7600746A5F /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		FA2A21222FEB0D7600746A5F /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FA2A21232FEB0D7600746A5F /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		FA2A21342FEB0D7700746A5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		FA2A21352FEB0D7700746A5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		FA2A21372FEB0D7700746A5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Tuckio Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Tuckio Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tuckio.tuckio.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FA2A21382FEB0D7700746A5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Tuckio Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Tuckio Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tuckio.tuckio.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FA2A213B2FEB0D7700746A5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Tuckio/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Tuckio;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tuckio.tuckio;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FA2A213C2FEB0D7700746A5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Tuckio/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Tuckio;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.tuckio.tuckio;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FA2A210C2FEB0D7600746A5F /* Build configuration list for PBXProject "Tuckio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA2A21342FEB0D7700746A5F /* Debug */,
+				FA2A21352FEB0D7700746A5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FA2A21362FEB0D7700746A5F /* Build configuration list for PBXNativeTarget "Tuckio Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA2A21372FEB0D7700746A5F /* Debug */,
+				FA2A21382FEB0D7700746A5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FA2A213A2FEB0D7700746A5F /* Build configuration list for PBXNativeTarget "Tuckio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FA2A213B2FEB0D7700746A5F /* Debug */,
+				FA2A213C2FEB0D7700746A5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FA2A21092FEB0D7600746A5F /* Project object */;
+}
