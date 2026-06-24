@@ -12,7 +12,9 @@ const renderSource = read("extension/content/panel/render.js");
 const filtersSource = read("extension/content/panel/filters.js");
 const searchSource = read("extension/content/panel/search.js");
 const compactViewSource = read("extension/content/panel/compact-view.js");
+const preferencesSource = read("extension/content/panel/preferences.js");
 const archiveSource = read("extension/content/panel/archive.js");
+const filterEventsSource = read("extension/content/panel/filter-events.js");
 const filterControlsSource = read("extension/content/panel/filter-controls.js");
 const sortSource = read("extension/content/panel/sort.js");
 const reorderSource = read("extension/content/panel/reorder.js");
@@ -36,8 +38,8 @@ assert.ok(
   backgroundSource.includes(`CONTENT_SCRIPT_VERSION = "${contentVersion}"`),
   "Background should inject the active panel save motion version"
 );
-assert.match(backgroundSource, /"content\/panel\/empty\.js",\s*"content\/panel\/motion\.js",\s*"content\/panel\/filters\.js",\s*"content\/panel\/render\.js",\s*"content\/panel\/reorder\.js"/, "Panel motion, filter, and reorder helpers should load before item-only flows");
-assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content\/styles\/panel-decision-ui\.js",\s*"content\/styles\/panel-decision-motion\.js",\s*"content\/styles\/panel-edit\.js",\s*"content\/styles\/panel-rebuild-motion\.js",\s*"content\/styles\/panel-save-motion\.js",\s*"content\/styles\/panel-interaction-motion\.js",\s*"content\/styles\/panel\.js"/, "Panel motion styles should load before panel style composition");
+assert.match(backgroundSource, /"content\/panel\/empty\.js",\s*"content\/panel\/motion\.js",\s*"content\/panel\/filters\.js",\s*"content\/panel\/preferences\.js",\s*"content\/panel\/render\.js",\s*"content\/panel\/reorder\.js"/, "Panel motion, filter, preference, and reorder helpers should load before item-only flows");
+assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content\/styles\/panel-decision-ui\.js",\s*"content\/styles\/panel-decision-motion\.js",\s*"content\/styles\/panel-edit\.js",\s*"content\/styles\/panel-rebuild-motion\.js",\s*"content\/styles\/panel-save-motion\.js",\s*"content\/styles\/panel-interaction-motion\.js",\s*"content\/styles\/panel-hints\.js",\s*"content\/styles\/panel\.js"/, "Panel motion styles should load before panel style composition");
 
 assert.match(constantsSource, /displacedItemId: ""/, "Panel state should track the card displaced by an open-panel save");
 assert.match(constantsSource, /rebuildMotion: ""/, "Panel state should track transient rebuild motion");
@@ -104,10 +106,10 @@ assert.match(reorderSource, /syncPanelNodeOrder\(compactList, nodes\)/, "Compact
 assert.doesNotMatch(reorderPanelItemsOnlyBody, /innerHTML\s*=/, "Sort reorder should not replace card HTML");
 assert.doesNotMatch(reorderPanelItemsOnlyBody, /replaceChildren/, "Sort reorder should not bulk-replace card nodes");
 assert.doesNotMatch(reorderPanelItemsOnlyBody, /appendChild/, "Sort reorder should not append recreated card nodes");
-assert.match(compactViewSource, /syncViewMode: true,[\s\S]*?syncSummary: false/, "Card/list toggle should update view state without refreshing unrelated chrome");
-assert.match(compactViewSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\S]*?syncSummary: false/, "Theme toggle should update theme state without refreshing unrelated chrome");
-assert.match(compactViewSource, /\{ compactView: !panelState\.compactView \},\s*\{ rerender: false, syncViewMode: true, syncSummary: false \}/, "List view toggle should sync in place without rebuild motion");
-assert.doesNotMatch(compactViewSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\S]*?rebuildMotion:/, "Theme toggle should not enter rebuild motion");
+assert.match(filterEventsSource, /syncViewMode: true,[\s\S]*?syncSummary: false/, "Card/list toggle should update view state without refreshing unrelated chrome");
+assert.match(preferencesSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\S]*?syncSummary: false/, "Theme toggle should update theme state without refreshing unrelated chrome");
+assert.match(filterEventsSource, /\{ compactView \},\s*\{ rerender: false, syncViewMode: true, syncSummary: false \}/, "List view toggle should sync in place without rebuild motion");
+assert.doesNotMatch(preferencesSource, /backgroundTheme: toggledGraphiteThemeId\(\)[\s\S]*?rebuildMotion:/, "Theme toggle should not enter rebuild motion");
 assert.match(eventsSource, /syncPanelWithRebuildMotion\([\s\S]*?options\.rebuildMotion[\s\S]*?syncSettingsUi/, "Settings sync should wrap in-place updates in rebuild motion");
 assert.match(panelMotionSource, /wp-new-card-skeleton[\s\S]*wp-new-card-skeleton-media[\s\S]*wp-new-card-skeleton-copy/, "New card skeleton should include media and copy zones");
 assert.match(panelMotionSource, /function renderTuckioPanelWithMotion/, "Panel motion helper should expose render-with-motion");

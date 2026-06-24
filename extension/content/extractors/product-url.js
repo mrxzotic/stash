@@ -3,11 +3,18 @@ function isProductLikeUrl(value) {
     const url = new URL(value, location.href);
     const isFarfetchProduct =
       /^(?:.+\.)?farfetch\.com$/i.test(url.hostname) && /-item-\d+\.aspx$/i.test(url.pathname);
+    const isBrandshopProduct =
+      /(^|\.)brandshop\.ru$/i.test(url.hostname) && /^\/goods\/\d+\/[^/]+\/?$/i.test(url.pathname);
+    const isFablestoreProduct =
+      /(^|\.)fablestore\.ru$/i.test(url.hostname) &&
+        /^\/catalog\/[^/]+\/[^/]+\/[^/]+\/?$/i.test(url.pathname);
     const isPyeProduct =
       typeof isPyeProductUrl === "function" && isPyeProductUrl(url.href);
     return (
       /\/(product|products|item|items|p)\//i.test(url.pathname) ||
       isFarfetchProduct ||
+      isBrandshopProduct ||
+      isFablestoreProduct ||
       isPyeProduct ||
       looksLikeSkuProductPath(url)
     );

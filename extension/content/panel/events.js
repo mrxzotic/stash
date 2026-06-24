@@ -13,6 +13,7 @@ function bindPanelEvents(root) {
   bindPanelExportEvents(root);
   bindPanelArchiveEvents(root);
   bindPanelSortEvents(root);
+  bindPanelHintEvents(root);
   bindPanelFounderPromoEvents(root);
   bindPanelSaveCurrentEvents(root);
   bindPanelImageSliderEvents(root);
@@ -295,10 +296,11 @@ async function savePanelSettings(nextSettings, options = {}) {
     summaryCurrency: panelState.summaryCurrency,
     backgroundTheme: panelState.backgroundTheme,
     compactView: panelState.compactView,
+    hoverHints: panelState.hoverHints,
     language: panelState.language,
     ...nextSettings
   });
-  Object.assign(panelState, { summaryCurrency: settings.summaryCurrency, summaryRate: fallbackSummaryRate(settings.summaryCurrency), backgroundTheme: settings.backgroundTheme, compactView: settings.compactView, language: settings.language });
+  Object.assign(panelState, { summaryCurrency: settings.summaryCurrency, summaryRate: fallbackSummaryRate(settings.summaryCurrency), backgroundTheme: settings.backgroundTheme, compactView: settings.compactView, hoverHints: settings.hoverHints, language: settings.language });
   if (options.rerender === false) {
     const shouldAnimateSummary =
       options.animateSummary || previousCurrency !== settings.summaryCurrency;

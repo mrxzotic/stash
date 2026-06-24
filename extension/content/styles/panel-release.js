@@ -98,7 +98,7 @@ function panelReleaseStyles() {
     .wp-card-action-icon {
       width: 17px;
       height: 17px;
-      font-size: 17px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -144,19 +144,25 @@ function panelReleaseStyles() {
 
     .wp-item:hover .wp-restore,
     .wp-item:focus-within .wp-restore,
+    .wp-media.is-hover-restored .wp-restore,
     .wp-item:hover .wp-shortlist,
     .wp-item:focus-within .wp-shortlist,
+    .wp-media.is-hover-restored .wp-shortlist,
     .wp-item:hover .wp-archive,
     .wp-item:focus-within .wp-archive,
+    .wp-media.is-hover-restored .wp-archive,
     .wp-item:hover .wp-edit,
     .wp-item:focus-within .wp-edit,
+    .wp-media.is-hover-restored .wp-edit,
     .wp-item:hover .wp-remove,
+    .wp-media.is-hover-restored .wp-remove,
     .wp-item:focus-within .wp-remove {
       opacity: 0.5;
       pointer-events: auto;
     }
 
     .wp-item:hover .wp-shortlist.is-active,
+    .wp-media.is-hover-restored .wp-shortlist.is-active,
     .wp-item:focus-within .wp-shortlist.is-active {
       opacity: 1;
     }
@@ -191,7 +197,7 @@ function panelReleaseStyles() {
     .wp-item .wp-archive:focus-visible,
     .wp-item .wp-edit:focus-visible,
     .wp-item .wp-remove:focus-visible {
-      border-radius: 6px;
+      border-radius: var(--radius);
     }
 
     .wp-theme-graphite .wp-edit,

@@ -273,6 +273,7 @@ function smokeLazyImageAndMissingFallback() {
     [
       "extension/content/constants.js",
       "extension/content/utils.js",
+      "extension/content/icons.js",
       "extension/content/text.js",
       "extension/content/media.js",
       "extension/content/extractors/context.js",
@@ -307,13 +308,14 @@ function smokeLazyImageAndMissingFallback() {
   );
 
   const missing = vm.runInContext('renderPanelCardImageFrame({}, { slider: false, alt: "Missing" })', sandbox);
-  assert.match(missing, /tuckio-app-black\.png/);
+  assert.match(missing, /image-broken\.svg/);
   assert.match(missing, /Oops, image missing/);
 
   const overlaySource = fs.readFileSync(path.join(root, "extension/content/overlay-images.js"), "utf8");
   const renderSource = fs.readFileSync(path.join(root, "extension/content/panel/render.js"), "utf8");
   assert.match(overlaySource, /renderMissingProductImage\("wl"\)/);
-  assert.match(renderSource, /renderMissingProductImage\("wp"\)/);
+  assert.match(renderSource, /renderMissingProductImage\(namespace\)/);
+  assert.match(renderSource, /image\.complete && !image\.naturalWidth/);
 }
 
 function smokeBrandNoiseFilter() {

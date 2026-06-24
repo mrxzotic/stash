@@ -63,7 +63,7 @@ function panelPromoStyles() {
       transform: scale(0.94);
     }
 
-    .wp-founder-close-icon { width: 15px; height: 15px; font-size: 15px; }
+    .wp-founder-close-icon { width: 15px; height: 15px; font-size: inherit; }
 
     .wp-founder-app {
       width: 100%;
@@ -91,14 +91,14 @@ function panelPromoStyles() {
 
     .wp-founder-app-copy strong {
       font-family: var(--ui-font);
-      font-size: 24px;
+      font-size: var(--text-heading);
       line-height: 1;
       font-weight: 680;
       letter-spacing: 0;
       opacity: 0.9;
     }
 
-    .wp-founder-app-copy p { max-width: 220px; margin: 0; color: rgba(8, 11, 16, 0.56); font-size: 13px; line-height: 18px; font-weight: 560; }
+    .wp-founder-app-copy p { max-width: 220px; margin: 0; color: rgba(8, 11, 16, 0.56); font-size: var(--text-body); line-height: 18px; font-weight: 560; }
 
     .wp-founder-photo {
       width: 40px;
@@ -119,7 +119,7 @@ function panelPromoStyles() {
       gap: 8px;
       color: rgba(8, 11, 16, 0.42);
       font-family: var(--ui-font);
-      font-size: 11px;
+      font-size: var(--text-caption);
       line-height: 1;
       font-weight: 560;
       letter-spacing: 0;
@@ -154,7 +154,7 @@ function panelPromoStyles() {
       padding-top: 20px;
     }
 
-    .wp-founder-section-title { color: rgba(8, 11, 16, 0.42); font-size: 11px; line-height: 1; font-weight: 650; text-transform: none; }
+    .wp-founder-section-title { color: rgba(8, 11, 16, 0.42); font-size: var(--text-caption); line-height: 1; font-weight: 650; text-transform: none; }
 
     .wp-founder-person {
       display: grid;
@@ -170,12 +170,12 @@ function panelPromoStyles() {
       gap: 3px;
     }
 
-    .wp-founder-person strong { min-width: 0; color: var(--foreground); font-size: 15px; line-height: 19px; font-weight: 680; }
+    .wp-founder-person strong { min-width: 0; color: var(--foreground); font-size: var(--text-ui); line-height: 18px; font-weight: 680; }
 
     .wp-founder-handle {
       min-width: 0;
       color: rgba(8, 11, 16, 0.44);
-      font-size: 12px;
+      font-size: var(--text-control);
       line-height: 14px;
       font-weight: 590;
       overflow-wrap: anywhere;
@@ -200,7 +200,7 @@ function panelPromoStyles() {
 
     .wp-founder-backup-copy span {
       color: rgba(8, 11, 16, 0.42);
-      font-size: 11px;
+      font-size: var(--text-caption);
       line-height: 1;
       font-weight: 650;
       text-transform: none;
@@ -208,14 +208,14 @@ function panelPromoStyles() {
 
     .wp-founder-backup-copy strong {
       color: rgba(8, 11, 16, 0.78);
-      font-size: 13px;
+      font-size: var(--text-body);
       line-height: 16px;
       font-weight: 640;
     }
 
     .wp-founder-backup-copy small {
       color: rgba(8, 11, 16, 0.46);
-      font-size: 12px;
+      font-size: var(--text-control);
       line-height: 16px;
       font-weight: 520;
     }
@@ -237,7 +237,7 @@ function panelPromoStyles() {
       border-radius: 8px;
       color: #0a84ff;
       background: transparent;
-      font-size: 13px;
+      font-size: var(--text-body);
       line-height: 16px;
       font-weight: 650;
       appearance: none;
@@ -261,7 +261,7 @@ function panelPromoStyles() {
     .wp-founder-action-icon {
       width: 15px;
       height: 15px;
-      font-size: 15px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.1;
       stroke-linecap: round;
@@ -305,7 +305,7 @@ function panelPromoStyles() {
       transform: scale(0.94);
     }
 
-    .wp-founder-link-icon { width: 16px; height: 16px; flex: 0 0 auto; font-size: 16px; }
+    .wp-founder-link-icon { width: 16px; height: 16px; flex: 0 0 auto; font-size: inherit; }
 
     .wp-theme-graphite .wp-founder-app-logo {
       filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.3));

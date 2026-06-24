@@ -21,6 +21,7 @@ function renderTuckioPanel(options = {}) {
       <nav class="wp-filters${panelState.activeCategory !== "all" || panelState.categoryComposerOpen || panelState.archivedOpen ? " is-expanded" : ""}" aria-label="${escapeAttribute(t("Tuckio categories"))}">
         ${renderCategoryFilters(filterCategories, panelArchivedCount(displayItems))}
       </nav>
+      <div class="wp-hint-layer" aria-hidden="true" hidden data-panel-hint-layer></div>
       ${renderPanelDecisionScrim()}
       ${panelState.categoryComposerOpen ? renderCategoryComposer() : ""}
       ${panelState.deleteCategoryId ? renderDeleteCategoryDialog() : ""}
@@ -242,8 +243,8 @@ function renderPanelOverflowMenu() {
         <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitemcheckbox" aria-checked="${panelState.backgroundTheme === GRAPHITE_BACKGROUND_THEME}" data-panel-theme-toggle>
           ${renderPanelThemeToggleContents()}
         </button>
-        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitemcheckbox" aria-checked="${panelState.compactView}" data-panel-compact-toggle>
-          ${renderPanelCompactToggleContents()}
+        <button class="wp-overflow-option" style="${escapeAttribute(PANEL_OVERFLOW_OPTION_INLINE_STYLE)}" type="button" role="menuitemcheckbox" aria-checked="${panelState.hoverHints}" data-panel-hover-hints-toggle>
+          ${renderPanelHoverHintsToggleContents()}
         </button>
         ${renderPanelLanguageSelect()}
         <div class="wp-overflow-divider" style="${escapeAttribute(PANEL_OVERFLOW_DIVIDER_INLINE_STYLE)}" role="separator" aria-hidden="true"></div>
@@ -284,21 +285,13 @@ function renderPanelItem(item) {
   const brand = formatBrandName(item.brand || item.source || sourceNameFromUrl(item.url));
   const priceHtml = renderSitePriceHtml(item, "wp");
   const isArchived = isPanelItemArchived(item);
-  const itemLabel = panelItemAccessibleName(item);
-  const imageUrls = panelCardImageUrls(item);
   const isNew = item.id === panelState.highlightedItemId;
   const isShiftedRight = item.id === panelState.displacedItemId;
 
   return `
     <article class="wp-item${isNew ? " is-new" : ""}${isShiftedRight ? " is-shifted-right" : ""}${isArchived ? " is-archived" : ""}" ${isArchived ? "" : `draggable="true" data-decision-draggable-id="${escapeAttribute(item.id)}"`} data-panel-item-id="${escapeAttribute(item.id)}" data-panel-motion-id="${escapeAttribute(item.id)}" data-panel-render-signature="${escapeAttribute(panelItemRenderSignature(item, "cards"))}">
       ${isNew && !isArchived ? renderPanelNewItemSkeleton() : ""}
-      <div class="wp-media" ${panelImageSliderAttributes(item)}>
-        <a class="wp-media-link" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer" aria-label="${escapeAttribute(t("Open {item}", { item: itemLabel }))}">
-          ${renderPanelCardImageFrame(item, { slider: false })}
-        </a>
-        ${imageUrls.length > 1 ? renderPanelImageSliderControls(imageUrls, item) : ""}
-        ${renderPanelCardActions(item)}
-      </div>
+      ${renderPanelCardMedia(item)}
       <div class="wp-item-copy">
         <div class="wp-brand-row">
           <a class="wp-brand" href="${escapeAttribute(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(brand)}</a>
@@ -346,24 +339,29 @@ function renderPanelItemsHtml(items) {
 function bindImageFallbacks(root) {
   root.querySelectorAll(".wp-image-frame > img, .wl-image img").forEach((image) => {
     syncProductImageRatio(image);
+    const fallback = () => replaceBrokenProductImage(image);
     if (image.__tuckioImageFallbackBound) {
       return;
     }
     image.addEventListener("load", () => syncProductImageRatio(image));
-    image.addEventListener("error", () => {
-      const placeholderClass = image.closest(".wl-image")
-        ? "wl-image-placeholder"
-        : "wp-image-placeholder";
-      const frame = image.closest(".wp-image-frame");
-      if (frame) {
-        frame.replaceWith(elementFromHtml(renderMissingProductImage("wp")));
-        return;
-      }
-      image.replaceWith(elementFromHtml(renderMissingProductImage(placeholderClass.startsWith("wl") ? "wl" : "wp")));
-    });
+    image.addEventListener("error", fallback);
     image.__tuckioImageFallbackBound = true;
+    if (image.complete && !image.naturalWidth) {
+      fallback();
+    }
   });
 
+}
+
+function replaceBrokenProductImage(image) {
+  const namespace = image.closest(".wl-image") ? "wl" : "wp";
+  const frame = image.closest(".wp-image-frame, .wl-image-frame");
+  const fallback = elementFromHtml(renderMissingProductImage(namespace));
+  if (frame) {
+    frame.replaceWith(fallback);
+    return;
+  }
+  image.replaceWith(fallback);
 }
 
 function syncProductImageRatio(image) {

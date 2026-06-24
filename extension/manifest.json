@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tuckio",
-  "version": "0.1.397",
+  "version": "0.1.432",
   "description": "Save products from any shop into a compact local library.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "background": {
@@ -55,10 +55,7 @@
         "icons/tuckio-icon-white-128.png",
         "assets/source-aimeleondore.png",
         "assets/phosphor-light/*.svg",
-        "fonts/inter-latin-var.woff2",
-        "fonts/ibm-plex-mono-latin-400.woff2",
-        "fonts/ibm-plex-mono-latin-600.woff2",
-        "fonts/ibm-plex-mono-latin-700.woff2"
+        "fonts/*.woff2"
       ],
       "matches": ["http://*/*", "https://*/*"],
       "use_dynamic_url": true

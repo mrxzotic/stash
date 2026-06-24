@@ -262,13 +262,13 @@ function sanitizeStorageObjectKey(key) {
 
 async function normalizeItem(product, category, categories) {
   const url = normalizeUrl(product.url || location.href);
-  const price = normalizePrice({
+  const price = repairKnownInstallmentPrice(normalizePrice({
     amount: product.priceAmount,
     currency: product.currency,
     text: product.priceText,
     compareAtAmount: product.compareAtPriceAmount,
     compareAtText: product.compareAtPriceText
-  });
+  }), url);
   const rubPrice = await convertPriceToRub(price);
   const title =
     cleanProductTitle(stripPriceFromText(product.title), product.brand, url) ||

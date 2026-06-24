@@ -232,7 +232,9 @@ function panelStylesChunk5() {
 
     .wp-price-stack {
       min-width: 0;
-      display: inline-flex;
+      display: inline-grid;
+      align-items: start;
+      gap: 2px;
       max-width: 100%;
     }
 

@@ -5,6 +5,7 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
+const manifest = JSON.parse(read("extension/manifest.json"));
 const overlaySource = read("extension/content/overlays.js");
 const overlayImageSource = read("extension/content/overlay-images.js");
 const overlayMotionSource = read("extension/content/overlay-motion.js");
@@ -18,6 +19,24 @@ const panelCardStyles = read("extension/content/styles/panel-5.js");
 const constantsSource = read("extension/content/constants.js");
 const backgroundSource = read("extension/background.js");
 const overlayBehaviorSource = `${overlaySource}\n${overlayImageSource}\n${overlayMotionSource}`;
+const packagedFontPaths = [
+  "fonts/inter-latin-var.woff2",
+  "fonts/inter-latin-ext-var.woff2",
+  "fonts/inter-cyrillic-var.woff2",
+  "fonts/inter-cyrillic-ext-var.woff2",
+  "fonts/ibm-plex-mono-latin-400.woff2",
+  "fonts/ibm-plex-mono-latin-600.woff2",
+  "fonts/ibm-plex-mono-latin-700.woff2",
+  "fonts/ibm-plex-mono-latin-ext-400.woff2",
+  "fonts/ibm-plex-mono-latin-ext-600.woff2",
+  "fonts/ibm-plex-mono-latin-ext-700.woff2",
+  "fonts/ibm-plex-mono-cyrillic-400.woff2",
+  "fonts/ibm-plex-mono-cyrillic-600.woff2",
+  "fonts/ibm-plex-mono-cyrillic-700.woff2",
+  "fonts/ibm-plex-mono-cyrillic-ext-400.woff2",
+  "fonts/ibm-plex-mono-cyrillic-ext-600.woff2",
+  "fonts/ibm-plex-mono-cyrillic-ext-700.woff2"
+];
 
 const contentVersion = constantsSource.match(/CONTENT_VERSION\s*=\s*"([^"]+)"/)?.[1];
 assert.ok(contentVersion, "Content version should be declared");
@@ -52,6 +71,33 @@ for (const icon of [
 }
 assert.match(backgroundSource, /"content\/overlay-fields\.js",\s*"content\/overlay-images\.js",\s*"content\/overlay-motion\.js",\s*"content\/overlays\.js"/, "Overlay helpers should load before the saved overlay");
 assert.match(backgroundSource, /"content\/styles\/overlay-fields\.js",\s*"content\/styles\/overlay-images\.js",\s*"content\/styles\/overlay-motion\.js",\s*"content\/styles\/overlay\.js"/, "Overlay motion styles should load before the saved overlay stylesheet");
+for (const fontPath of packagedFontPaths) {
+  assert.equal(fs.existsSync(path.join(root, "extension", fontPath)), true, `${fontPath} should be packaged with the extension`);
+  assert.equal(
+    manifest.web_accessible_resources.some((entry) => entry.resources.includes(fontPath) || entry.resources.includes("fonts/*.woff2")),
+    true,
+    `${fontPath} should be available to shadow-DOM styles`
+  );
+  const sourceFontPath = fontPath.replace(/-(400|600|700)\.woff2$/, "-${weight}.woff2");
+  assert.match(overlayStyles, new RegExp(sourceFontPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `${fontPath} should be loaded by @font-face`);
+}
+assert.match(overlayStyles, /function extensionFontFace\(family, path, weight, unicodeRange\)/, "Packaged fonts should be generated through one local font-face helper");
+assert.match(overlayStyles, /font-display: block;/, "Local app fonts should block briefly instead of flashing fallback typography");
+assert.match(overlayStyles, /extensionFontFace\("Inter", "fonts\/inter-latin-var\.woff2", "100 900", latin\)/, "Inter latin should be loaded from the packaged variable font");
+assert.match(overlayStyles, /extensionFontFace\("Inter", "fonts\/inter-cyrillic-var\.woff2", "100 900", cyrillic\)/, "Inter cyrillic should be packaged for non-Latin product text");
+assert.match(overlayStyles, /extensionFontFace\("IBM Plex Mono", `fonts\/ibm-plex-mono-latin-\$\{weight\}\.woff2`, weight, latin\)/, "IBM Plex Mono latin should be packaged for digits");
+assert.match(overlayStyles, /extensionFontFace\("IBM Plex Mono", `fonts\/ibm-plex-mono-latin-ext-\$\{weight\}\.woff2`, weight, latinExt\)/, "IBM Plex Mono latin-ext should be packaged for ruble and currency glyphs");
+assert.match(overlayStyles, /extensionFontFace\("IBM Plex Mono", `fonts\/ibm-plex-mono-cyrillic-\$\{weight\}\.woff2`, weight, cyrillic\)/, "IBM Plex Mono cyrillic should be packaged for mixed localized figures");
+assert.match(overlayStyles, /U\+20AD-20C0/, "Latin-ext range should cover the ruble sign");
+assert.match(panelBaseStyles, /extensionFontFaceStyles\(\)/, "Main panel should inject the same packaged font faces as the saved overlay");
+assert.match(panelBaseStyles, /--ui-font: "Inter"/, "Main panel UI font should use the packaged Inter family first");
+assert.match(panelBaseStyles, /--figure-font: "IBM Plex Mono"/, "Main panel figure font should use the packaged IBM Plex Mono family first");
+assert.match(panelBaseStyles, /\.wp-count-figure,[\s\S]*?\.wp-archive-count,[\s\S]*?font-family: var\(--figure-font\) !important;/, "Main panel count surfaces should force the packaged figure font");
+assert.match(panelBaseStyles, /\.wp-total,[\s\S]*?\.wp-site-price,[\s\S]*?\.wp-native-price[\s\S]*?font-family: var\(--figure-font\) !important;/, "Main panel currency surfaces should force the packaged figure font");
+assert.match(overlayStyles, /--ui-font: "Inter"/, "Saved overlay UI font should use the packaged Inter family first");
+assert.match(overlayStyles, /--figure-font: "IBM Plex Mono"/, "Saved overlay figure font should use the packaged IBM Plex Mono family first");
+assert.match(overlayStyles, /\.wl-countdown\s*\{[\s\S]*?font-family: var\(--figure-font\) !important;/, "Saved overlay timer figures should force the packaged figure font");
+assert.match(overlayStyles, /\.wl-site-price,[\s\S]*?\.wl-native-price[\s\S]*?font-family: var\(--figure-font\) !important;/, "Saved overlay currency surfaces should force the packaged figure font");
 assert.match(overlaySource, /renderSavedOverlayImage\(item\)/, "Saved overlay should render images through the slider-aware image renderer");
 assert.match(overlayImageSource, /renderMissingProductImage\("wl"\)/, "Saved overlay should use the Tuckio missing-image fallback");
 assert.doesNotMatch(overlayImageSource, /phosphorImageIcon\("wl-image-placeholder"\)/, "Saved overlay should not use the old generic image icon fallback");

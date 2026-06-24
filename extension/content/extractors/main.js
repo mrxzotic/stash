@@ -148,7 +148,7 @@ function bestProductPrice({ commonSelectorProduct, pagePriceProduct, contextualP
     }
   }
 
-  return bestPriceFromSources(priceSources);
+  return repairKnownInstallmentPrice(bestPriceFromSources(priceSources), url);
 }
 
 function priceWithoutCompareAt(price) {
@@ -175,7 +175,7 @@ function titleSourceCandidate(source, index, brand, productUrl, fallbackTitle) {
 
   return {
     title: titleSourceValue(source.title, cleaned, urlTitle),
-    score: titleSourceScore(cleaned, urlTitle, index, fallbackTitle, source, productUrl)
+    score: titleSourceScore(cleaned, urlTitle, index, fallbackTitle, source, productUrl, brand)
   };
 }
 
@@ -183,17 +183,18 @@ function titleSourceValue(rawTitle, cleanedTitle, urlTitle) {
   if (urlTitle && hasTrailingTitleFacet(cleanedTitle, urlTitle)) {
     return urlTitle;
   }
-
   return rawTitle;
 }
 
-function titleSourceScore(title, urlTitle, index, fallbackTitle, source, productUrl) {
+function titleSourceScore(title, urlTitle, index, fallbackTitle, source, productUrl, brand) {
   const wordCount = title.split(/\s+/).filter(Boolean).length;
   const titleText = cleanText(title).toLocaleLowerCase();
   const fallbackText = cleanText(fallbackTitle).toLocaleLowerCase();
+  const brandText = cleanText(brand).toLocaleLowerCase();
+  const titleKey = compactComparableText(title);
+  const brandKey = compactComparableText(brand);
   const sourceMatchesProduct = sameProductPageUrl(source?.url || productUrl, productUrl);
   let score = Math.max(0, 32 - index * 2);
-
   if (looksLikeProductName(title)) score += 18;
   if (looksLikeModelColorwayTitle(title)) score += 10;
   if (title.length >= 5 && title.length <= 64) score += 8;
@@ -203,7 +204,7 @@ function titleSourceScore(title, urlTitle, index, fallbackTitle, source, product
   if (!source?.fromContext && sourceMatchesProduct && titleText && fallbackText.includes(titleText)) score += 20;
   if (urlTitle && titleMatchesUrlTitle(title, urlTitle)) score += 14;
   if (urlTitle && hasTrailingTitleFacet(title, urlTitle)) score -= 10;
-
+  if (brandKey && (titleKey === brandKey || (brandKey.length >= 4 && titleKey.includes(brandKey) && !(brandText && titleText.startsWith(brandText))))) score -= titleKey === brandKey ? 36 : 18;
   return score;
 }
 
@@ -230,7 +231,6 @@ function bestProductBrand(sources, productUrl) {
   const sourceKey = compactComparableText(sourceNameFromUrl(productUrl));
   const sourceBrand = cleanBrandName(sourceNameFromUrl(productUrl));
   if (sourceBrand && !isMarketplaceProductUrl(productUrl)) candidates.push({ brand: sourceBrand, key: sourceKey, score: 48 });
-
   if (!candidates.length) {
     return "";
   }

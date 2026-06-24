@@ -5,6 +5,7 @@ async function saveCurrentProduct(message) {
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
+  panelState.hoverHints = settings.hoverHints;
   panelState.language = settings.language;
   const category =
     message.category && message.category !== "auto" && hasCategory(categories, message.category)
@@ -156,5 +157,6 @@ async function loadPanelData() {
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
+  panelState.hoverHints = settings.hoverHints;
   panelState.language = settings.language;
 }

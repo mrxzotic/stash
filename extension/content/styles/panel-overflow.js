@@ -9,7 +9,7 @@ function panelOverflowStyles() {
     .wp-overflow-button-icon {
       width: 20px;
       height: 20px;
-      font-size: 20px;
+      font-size: inherit;
     }
 
     .wp-overflow-menu {
@@ -24,14 +24,14 @@ function panelOverflowStyles() {
       --wp-overflow-switch-knob-shadow: rgba(8, 11, 16, 0.24);
       --wp-overflow-switch-knob-on-bg: rgba(255, 255, 255, 0.96);
       position: absolute;
-      top: calc(100% + 8px);
+      top: calc(100% + var(--space-1));
       right: 0;
       z-index: 14;
       width: 344px;
-      max-width: calc(100vw - 32px);
+      max-width: calc(100vw - var(--space-4));
       display: grid;
-      gap: 6px;
-      padding: 8px;
+      gap: var(--space-1);
+      padding: var(--space-1);
       border: 1px solid var(--wp-popover-border);
       border-radius: var(--radius);
       background: var(--wp-popover-bg);
@@ -48,14 +48,14 @@ function panelOverflowStyles() {
 
     .wp-overflow-option {
       width: 100%;
-      height: 40px;
+      height: var(--space-5);
       display: grid;
-      grid-template-columns: 20px minmax(0, 1fr) 36px;
+      grid-template-columns: var(--space-3) minmax(0, 1fr) var(--space-5);
       align-items: center;
-      gap: 18px;
-      padding: 0 10px;
+      gap: var(--space-2);
+      padding: 0 var(--space-1);
       border: 0;
-      border-radius: 9px;
+      border-radius: var(--radius);
       background: transparent;
       color: rgba(8, 11, 16, 0.72);
       font-size: var(--text-body);
@@ -89,13 +89,13 @@ function panelOverflowStyles() {
     .wp-overflow-language {
       position: relative;
       width: 100%;
-      height: 40px;
+      height: var(--space-5);
       display: grid;
-      grid-template-columns: 20px minmax(0, 1fr) 148px;
+      grid-template-columns: var(--space-3) minmax(0, 1fr) 144px;
       align-items: center;
-      gap: 10px;
-      padding: 0 10px;
-      border-radius: 9px;
+      gap: var(--space-2);
+      padding: 0 var(--space-1);
+      border-radius: var(--radius);
       color: var(--wp-overflow-option-color, rgba(8, 11, 16, 0.72));
       font-size: var(--text-body);
       font-weight: 720;
@@ -109,15 +109,15 @@ function panelOverflowStyles() {
     }
 
     .wp-overflow-language-trigger {
-      width: 148px;
-      height: 32px;
+      width: 144px;
+      height: var(--space-4);
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 20px 14px;
+      grid-template-columns: minmax(0, 1fr) 20px 16px;
       align-items: center;
-      gap: 7px;
-      padding: 0 8px;
+      gap: var(--space-1);
+      padding: 0 var(--space-1);
       border: 1px solid var(--wp-overflow-select-border, rgba(8, 11, 16, 0.12));
-      border-radius: 9px;
+      border-radius: var(--radius);
       background: var(--wp-overflow-select-bg, rgba(255, 255, 255, 0.68));
       color: var(--wp-overflow-select-color, currentColor);
       font: inherit;
@@ -149,13 +149,13 @@ function panelOverflowStyles() {
       width: 20px;
       display: inline-grid;
       place-items: center;
-      font-size: 15px;
+      font-size: var(--text-ui);
       line-height: 1;
     }
 
     .wp-language-chevron {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       color: rgba(8, 11, 16, 0.48);
       overflow: visible;
       transition: transform 160ms ease;
@@ -167,13 +167,13 @@ function panelOverflowStyles() {
 
     .wp-language-menu {
       position: absolute;
-      top: calc(100% + 8px);
-      right: 10px;
+      top: calc(100% + var(--space-1));
+      right: var(--space-1);
       z-index: 16;
       width: 232px;
       display: grid;
-      gap: 6px;
-      padding: 8px;
+      gap: var(--space-1);
+      padding: var(--space-1);
       border: 1px solid var(--wp-popover-border);
       border-radius: var(--radius);
       background: var(--wp-popover-bg);
@@ -190,14 +190,14 @@ function panelOverflowStyles() {
 
     .wp-language-option {
       width: 100%;
-      height: 40px;
+      height: var(--space-5);
       display: grid;
-      grid-template-columns: 20px minmax(0, 1fr) 24px;
+      grid-template-columns: var(--space-3) minmax(0, 1fr) var(--space-3);
       align-items: center;
-      gap: 10px;
-      padding: 0 10px;
+      gap: var(--space-1);
+      padding: 0 var(--space-1);
       border: 0;
-      border-radius: 9px;
+      border-radius: var(--radius);
       background: transparent;
       color: var(--foreground);
       font: inherit;
@@ -231,7 +231,7 @@ function panelOverflowStyles() {
       width: 14px;
       height: 14px;
       color: var(--foreground);
-      font-size: 14px;
+      font-size: inherit;
       stroke: var(--foreground);
       stroke-width: 2.4;
       stroke-linecap: round;
@@ -239,9 +239,9 @@ function panelOverflowStyles() {
     }
 
     .wp-overflow-option-icon {
-      width: 18px;
-      height: 18px;
-      font-size: 18px;
+      width: 16px;
+      height: 16px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.15;
       stroke-linecap: round;
@@ -250,8 +250,8 @@ function panelOverflowStyles() {
 
     .wp-overflow-switch {
       position: relative;
-      width: 30px;
-      height: 18px;
+      width: var(--space-5);
+      height: var(--space-3);
       justify-self: end;
       border-radius: 999px;
       background: rgba(8, 11, 16, 0.14);
@@ -264,10 +264,10 @@ function panelOverflowStyles() {
 
     .wp-overflow-switch-knob {
       position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 12px;
-      height: 12px;
+      top: 4px;
+      left: 4px;
+      width: var(--space-2);
+      height: var(--space-2);
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.96);
       box-shadow: 0 1px 3px rgba(8, 11, 16, 0.24);
@@ -280,12 +280,12 @@ function panelOverflowStyles() {
     }
 
     .wp-overflow-switch.is-on .wp-overflow-switch-knob {
-      transform: translateX(12px);
+      transform: translateX(var(--space-2));
     }
 
     .wp-overflow-divider {
       height: 1px;
-      margin: 3px 4px;
+      margin: var(--space-1) 0;
       background: rgba(8, 11, 16, 0.1);
     }
 

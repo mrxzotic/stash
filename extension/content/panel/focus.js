@@ -125,7 +125,7 @@ function panelFocusSelector(element) {
     "data-founder-promo-trigger",
     "data-panel-search",
     "data-panel-overflow-trigger",
-    "data-panel-compact-toggle",
+    "data-panel-view-toggle",
     "data-panel-theme-toggle",
     "data-archive-view-toggle",
     "data-shortlist-toggle",

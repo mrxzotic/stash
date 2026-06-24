@@ -37,6 +37,8 @@ function overlayImageStyles() {
       max-width: 100%;
       max-height: 100%;
       border-radius: 8px;
+      color: transparent;
+      font-size: 0;
       -webkit-clip-path: inset(0 round 8px);
       clip-path: inset(0 round 8px);
       object-fit: contain;
@@ -47,7 +49,7 @@ function overlayImageStyles() {
       width: 52px;
       height: 52px;
       color: rgba(16, 16, 16, 0.2);
-      font-size: 52px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 1.8;
       stroke-linecap: round;
@@ -65,10 +67,9 @@ function overlayImageStyles() {
       text-align: center;
     }
 
-    .wl-image-missing-logo {
+    .wl-image-missing-icon {
       width: 56px;
       height: 56px;
-      object-fit: contain;
       opacity: 0.36;
     }
 
@@ -109,6 +110,7 @@ function overlayImageStyles() {
     }
 
     .wl-image.has-slider:hover .wl-image-slider-button,
+    .wl-image.has-slider.is-hover-restored .wl-image-slider-button,
     .wl-image.has-slider:focus-within .wl-image-slider-button {
       opacity: 0.5;
       pointer-events: auto;
@@ -130,7 +132,7 @@ function overlayImageStyles() {
     .wl-image-slider-icon {
       width: 18px;
       height: 18px;
-      font-size: 18px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -153,6 +155,7 @@ function overlayImageStyles() {
     }
 
     .wl-image.has-slider:hover .wl-image-slider-tray,
+    .wl-image.has-slider.is-hover-restored .wl-image-slider-tray,
     .wl-image.has-slider:focus-within .wl-image-slider-tray {
       opacity: 1;
       pointer-events: auto;
@@ -186,7 +189,7 @@ function overlayImageStyles() {
     .wl-image-delete-icon {
       width: 16px;
       height: 16px;
-      font-size: 16px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
@@ -209,6 +212,7 @@ function overlayImageStyles() {
     }
 
     .wl-image.has-slider:hover .wl-image-slider,
+    .wl-image.has-slider.is-hover-restored .wl-image-slider,
     .wl-image.has-slider:focus-within .wl-image-slider {
       opacity: 0.5;
     }

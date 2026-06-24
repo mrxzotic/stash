@@ -193,7 +193,8 @@ function lowConfidenceProductImage(product) {
 function isMarketplaceProductUrl(value) {
   try {
     const url = new URL(value || location.href, location.href);
-    return /(^|\.)farfetch\.com$/i.test(url.hostname);
+    return /(^|\.)farfetch\.com$/i.test(url.hostname) ||
+      /(^|\.)brandshop\.ru$/i.test(url.hostname);
   } catch {
     return false;
   }

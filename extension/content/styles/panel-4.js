@@ -1,24 +1,5 @@
 function panelStylesChunk4() {
-  return `      width: 32px;
-      height: 32px;
-      box-shadow: none;
-      color: var(--muted);
-    }
-
-    .wp-category-form {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      padding-top: 8px;
-      margin-top: 8px;
-      border-top: 1px solid rgba(60, 60, 67, 0.1);
-    }
-
-    .wp-category-form input {
-      padding: 0 12px;
-      background: #fff;
-    }
-
+  return `
     .wp-filters {
       position: relative;
       z-index: 3;
@@ -141,7 +122,7 @@ function panelStylesChunk4() {
     .wp-filter-remove-icon {
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
-      font-size: var(--wp-pill-icon-size);
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.35;
       stroke-linecap: round;
@@ -194,7 +175,7 @@ function panelStylesChunk4() {
     .wp-filter-add-icon {
       width: var(--wp-pill-icon-size);
       height: var(--wp-pill-icon-size);
-      font-size: var(--wp-pill-icon-size);
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.7;
       stroke-linecap: round;
@@ -264,7 +245,7 @@ function panelStylesChunk4() {
     .wp-category-cancel-icon {
       width: 16px;
       height: 16px;
-      font-size: 16px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.4;
       stroke-linecap: round;

@@ -377,13 +377,13 @@ function stripLeadingBrandFromTitle(value, brand) {
     return text;
   }
 
-  const normalizedText = normalizeComparableText(text);
-  const normalizedBrand = normalizeComparableText(brandText);
-  if (!normalizedBrand || !normalizedText.startsWith(normalizedBrand)) {
+  const escapedBrand = brandText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const brandPrefix = text.match(new RegExp(`^\\s*${escapedBrand}(?:[-–—:|,\\s]+|$)`, "i"));
+  if (!brandPrefix) {
     return text;
   }
 
-  const rest = text.slice(brandText.length).replace(/^[-–—:|,\s]+/, "");
+  const rest = text.slice(brandPrefix[0].length).replace(/^[-–—:|,\s]+/, "");
   return rest || text;
 }
 

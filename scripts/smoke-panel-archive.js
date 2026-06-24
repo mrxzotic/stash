@@ -81,6 +81,17 @@ assert.deepEqual(
 );
 sandbox.panelState.archivedOpen = false;
 sandbox.panelState.items = [{ id: "item-1", title: "Cabin", url: "https://example.com/cabin" }];
+sandbox.panelState.activeCategory = "bags";
+vm.runInContext("togglePanelArchivedView()", sandbox);
+assert.equal(sandbox.panelState.archivedOpen, true, "Archive toggle should open archive view");
+assert.equal(sandbox.panelState.activeCategory, "bags", "Archive toggle should preserve the child category filter");
+sandbox.panelState.archivedOpen = false;
+sandbox.panelState.activeCategory = "tops";
+vm.runInContext("openPanelArchivedDecisionList()", sandbox);
+assert.equal(sandbox.panelState.archivedOpen, true, "Decision archive helper should open archive view");
+assert.equal(sandbox.panelState.activeCategory, "tops", "Decision archive helper should preserve the child category filter");
+sandbox.panelState.archivedOpen = false;
+sandbox.panelState.activeCategory = "all";
 
 const clickListeners = {};
 const dropListeners = {};

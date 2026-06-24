@@ -4,6 +4,10 @@ function bindPanelFilterEvents(root) {
       return;
     }
 
+    if (handlePanelViewToggle(event, root)) {
+      return;
+    }
+
     if (handlePanelFilterClear(event)) {
       return;
     }
@@ -22,6 +26,31 @@ function bindPanelFilterEvents(root) {
 
     handlePanelCategorySelection(event);
   });
+}
+
+function handlePanelViewToggle(event, root) {
+  const button = event.target.closest("[data-panel-view-toggle]");
+  if (!button) {
+    return false;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation?.();
+  const compactView = !panelState.compactView;
+  closePanelCurrencySelect(root);
+  closePanelLanguageMenu(root);
+  closePanelFilterMenu(root);
+  closePanelSortMenu(root);
+  panelState.settingsOpen = false;
+  syncPanelOverflowMenu(root);
+  safelyRunPanelAction(() =>
+    savePanelSettings(
+      { compactView },
+      { rerender: false, syncViewMode: true, syncSummary: false }
+    )
+  );
+  return true;
 }
 
 function handlePanelFilterMenuTrigger(event, root) {
@@ -110,11 +139,7 @@ function handlePanelCategorySelection(event) {
   }
   panelState.sortMenuOpen = false;
   panelState.filterMenuOpen = false;
-  panelState.brandCloudOpen = false;
-  panelState.brandCloudSortList = false;
-  panelState.shortlistOpen = false;
   panelState.categoryComposerOpen = false;
-  closePanelArchivedView();
   panelState.deleteCategoryId = "";
   panelState.deleteItemId = "";
   panelState.activeCategory = button.dataset.category;

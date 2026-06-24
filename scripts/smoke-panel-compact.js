@@ -11,6 +11,10 @@ const compactStyles = fs.readFileSync(
   path.join(root, "extension/content/styles/panel-compact.js"),
   "utf8"
 );
+const filterEventsSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/filter-events.js"),
+  "utf8"
+);
 const reorderSource = fs.readFileSync(
   path.join(root, "extension/content/panel/reorder.js"),
   "utf8"
@@ -40,9 +44,9 @@ assert.match(
   "Empty compact price cells should stay hidden from assistive tech"
 );
 assert.match(
-  compactSource,
-  /savePanelSettings\(\s*\{\s*compactView: !panelState\.compactView\s*\},[\s\S]*?syncViewMode:\s*true/,
-  "Compact toggle should save and synchronize the requested view mode"
+  filterEventsSource,
+  /const compactView = !panelState\.compactView;[\s\S]*?savePanelSettings\(\s*\{\s*compactView\s*\},[\s\S]*?syncViewMode:\s*true/,
+  "Compact view control should save and synchronize the toggled view mode"
 );
 assert.match(
   compactStyles,
@@ -66,8 +70,8 @@ assert.match(
 );
 assert.match(
   compactStyles,
-  /\.wp-compact-price\s*\{[\s\S]*?width: auto;[\s\S]*?max-width: 126px;[\s\S]*?align-self: center;[\s\S]*?justify-self: end;[\s\S]*?text-align: right;/,
-  "Compact prices should stay capped on the right without floating at the top of the row"
+  /\.wp-compact-price\s*\{[\s\S]*?width: auto;[\s\S]*?max-width: 126px;[\s\S]*?padding-right: 10px;[\s\S]*?box-sizing: border-box;[\s\S]*?align-self: center;[\s\S]*?justify-self: end;[\s\S]*?text-align: right;/,
+  "Compact prices should stay capped and visually inset from the right edge"
 );
 assert.match(
   compactStyles,

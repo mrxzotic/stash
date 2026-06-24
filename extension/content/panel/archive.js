@@ -107,7 +107,11 @@ function bindPanelArchiveEvents(root) {
   });
   root.querySelector("[data-decision-drop-tray]")?.addEventListener("click", (event) => {
     const target = event.target.closest("[data-decision-drop-action]");
-    if (!target) return;
+    if (!target) {
+      closePanelDecisionTray();
+      syncPanelDecisionMode(root);
+      return;
+    }
     const id = panelDecisionTargetId();
     if (!id) return;
     event.preventDefault();
@@ -151,7 +155,6 @@ function togglePanelArchivedView() {
   panelState.brandFilterLabel = "";
   panelState.searchOpen = false;
   panelState.searchQuery = "";
-  panelState.activeCategory = "all";
   panelState.filterMenuOpen = false;
   panelState.sortMenuOpen = false;
   panelState.categoryComposerOpen = false;

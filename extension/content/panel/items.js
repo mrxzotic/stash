@@ -25,15 +25,17 @@ function normalizePanelItem(item) {
 
 function normalizePanelPrice(item) {
   const storedPrice = item.price || {};
-  const parsed = normalizePrice({
+  const parsed = repairKnownInstallmentPrice(normalizePrice({
     amount: storedPrice.amount ?? item.priceAmount,
     currency: storedPrice.currency ?? item.currency,
     text: storedPrice.originalText ?? item.priceText,
     compareAtAmount: storedPrice.compareAtAmount ?? item.compareAtPriceAmount,
     compareAtText: storedPrice.compareAtText ?? item.compareAtPriceText
-  });
-  const rubAmount = storedPrice.rubAmount ?? item.rubPriceAmount ?? convertToRubSync(parsed.amount, parsed.currency);
-  const rubText = storedPrice.rubText || item.rubPriceText || (Number.isFinite(rubAmount) ? formatRubPrice(rubAmount) : "");
+  }), item.url);
+  const storedRubAmount = numericPrice(storedPrice.rubAmount ?? item.rubPriceAmount);
+  const staleRub = parsed.currency === "RUB" && Number.isFinite(storedRubAmount) && storedRubAmount !== parsed.amount;
+  const rubAmount = staleRub ? parsed.amount : storedRubAmount ?? convertToRubSync(parsed.amount, parsed.currency);
+  const rubText = staleRub ? formatRubPrice(rubAmount) : storedPrice.rubText || item.rubPriceText || (Number.isFinite(rubAmount) ? formatRubPrice(rubAmount) : "");
 
   return {
     amount: parsed.amount,

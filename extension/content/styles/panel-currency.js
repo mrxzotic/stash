@@ -120,7 +120,7 @@ function panelCurrencyStyles() {
     .wp-total-chevron {
       width: 16px;
       height: 16px;
-      font-size: 16px;
+      font-size: inherit;
       opacity: 0;
       stroke: currentColor;
       stroke-width: 2.2;
@@ -149,7 +149,7 @@ function panelCurrencyStyles() {
       flex: 0 0 14px;
       max-width: 0;
       margin-left: 0;
-      font-size: 14px;
+      font-size: inherit;
       opacity: 0;
       overflow: hidden;
       transition:
@@ -248,7 +248,7 @@ function panelCurrencyStyles() {
       width: 14px;
       height: 14px;
       color: var(--foreground);
-      font-size: 14px;
+      font-size: inherit;
       stroke: var(--foreground);
       stroke-width: 2.4;
       stroke-linecap: round;

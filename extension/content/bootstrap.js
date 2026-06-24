@@ -56,6 +56,7 @@ function initializeTuckioContent() {
     let requiresFullRender = false;
     let settingsChanged = false;
     let viewModeChanged = false;
+    let summaryCurrencyChanged = false;
     let summaryAnimationFrom = "";
   
     if (changes[STORAGE_KEY]) {
@@ -84,11 +85,13 @@ function initializeTuckioContent() {
     if (changes[SETTINGS_STORAGE_KEY]) {
       const settings = normalizePanelSettings(changes[SETTINGS_STORAGE_KEY].newValue);
       viewModeChanged = panelState.compactView !== settings.compactView;
+      summaryCurrencyChanged = panelState.summaryCurrency !== settings.summaryCurrency;
       const languageChanged = panelState.language !== settings.language;
       panelState.summaryCurrency = settings.summaryCurrency;
       panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
       panelState.backgroundTheme = settings.backgroundTheme;
       panelState.compactView = settings.compactView;
+      panelState.hoverHints = settings.hoverHints;
       panelState.language = settings.language;
       settingsChanged = true;
       requiresFullRender = requiresFullRender || languageChanged;
@@ -103,8 +106,10 @@ function initializeTuckioContent() {
       if (viewModeChanged) {
         syncPanelViewMode();
       }
-      renderPanelSummaryOnly();
-      refreshPanelSummaryRate();
+      if (summaryCurrencyChanged) {
+        renderPanelSummaryOnly();
+        refreshPanelSummaryRate();
+      }
       return;
     }
   

@@ -105,7 +105,7 @@ function panelCompactStyles() {
       gap: 4px;
     }
 
-    .wp-compact-thumb .wp-image-missing-logo {
+    .wp-compact-thumb .wp-image-missing-icon {
       width: 24px;
       height: 24px;
     }
@@ -220,6 +220,8 @@ function panelCompactStyles() {
       width: auto;
       min-width: 0;
       max-width: 126px;
+      padding-right: 10px;
+      box-sizing: border-box;
       align-self: center;
       justify-self: end;
       justify-content: flex-end;
@@ -241,7 +243,7 @@ function panelCompactStyles() {
 
     .wp-compact-price .wp-price-line {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: baseline;
       justify-content: flex-end;
       gap: 2px 4px;

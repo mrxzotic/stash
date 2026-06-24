@@ -8,10 +8,16 @@ function panelFilterMenuStyles() {
       justify-self: start;
       width: 100%;
       gap: 8px;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
       padding: 2px 0;
       margin: -2px 0;
       scroll-padding-inline: 0;
+      scrollbar-width: none;
+    }
+
+    .wp-filter-rail::-webkit-scrollbar {
+      display: none;
     }
 
     .wp-brand-chip,
@@ -41,7 +47,7 @@ function panelFilterMenuStyles() {
       background: rgba(255, 255, 255, 0.38);
       color: rgba(8, 11, 16, 0.52);
       font-family: var(--figure-font);
-      font-size: 12px;
+      font-size: var(--text-control);
       font-weight: 680;
       transition:
         background 220ms cubic-bezier(.18, .84, .24, 1),
@@ -67,7 +73,13 @@ function panelFilterMenuStyles() {
       font-weight: 780;
     }
 
+    .wp-brand-chip.is-filtered {
+      max-width: min(152px, 42vw);
+      padding-right: 8px;
+    }
+
     .wp-brand-chip.is-active .wp-brand-chip-count,
+    .wp-brand-chip.is-active .wp-brand-chip-label,
     .wp-filter-rail > .wp-filter.is-active .wp-filter-trigger-label {
       color: var(--primary-foreground);
       opacity: 0.88;
@@ -85,6 +97,7 @@ function panelFilterMenuStyles() {
     }
 
     .wp-theme-graphite .wp-brand-chip.is-active .wp-brand-chip-count,
+    .wp-theme-graphite .wp-brand-chip.is-active .wp-brand-chip-label,
     .wp-theme-graphite .wp-filter-rail > .wp-filter.is-active .wp-filter-trigger-label {
       color: #080b10;
     }
@@ -111,10 +124,18 @@ function panelFilterMenuStyles() {
       flex: 0 0 auto; min-width: 50px; gap: 6px; padding: 0 9px;
     }
 
+    .wp-filters.is-filter-crowded .wp-brand-chip,
+    .wp-filters.is-filter-crowded .wp-filter-rail > .wp-filter-shortlist,
+    .wp-filters.is-filter-crowded .wp-filter-rail > .wp-filter-archive { min-width: var(--wp-pill-height); gap: 5px; padding: 0 7px; }
+
+    .wp-filters.is-filter-crowded .wp-brand-chip.is-active,
+    .wp-filters.is-filter-crowded .wp-filter-rail > .wp-filter-shortlist.is-active,
+    .wp-filters.is-filter-crowded .wp-filter-rail > .wp-filter-archive.is-active { min-width: 44px; }
+
     .wp-brand-chip-icon,
     .wp-shortlist-chip-icon,
     .wp-archive-chip-icon {
-      width: 14px; height: 14px; flex: 0 0 14px; font-size: 14px;
+      width: 14px; height: 14px; flex: 0 0 14px; font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.25;
       stroke-linecap: round;
@@ -123,15 +144,16 @@ function panelFilterMenuStyles() {
     }
 
     .wp-shortlist-chip-icon {
-      width: 16px; height: 16px; flex-basis: 16px; font-size: 16px;
+      width: 16px; height: 16px; flex-basis: 16px; font-size: inherit;
     }
 
     .wp-brand-chip-icon {
-      width: 20px; height: 20px; flex-basis: 20px; font-size: 20px;
+      width: 20px; height: 20px; flex-basis: 20px; font-size: inherit;
       stroke-width: 1.9;
     }
 
     .wp-brand-chip-count,
+    .wp-brand-chip-label,
     .wp-shortlist-chip-count {
       min-width: 1ch;
       font-family: var(--figure-font);
@@ -139,8 +161,24 @@ function panelFilterMenuStyles() {
       opacity: 0.72;
     }
 
+    .wp-brand-chip-label {
+      max-width: 92px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: var(--ui-font);
+      font-size: var(--text-control);
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
     .wp-shortlist-chip-count {
       font-weight: 720;
+    }
+
+    .wp-filters.is-filter-crowded .wp-brand-chip-count, .wp-filters.is-filter-crowded .wp-shortlist-chip-count, .wp-filters.is-filter-crowded .wp-archive-count { display: none; }
+
+    .wp-filters.is-filter-crowded .wp-brand-chip-label {
+      max-width: 62px;
     }
 
     .wp-chip-clear {
@@ -153,7 +191,7 @@ function panelFilterMenuStyles() {
     }
 
     .wp-chip-clear-icon {
-      width: 12px; height: 12px; font-size: 12px;
+      width: 12px; height: 12px; font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.35;
       stroke-linecap: round;
@@ -206,7 +244,7 @@ function panelFilterMenuStyles() {
     }
 
     .wp-filter-trigger-icon {
-      width: 15px; height: 15px; flex: 0 0 15px; font-size: 15px;
+      width: 15px; height: 15px; flex: 0 0 15px; font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.2;
       stroke-linecap: round;
@@ -229,8 +267,19 @@ function panelFilterMenuStyles() {
       transform: translate3d(0, 0, 0);
     }
 
+    .wp-filters.is-filter-crowded .wp-filter-trigger.is-active .wp-filter-trigger-label,
+    .wp-filters.is-filter-crowded .wp-filter-trigger.is-active:hover .wp-filter-trigger-label,
+    .wp-filters.is-filter-crowded .wp-filter-trigger.is-active:focus-visible .wp-filter-trigger-label,
+    .wp-filters.is-filter-crowded .wp-filter-trigger[aria-expanded="true"] .wp-filter-trigger-label {
+      max-width: 0;
+      margin-left: 0;
+      margin-right: 0;
+      opacity: 0;
+      transform: translate3d(-3px, 0, 0);
+    }
+
     .wp-filter-chevron {
-      width: 12px; height: 12px; font-size: 12px;
+      width: 12px; height: 12px; font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.35;
       stroke-linecap: round;
@@ -252,7 +301,7 @@ function panelFilterMenuStyles() {
       display: grid;
       gap: 2px;
       padding: 6px;
-      border-radius: 14px;
+      border-radius: var(--radius);
       transform-origin: top left;
       animation: wpFilterMenuIn 180ms cubic-bezier(.18, .9, .22, 1) both;
     }
@@ -266,7 +315,7 @@ function panelFilterMenuStyles() {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 28px;
       align-items: center;
-      border-radius: 9px;
+      border-radius: var(--radius);
       color: rgba(8, 11, 16, 0.66);
     }
 
@@ -300,7 +349,7 @@ function panelFilterMenuStyles() {
     .wp-filter-menu-add {
       grid-template-columns: 18px minmax(0, 1fr);
       padding: 0 10px 0 7px;
-      border-radius: 9px;
+      border-radius: var(--radius);
       color: rgba(8, 11, 16, 0.58);
     }
 
@@ -319,7 +368,7 @@ function panelFilterMenuStyles() {
 
     .wp-filter-menu-check-icon,
     .wp-filter-menu-add-icon {
-      width: 14px; height: 14px; font-size: 14px;
+      width: 14px; height: 14px; font-size: inherit;
       stroke: currentColor;
       stroke-width: 2.5;
       stroke-linecap: round;

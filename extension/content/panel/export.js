@@ -23,6 +23,8 @@ function bindPanelExportEvents(root) {
 
     safelyRunPanelAction(() => importTuckioBackupFile(file));
   });
+
+  bindPanelResetEvents(root);
 }
 
 function exportTuckioBackup() {
@@ -36,6 +38,7 @@ function exportTuckioBackup() {
       summaryCurrency: panelState.summaryCurrency,
       backgroundTheme: panelState.backgroundTheme,
       compactView: panelState.compactView,
+      hoverHints: panelState.hoverHints,
       language: panelState.language
     })
   };
@@ -69,6 +72,7 @@ async function importTuckioBackupFile(file) {
     summaryCurrency: panelState.summaryCurrency,
     backgroundTheme: panelState.backgroundTheme,
     compactView: panelState.compactView,
+    hoverHints: panelState.hoverHints,
     language: panelState.language,
     ...(source?.settings || {})
   });
@@ -80,6 +84,7 @@ async function importTuckioBackupFile(file) {
   panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
+  panelState.hoverHints = settings.hoverHints;
   panelState.language = settings.language;
   panelState.founderPromoOpen = false;
   panelState.searchOpen = false;

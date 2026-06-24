@@ -53,12 +53,21 @@ const filterEventsSource = fs.readFileSync(
   path.join(root, "extension/content/panel/filter-events.js"),
   "utf8"
 );
+const archiveSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/archive.js"),
+  "utf8"
+);
+const decisionsSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/decisions.js"),
+  "utf8"
+);
 
 vm.runInContext(
-  `${filterControlsSource}\n${sortSource}`,
+  `${filterControlsSource}\n${filtersSource}\n${sortSource}`,
   sandbox,
   { filename: "content/panel/sort.js" }
 );
+vm.runInContext(filterEventsSource, sandbox, { filename: "content/panel/filter-events.js" });
 
 const sortStylesSource = fs.readFileSync(
   path.join(root, "extension/content/styles/panel-sort.js"),
@@ -108,6 +117,37 @@ assert.match(
   /renderShortlistFilterChip\(\)[\s\S]*?renderBrandFilterChip\(\)[\s\S]*?renderFilterMenuTrigger\(categoryOptions\)[\s\S]*?renderArchivedFilter\(archivedCount\)/,
   "Second chip row should render Shortlist, Brand, Filter, then optional Archived"
 );
+assert.match(
+  filtersSource,
+  /renderPanelViewToggle\(\)[\s\S]*?renderPanelSortControls\(\)/,
+  "View toggle should sit directly before sort in the right-side view control cluster"
+);
+assert.match(
+  filtersSource,
+  /panelState\.compactView[\s\S]*?phosphorGridIcon\("wp-view-toggle-icon"\)[\s\S]*?phosphorListIcon\("wp-view-toggle-icon"\)/,
+  "Single view toggle should swap between grid and list Phosphor icons"
+);
+assert.match(
+  filtersSource,
+  /function panelShouldShowViewToggle[\s\S]*?!panelBrandCloudViewIsActive\(\)/,
+  "View toggle should be hidden while the brand cloud owns the view"
+);
+assert.match(
+  filtersSource,
+  /panelFilterRailIsCrowded[\s\S]*?getBoundingClientRect[\s\S]*?rect\.right > rightEdge/,
+  "Crowding detection should catch clipped chip geometry, not only scroll width"
+);
+assert.match(
+  filtersSource,
+  /scrollPanelFilterChipIntoView\(rail, active\);[\s\S]*?applyPanelFilterCrowding\(root, rail\);[\s\S]*?scrollPanelFilterChipIntoView\(rail, active\);/,
+  "Active filter chips should be scrolled into view before and after crowded compaction"
+);
+assert.match(
+  filtersSource,
+  /ResizeObserver[\s\S]*?schedulePanelFilterRailLayout\(root\)/,
+  "Crowding should be remeasured when the rail or right-side controls resize"
+);
+assert.doesNotMatch(filtersSource, /wp-view-mode|wp-view-option/, "View mode should not render as a wide segmented control");
 assert.doesNotMatch(filtersSource, /renderAllFilter|wp-filter-all/, "All should not render as a permanent filter-row chip");
 assert.match(
   filtersSource,
@@ -143,8 +183,8 @@ assert.doesNotMatch(
 );
 assert.match(
   filtersSource,
-  /phosphorTagIcon\("wp-brand-chip-icon"\)[\s\S]*?<span class="wp-brand-chip-count">\$\{brandCount\}<\/span>/,
-  "Brand chip should use a tag icon and numeric count without a text label"
+  /hasBrandFilter[\s\S]*?wp-brand-chip-label[\s\S]*?panelBrandChipLabel\(\)[\s\S]*?wp-brand-chip-count/,
+  "Brand chip should show the selected brand label only when a brand filter is active"
 );
 assert.match(
   filtersSource,
@@ -177,11 +217,85 @@ assert.match(
   /function panelActiveFilterCount\(\)[\s\S]*?return panelState\.activeCategory !== "all" \? 1 : 0;/,
   "Filter active count should track category state only; brand has its own chip"
 );
+assert.match(
+  filtersSource,
+  /function renderFilterMenuRow\(category\)[\s\S]*?const isActive = category\.id === panelState\.activeCategory;/,
+  "Category menu selection should stay visible inside any parent scope"
+);
+assert.doesNotMatch(
+  filterEventsSource,
+  /function handlePanelCategorySelection\(event\)[\s\S]*?panelState\.(?:shortlistOpen|brandCloudOpen|brandCloudSortList) = false;/,
+  "Selecting a category should not close shortlist or brand parent scopes"
+);
+assert.doesNotMatch(
+  filterEventsSource,
+  /function handlePanelCategorySelection\(event\)[\s\S]*?closePanelArchivedView\(\)/,
+  "Selecting a category should not close the archive parent scope"
+);
+assert.doesNotMatch(
+  archiveSource,
+  /function togglePanelArchivedView\(\)[\s\S]*?panelState\.activeCategory = "all";/,
+  "Opening archive should preserve the current child category filter"
+);
+assert.doesNotMatch(
+  decisionsSource,
+  /function openPanelArchivedDecisionList\(\)[\s\S]*?panelState\.activeCategory = "all";/,
+  "Decision-to-archive should preserve the current child category filter"
+);
 assert.doesNotMatch(
   filtersSource,
   /Filter ·|category\?\.label \|\| "Category"/,
   "Active filter trigger should not name the selected category"
 );
+
+sandbox.syncPanelViewStateWithMotion = () => {
+  sandbox.categoryViewSyncCount = (sandbox.categoryViewSyncCount || 0) + 1;
+};
+const categoryButton = { dataset: { category: "tops" } };
+sandbox.categoryClickEvent = {
+  target: {
+    closest: (selector) => (selector === "[data-category]" ? categoryButton : null)
+  }
+};
+for (const parentState of [
+  { shortlistOpen: true },
+  { archivedOpen: true },
+  { brandCloudOpen: true },
+  { brandFilterKey: "jacquemus", brandFilterLabel: "JACQUEMUS" }
+]) {
+  Object.assign(sandbox.panelState, {
+    activeCategory: "all",
+    archivedOpen: false,
+    brandCloudOpen: false,
+    brandCloudSortList: false,
+    brandFilterKey: "",
+    brandFilterLabel: "",
+    categoryComposerOpen: false,
+    deleteCategoryId: "",
+    deleteItemId: "",
+    filterMenuOpen: true,
+    searchOpen: false,
+    searchQuery: "",
+    shortlistOpen: false,
+    sortMenuOpen: true
+  }, parentState);
+  vm.runInContext("handlePanelCategorySelection(categoryClickEvent)", sandbox);
+  assert.equal(sandbox.panelState.activeCategory, "tops", "Category click should apply the selected child category");
+  for (const [key, value] of Object.entries(parentState)) {
+    assert.equal(sandbox.panelState[key], value, `Category click should preserve parent scope ${key}`);
+  }
+}
+Object.assign(sandbox.panelState, {
+  activeCategory: "all",
+  archivedOpen: false,
+  brandCloudOpen: false,
+  brandCloudSortList: false,
+  brandFilterKey: "",
+  brandFilterLabel: "",
+  filterMenuOpen: false,
+  shortlistOpen: false,
+  sortMenuOpen: false
+});
 assert.match(
   sortStylesSource,
   /\.wp-sort-menu\s*\{[\s\S]*?position: absolute;[\s\S]*?right: 0;[\s\S]*?width: 170px;/,
@@ -224,8 +338,8 @@ assert.match(
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-filter-rail\s*\{[\s\S]*?justify-self: start;[\s\S]*?width: 100%;[\s\S]*?gap: 8px;[\s\S]*?overflow: hidden;/,
-  "Second-row chips should clip the row while labels expand inside pills"
+  /\.wp-filter-rail\s*\{[\s\S]*?justify-self: start;[\s\S]*?width: 100%;[\s\S]*?gap: 8px;[\s\S]*?overflow-x: auto;[\s\S]*?overflow-y: hidden;/,
+  "Second-row chips should use a quiet horizontal rail while labels expand inside pills"
 );
 assert.match(
   filterStylesSource,
@@ -244,6 +358,16 @@ assert.match(
 );
 assert.match(
   filterMenuStylesSource,
+  /\.wp-brand-chip\.is-filtered\s*\{[\s\S]*?max-width: min\(152px, 42vw\);[\s\S]*?padding-right: 8px;/,
+  "Selected brand chip should reveal the brand name without taking over the filter row"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-brand-chip-label\s*\{[\s\S]*?max-width: 92px;[\s\S]*?overflow: hidden;[\s\S]*?text-overflow: ellipsis;/,
+  "Selected brand label should stay readable but capped"
+);
+assert.match(
+  filterMenuStylesSource,
   /\.wp-filter-rail > \.wp-filter-shortlist,[\s\S]*?\.wp-filter-rail > \.wp-filter-trigger\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?max-width: 128px;/,
   "Shortlist and Filter chips should size to their content instead of reserving a fixed right-side gutter"
 );
@@ -256,6 +380,11 @@ assert.match(
   filterMenuStylesSource,
   /\.wp-filter-rail > \.wp-filter-archive\s*\{[\s\S]*?flex: 0 0 auto;[\s\S]*?min-width: 50px;[\s\S]*?gap: 6px;[\s\S]*?padding: 0 9px;/,
   "Archive chip should keep space between icon and count"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filters\.is-filter-crowded \.wp-brand-chip-count,[\s\S]*?\.wp-filters\.is-filter-crowded \.wp-archive-count\s*\{[\s\S]*?display: none;/,
+  "Crowded filter rail should hide state chip counts before controls overlap"
 );
 assert.match(
   fs.readFileSync(path.join(root, "extension/content/styles/panel-release.js"), "utf8"),
@@ -271,6 +400,11 @@ assert.match(
   filterMenuStylesSource,
   /\.wp-filter-rail > \.wp-filter\.is-active \.wp-filter-trigger-label\s*\{[\s\S]*?color: var\(--primary-foreground\);/,
   "Active black Filter should force its label to the selected foreground color"
+);
+assert.match(
+  filterMenuStylesSource,
+  /\.wp-filters\.is-filter-crowded \.wp-filter-trigger\.is-active \.wp-filter-trigger-label,[\s\S]*?max-width: 0;[\s\S]*?margin-left: 0;[\s\S]*?opacity: 0;/,
+  "Crowded active Filter should collapse its text label instead of keeping Filter (1) wide"
 );
 assert.match(
   filterMenuStylesSource,
@@ -305,8 +439,8 @@ assert.match(
 );
 assert.match(
   filterMenuStylesSource,
-  /\.wp-brand-chip-count,[\s\S]*?\.wp-shortlist-chip-count\s*\{[\s\S]*?min-width: 1ch;[\s\S]*?font-variant-numeric: tabular-nums;/,
-  "Brand count should reserve one tabular digit and grow naturally"
+  /\.wp-brand-chip-count,[\s\S]*?\.wp-brand-chip-label,[\s\S]*?\.wp-shortlist-chip-count\s*\{[\s\S]*?min-width: 1ch;[\s\S]*?font-variant-numeric: tabular-nums;/,
+  "Brand count and selected brand label should reserve stable text width"
 );
 assert.doesNotMatch(
   filterStylesSource,
@@ -339,7 +473,7 @@ assert.match(
   "Visible category remove affordance should use the original hover pill sizing"
 );
 assert.match(sortSource, /function panelShouldShowSortControls[\s\S]*?panelVisibleItems\(items\)\.length >= 2/, "Sort controls should only render for two or more currently visible items");
-assert.match(sortSource, /currentControls\.remove\(\);[\s\S]*?insertAdjacentHTML\?\.\("beforeend", renderPanelSortControls\(\)\)/, "Sort controls should be removed or reinserted as live result counts change");
+assert.match(sortSource, /panelShouldShowViewControls\(\)[\s\S]*?viewControls\.remove\(\);[\s\S]*?renderPanelViewControls\(\)[\s\S]*?viewControls\.insertAdjacentHTML\?\.\("beforeend", renderPanelSortControls\(\)\)/, "Sort sync should keep the right-side view cluster correct as live result counts change");
 assert.match(
   sortSource,
   /panelState\.brandCloudSortList[\s\S]*?reorderPanelItemsOnly\(root\);[\s\S]*?syncPanelSortControls\(root\);/,
@@ -377,6 +511,60 @@ sandbox.phosphorChevronDownIcon = () => "";
 sandbox.phosphorCheckIcon = () => "";
 sandbox.phosphorArrowDownIcon = () => "";
 sandbox.phosphorArrowUpIcon = () => "";
+sandbox.phosphorGridIcon = () => "";
+sandbox.phosphorListIcon = () => "";
+
+sandbox.crowdedRail = {
+  scrollWidth: 100,
+  clientWidth: 100,
+  getBoundingClientRect: () => ({ left: 0, right: 100 }),
+  children: [
+    { getBoundingClientRect: () => ({ left: 8, right: 48, width: 40 }) },
+    { getBoundingClientRect: () => ({ left: 86, right: 118, width: 32 }) }
+  ]
+};
+sandbox.roomyRail = {
+  scrollWidth: 100,
+  clientWidth: 100,
+  getBoundingClientRect: () => ({ left: 0, right: 120 }),
+  children: [
+    { getBoundingClientRect: () => ({ left: 8, right: 48, width: 40 }) },
+    { getBoundingClientRect: () => ({ left: 70, right: 104, width: 34 }) }
+  ]
+};
+assert.equal(vm.runInContext("panelFilterRailIsCrowded(crowdedRail)", sandbox), true);
+assert.equal(vm.runInContext("panelFilterRailIsCrowded(roomyRail)", sandbox), false);
+sandbox.scrollRail = { clientWidth: 100, scrollLeft: 0 };
+sandbox.scrollChip = { offsetLeft: 124, offsetWidth: 42 };
+vm.runInContext("scrollPanelFilterChipIntoView(scrollRail, scrollChip)", sandbox);
+assert.equal(sandbox.scrollRail.scrollLeft, 68, "Active chip should scroll fully inside the rail right edge");
+sandbox.scrollRail.scrollLeft = 80;
+sandbox.scrollChip = { offsetLeft: 32, offsetWidth: 42 };
+vm.runInContext("scrollPanelFilterChipIntoView(scrollRail, scrollChip)", sandbox);
+assert.equal(sandbox.scrollRail.scrollLeft, 30, "Active chip should scroll fully inside the rail left edge");
+
+sandbox.panelState.items = items;
+sandbox.panelState.brandCloudOpen = true;
+sandbox.panelState.brandFilterKey = "";
+sandbox.panelState.archivedOpen = false;
+assert.doesNotMatch(
+  vm.runInContext("renderPanelViewControls()", sandbox),
+  /data-panel-view-toggle/,
+  "Brand cloud view should hide the card/list toggle"
+);
+assert.match(
+  vm.runInContext("renderPanelViewControls()", sandbox),
+  /wp-sort-controls/,
+  "Brand cloud view should keep sort available"
+);
+sandbox.panelState.brandCloudOpen = false;
+sandbox.panelState.brandFilterKey = "Loewe";
+assert.match(
+  vm.runInContext("renderPanelViewControls()", sandbox),
+  /data-panel-view-toggle/,
+  "A concrete brand filter should still allow card/list switching"
+);
+sandbox.panelState.brandFilterKey = "";
 
 sandbox.panelState.items = [items[0]];
 assert.equal(vm.runInContext("renderPanelSortControls().trim()", sandbox), "");
@@ -433,6 +621,11 @@ const sortRoot = {
     renderedSortControl = value;
   }
 };
+const viewControls = {
+  insertAdjacentHTML: (_position, html) => {
+    renderedSortControl = html;
+  }
+};
 const sortTrigger = {
   closest: (selector) => (selector === "[data-panel-sort-trigger]" ? sortTrigger : null),
   matches: () => false
@@ -452,8 +645,12 @@ const filterRow = {
   addEventListener: (type, handler, options) => {
     filterListeners[type] = { handler, options };
   },
-  contains: (node) => node === sortTrigger || node === sortOption || node === categoryShell || node === sortRoot,
-  querySelector: (selector) => (selector === "[data-panel-sort-root]" ? sortRoot : null),
+  contains: (node) => node === sortTrigger || node === sortOption || node === categoryShell || node === sortRoot || node === viewControls,
+  querySelector: (selector) => {
+    if (selector === "[data-panel-sort-root]") return sortRoot;
+    if (selector === "[data-panel-view-controls]") return viewControls;
+    return null;
+  },
   insertAdjacentHTML: (_position, html) => {
     renderedSortControl = html;
   },

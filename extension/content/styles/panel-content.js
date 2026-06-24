@@ -151,7 +151,7 @@ function panelContentStyles() {
       min-width: 0;
       color: rgba(8, 11, 16, 0.72);
       font-variant-numeric: tabular-nums;
-      font-size: calc(14px * var(--wp-brand-cloud-scale, 1));
+      font-size: calc(var(--text-ui) * var(--wp-brand-cloud-scale, 1));
       font-weight: 760;
       line-height: 1.05;
       text-transform: uppercase;
@@ -163,7 +163,7 @@ function panelContentStyles() {
       color: rgba(8, 11, 16, 0.38);
       font-family: var(--figure-font);
       font-variant-numeric: tabular-nums;
-      font-size: 0.72em;
+      font-size: calc(var(--text-ui) * 0.72 * var(--wp-brand-cloud-scale, 1));
       font-weight: 650;
     }
 
@@ -291,6 +291,8 @@ function panelContentStyles() {
       width: 100%;
       height: 100%;
       border-radius: inherit;
+      color: transparent;
+      font-size: 0;
       object-fit: cover;
       object-position: center;
     }
@@ -299,7 +301,7 @@ function panelContentStyles() {
       width: 42px;
       height: 42px;
       color: rgba(16, 16, 16, 0.2);
-      font-size: 42px;
+      font-size: inherit;
       stroke: currentColor;
       stroke-width: 1.8;
       stroke-linecap: round;
@@ -317,10 +319,9 @@ function panelContentStyles() {
       text-align: center;
     }
 
-    .wp-image-missing-logo {
+    .wp-image-missing-icon {
       width: 42px;
       height: 42px;
-      object-fit: contain;
       opacity: 0.34;
     }
 

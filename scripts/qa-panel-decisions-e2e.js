@@ -57,9 +57,11 @@ async function main() {
     await page.goto("https://example.com", { waitUntil: "domcontentloaded", timeout: 30000 });
     await openPanel(worker);
     await page.waitForFunction(() => document.getElementById("tuckio-panel-root")?.shadowRoot?.querySelector(".wp-shell"));
+    await page.waitForFunction(() => document.getElementById("tuckio-panel-root")?.shadowRoot?.querySelector(".wp-image-missing-icon"));
 
     const metrics = await page.evaluate(async () => {
       const root = document.getElementById("tuckio-panel-root").shadowRoot;
+      await document.fonts.ready;
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       const clickAtShadowCenter = (selector) => {
         const node = root.querySelector(selector);
@@ -87,14 +89,53 @@ async function main() {
       const rectCenterX = (rect) => rect.left + (rect.width / 2);
       const groupedRect = (nodes) => {
         const rects = Array.from(nodes, (node) => node.getBoundingClientRect()).filter((rect) => rect.width || rect.height);
+        const left = Math.min(...rects.map((rect) => rect.left));
+        const right = Math.max(...rects.map((rect) => rect.right));
+        const top = Math.min(...rects.map((rect) => rect.top));
+        const bottom = Math.max(...rects.map((rect) => rect.bottom));
         return {
-          left: Math.min(...rects.map((rect) => rect.left)),
-          right: Math.max(...rects.map((rect) => rect.right))
+          left,
+          right,
+          top,
+          bottom,
+          width: right - left,
+          height: bottom - top
         };
       };
       const targetId = "active-54";
       const stableTopbar = root.querySelector(".wp-topbar");
       const stableItems = root.querySelector(".wp-items");
+      const packagedUiFontReady = document.fonts.check('13px "Inter"');
+      const packagedFigureFontReady = document.fonts.check('13px "IBM Plex Mono"');
+      const packagedFigureCurrencyReady = document.fonts.check('13px "IBM Plex Mono"', "189 690 ₽");
+      const fontFamilyOf = (selector) => {
+        const node = root.querySelector(selector);
+        return node ? getComputedStyle(node).fontFamily : "";
+      };
+      const monospaceDeltaOf = (selector) => {
+        const node = root.querySelector(selector);
+        if (!node) {
+          return 0;
+        }
+        const style = getComputedStyle(node);
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        return Math.abs(context.measureText("111111").width - context.measureText("888888").width);
+      };
+      const shellFontFamily = getComputedStyle(root.querySelector(".wp-shell")).fontFamily;
+      const figureFontFamily = getComputedStyle(root.querySelector(".wp-count-figure")).fontFamily;
+      const totalValueFontFamily = fontFamilyOf(".wp-total-value");
+      const sitePriceFontFamily = fontFamilyOf(".wp-site-price");
+      const nativePriceFontFamily = fontFamilyOf(".wp-native-price");
+      const brandChipCountFontFamily = fontFamilyOf(".wp-brand-chip-count");
+      const shortlistChipCountFontFamily = fontFamilyOf(".wp-shortlist-chip-count");
+      const archiveCountFontFamily = fontFamilyOf(".wp-archive-count");
+      const totalValueMonoDelta = monospaceDeltaOf(".wp-total-value");
+      const sitePriceMonoDelta = monospaceDeltaOf(".wp-site-price");
+      const nativePriceMonoDelta = monospaceDeltaOf(".wp-native-price");
+      const brandChipCountMonoDelta = monospaceDeltaOf(".wp-brand-chip-count");
+      const archiveCountMonoDelta = monospaceDeltaOf(".wp-archive-count");
       let items = root.querySelector(".wp-items");
       let filterTrigger = root.querySelector("[data-filter-menu-trigger]");
       let filterLabel = filterTrigger.querySelector(".wp-filter-trigger-label");
@@ -121,7 +162,10 @@ async function main() {
       const totalChevronOpacity = Number(totalChevronStyles.opacity);
       const archiveChipBackgroundColor = archiveChipStyles.backgroundColor;
       const archiveChipColor = archiveChipStyles.color;
-      const cardTopGap = root.querySelector(".wp-image-frame").getBoundingClientRect().top -
+      const firstMediaVisual = root.querySelector(".wp-media");
+      const missingImageIconExists = Boolean(root.querySelector(".wp-image-missing-icon"));
+      const browserAltVisible = /\bproduct image\b/i.test(root.querySelector(".wp-media")?.textContent || "");
+      const cardTopGap = firstMediaVisual.getBoundingClientRect().top -
         root.querySelector(".wp-filters").getBoundingClientRect().bottom;
 
       const immediateDecisionId = "active-2";
@@ -183,7 +227,7 @@ async function main() {
       const themeTopbarStableAfterRestore = root.querySelector(".wp-topbar") === stableTopbar;
       const themeItemsStableAfterRestore = root.querySelector(".wp-items") === stableItems;
 
-      root.querySelector("[data-panel-compact-toggle]").click();
+      root.querySelector("[data-panel-view-toggle]").click();
       await sleep(160);
       const compactItems = root.querySelector(".wp-items");
       const compactList = root.querySelector(".wp-compact-list");
@@ -257,7 +301,7 @@ async function main() {
       const compactDropTrayPointerEventsAfterCancel = compactDropTrayAfterCancelStyles.pointerEvents;
       const compactTopGap = root.querySelector(".wp-compact-thumb").getBoundingClientRect().top -
         root.querySelector(".wp-filters").getBoundingClientRect().bottom;
-      root.querySelector("[data-panel-compact-toggle]").click();
+      root.querySelector("[data-panel-view-toggle]").click();
       await sleep(520);
       const compactRestoredCardView = !root.querySelector(".wp-items").classList.contains("is-compact");
       const compactTopbarStableAfterRestore = root.querySelector(".wp-topbar") === stableTopbar;
@@ -421,7 +465,7 @@ async function main() {
       const shortlistChipInRail = Boolean(shortlistChip?.closest("[data-filter-rail]"));
       const shortlistChipFirst = root.querySelector("[data-filter-rail]")?.firstElementChild === shortlistChip;
 
-      root.querySelector("[data-panel-compact-toggle]").click();
+      root.querySelector("[data-panel-view-toggle]").click();
       await sleep(260);
       const compactActiveStar = root.querySelector(`.wp-compact-item [data-shortlist-id="${targetId}"]`);
       const compactActiveStarActions = compactActiveStar?.closest(".wp-compact-actions");
@@ -441,7 +485,7 @@ async function main() {
       const compactActiveStarContourBackground = compactActiveStarContourStyles?.backgroundColor || "";
       const compactActiveStarAnimationName = compactActiveStarIconStyles?.animationName || "";
       const compactActiveStarTwinkling = compactActiveStar?.classList.contains("is-twinkling") || false;
-      root.querySelector("[data-panel-compact-toggle]").click();
+      root.querySelector("[data-panel-view-toggle]").click();
       await sleep(420);
 
       shortlistChip.click();
@@ -464,6 +508,27 @@ async function main() {
       const inlineTrayExists = Boolean(root.querySelector(".wp-decision-tray"));
       const clickModeDropTrayOpacity = Number(clickModeDropTrayStyles.opacity);
       const clickModeDropTrayPointerEvents = clickModeDropTrayStyles.pointerEvents;
+      const decisionButtonGroupRect = groupedRect(clickModeDropTray.querySelectorAll(".wp-decision-pill"));
+      const clickModeShellRect = clickModeShell.getBoundingClientRect();
+      const decisionTrayCenterXDelta = Math.abs(((decisionButtonGroupRect.left + decisionButtonGroupRect.right) / 2) - rectCenterX(clickModeShellRect));
+      const decisionTrayCenterYDelta = Math.abs(((decisionButtonGroupRect.top + decisionButtonGroupRect.bottom) / 2) - (clickModeShellRect.top + (clickModeShellRect.height / 2)));
+      const boughtDecisionBox = clickModeDropTray.querySelector('[data-decision-drop-action="bought"]');
+      const boughtDecisionBoxRect = boughtDecisionBox.getBoundingClientRect();
+      const boughtDecisionIconRect = boughtDecisionBox.querySelector(".wp-decision-pill-icon").getBoundingClientRect();
+      const boughtDecisionLabelRect = boughtDecisionBox.querySelector(".wp-decision-pill-label").getBoundingClientRect();
+      const decisionIconCenterInsideBox =
+        rectCenterX(boughtDecisionIconRect) >= boughtDecisionBoxRect.left &&
+        rectCenterX(boughtDecisionIconRect) <= boughtDecisionBoxRect.right &&
+        (boughtDecisionIconRect.top + (boughtDecisionIconRect.height / 2)) >= boughtDecisionBoxRect.top &&
+        (boughtDecisionIconRect.top + (boughtDecisionIconRect.height / 2)) <= boughtDecisionBoxRect.bottom;
+      const decisionIconBoxCenterDelta = Math.abs(rectCenterX(boughtDecisionIconRect) - rectCenterX(boughtDecisionBoxRect)) +
+        Math.abs((boughtDecisionIconRect.top + (boughtDecisionIconRect.height / 2)) - (boughtDecisionBoxRect.top + (boughtDecisionBoxRect.height / 2)));
+      const boughtDecisionLabelOpacity = Number(getComputedStyle(boughtDecisionBox.querySelector(".wp-decision-pill-label")).opacity);
+      const decisionLabelInsideBox =
+        boughtDecisionLabelRect.left >= boughtDecisionBoxRect.left &&
+        boughtDecisionLabelRect.right <= boughtDecisionBoxRect.right &&
+        boughtDecisionLabelRect.top >= boughtDecisionBoxRect.top &&
+        boughtDecisionLabelRect.bottom <= boughtDecisionBoxRect.bottom;
       clickModeScrim.click();
       await sleep(120);
       const decisionModeAfterCancel = root.querySelector(".wp-shell").classList.contains("is-decision-mode");
@@ -494,7 +559,7 @@ async function main() {
       const archiveToggle = root.querySelector("[data-archive-view-toggle]");
       const archiveTopbarStable = root.querySelector(".wp-topbar") === stableTopbar;
       const archiveTopbarAnimationName = getComputedStyle(stableTopbar).animationName;
-      root.querySelector("[data-panel-compact-toggle]").click();
+      root.querySelector("[data-panel-view-toggle]").click();
       await sleep(180);
       const archivedCompactRow = root.querySelector(`[data-panel-item-id="${targetId}"]`);
       const archivedCompactItems = root.querySelector(".wp-items");
@@ -536,6 +601,13 @@ async function main() {
       const archivedCompactTitleWhiteSpace = archivedCompactTitleStyles?.whiteSpace || "";
       const archivedCompactTitleTextOverflow = archivedCompactTitleStyles?.textOverflow || "";
       const archivedCompactPriceCenterDeltaRounded = Math.round(archivedCompactPriceCenterDelta);
+      const archiveScopedFilterActive = root.querySelector("[data-filter-menu-trigger]")?.classList.contains("is-active") || false;
+      const archiveScopedFilterClear = root.querySelector("[data-filter-clear]");
+      const archiveScopedFilterClearExists = Boolean(archiveScopedFilterClear);
+      archiveScopedFilterClear?.click();
+      await sleep(180);
+      const archiveAfterFilterClearStillOpen = root.querySelector(".wp-items")?.classList.contains("is-archive-view") || false;
+      const archiveAfterFilterClearChipActive = root.querySelector("[data-archive-view-toggle]")?.classList.contains("is-active") || false;
       const listArchiveOffClick = clickAtShadowCenter("[data-archive-view-toggle]");
       await sleep(260);
       const listArchiveOffItems = root.querySelector(".wp-items");
@@ -573,7 +645,7 @@ async function main() {
       const archivedLongTitleBeforePrice = archivedLongTitleRect && archivedLongPriceRect
         ? archivedLongTitleRect.right <= archivedLongPriceRect.left + 1
         : false;
-      root.querySelector("[data-panel-compact-toggle]").click();
+      root.querySelector("[data-panel-view-toggle]").click();
       await sleep(520);
       root.querySelector("[data-archive-view-toggle]")?.click();
       await sleep(260);
@@ -594,6 +666,24 @@ async function main() {
         allFilterExists,
         resetExists,
         topbarShortlistExists,
+        packagedUiFontReady,
+        packagedFigureFontReady,
+        packagedFigureCurrencyReady,
+        shellFontFamily,
+        figureFontFamily,
+        totalValueFontFamily,
+        sitePriceFontFamily,
+        nativePriceFontFamily,
+        brandChipCountFontFamily,
+        shortlistChipCountFontFamily,
+        archiveCountFontFamily,
+        totalValueMonoDelta,
+        sitePriceMonoDelta,
+        nativePriceMonoDelta,
+        brandChipCountMonoDelta,
+        archiveCountMonoDelta,
+        missingImageIconExists,
+        browserAltVisible,
         topbarCountTextCenterDelta,
         totalValueCenterDelta,
         topbarCountColor,
@@ -746,6 +836,12 @@ async function main() {
         clickModeScrimOpacity,
         clickModeDropTrayOpacity,
         clickModeDropTrayPointerEvents,
+        decisionTrayCenterXDelta,
+        decisionTrayCenterYDelta,
+        decisionIconCenterInsideBox,
+        decisionIconBoxCenterDelta,
+        boughtDecisionLabelOpacity,
+        decisionLabelInsideBox,
         decisionModeAfterCancel,
         dragClass,
         dropTrayOpacity,
@@ -777,6 +873,10 @@ async function main() {
         archivedCompactTitleTextOverflow,
         archivedCompactPriceCenterDelta: archivedCompactPriceCenterDeltaRounded,
         archivedCompactActionsBelowTitle,
+        archiveScopedFilterActive,
+        archiveScopedFilterClearExists,
+        archiveAfterFilterClearStillOpen,
+        archiveAfterFilterClearChipActive,
         listArchiveOffHitTarget: listArchiveOffClick.hit,
         listArchiveOffClickHitArchive: listArchiveOffClick.clicked,
         listArchiveOffCompact,
@@ -817,6 +917,28 @@ async function main() {
     assert.equal(metrics.allFilterExists, false, "Permanent All chip should not render");
     assert.equal(metrics.resetExists, false, "Separate reset/undo chip should not render");
     assert.equal(metrics.topbarShortlistExists, false, "Shortlist state should not render as a separate topbar badge");
+    assert.equal(metrics.packagedUiFontReady, true, "Packaged Inter font should be loaded in the app");
+    assert.equal(metrics.packagedFigureFontReady, true, "Packaged IBM Plex Mono font should be loaded in the app");
+    assert.equal(metrics.packagedFigureCurrencyReady, true, "Packaged IBM Plex Mono should cover localized currency figures");
+    assert.match(metrics.shellFontFamily, /Inter/, "Panel shell should use the packaged Inter family first");
+    assert.match(metrics.figureFontFamily, /IBM Plex Mono/, "Panel figures should use the packaged IBM Plex Mono family first");
+    assert.match(metrics.totalValueFontFamily, /IBM Plex Mono/, "Summary currency should use the packaged IBM Plex Mono family");
+    assert.match(metrics.sitePriceFontFamily, /IBM Plex Mono/, "Card price should use the packaged IBM Plex Mono family");
+    assert.ok(metrics.totalValueMonoDelta <= 0.01, `Summary currency digits should render monospace: ${metrics.totalValueMonoDelta}`);
+    assert.ok(metrics.sitePriceMonoDelta <= 0.01, `Card price digits should render monospace: ${metrics.sitePriceMonoDelta}`);
+    assert.ok(metrics.brandChipCountMonoDelta <= 0.01, `Brand pill digits should render monospace: ${metrics.brandChipCountMonoDelta}`);
+    assert.ok(metrics.archiveCountMonoDelta <= 0.01, `Archive pill digits should render monospace: ${metrics.archiveCountMonoDelta}`);
+    if (metrics.nativePriceFontFamily) {
+      assert.match(metrics.nativePriceFontFamily, /IBM Plex Mono/, "Native currency line should use the packaged IBM Plex Mono family");
+      assert.ok(metrics.nativePriceMonoDelta <= 0.01, `Native currency digits should render monospace: ${metrics.nativePriceMonoDelta}`);
+    }
+    assert.match(metrics.brandChipCountFontFamily, /IBM Plex Mono/, "Brand count pill should use the packaged IBM Plex Mono family");
+    if (metrics.shortlistChipCountFontFamily) {
+      assert.match(metrics.shortlistChipCountFontFamily, /IBM Plex Mono/, "Shortlist count pill should use the packaged IBM Plex Mono family");
+    }
+    assert.match(metrics.archiveCountFontFamily, /IBM Plex Mono/, "Archive count pill should use the packaged IBM Plex Mono family");
+    assert.equal(metrics.missingImageIconExists, true, "Broken seeded images should render the Phosphor missing-image icon");
+    assert.equal(metrics.browserAltVisible, false, "Broken seeded images should not expose browser alt text in the media slot");
     assert.ok(metrics.topbarCountTextCenterDelta <= 2, `Topbar item count should be centered: ${metrics.topbarCountTextCenterDelta}px`);
     assert.ok(metrics.totalValueCenterDelta <= 2, `Summary value should center while chevron is hidden: ${metrics.totalValueCenterDelta}px`);
     assert.match(metrics.topbarCountColor, /rgba?\(8, 11, 16, 0\.46\)/, "Topbar item count should stay muted under the total value");
@@ -875,7 +997,7 @@ async function main() {
     assert.equal(metrics.compactArchiveButtonExists, true, "List view should expose the archive decision action");
     assert.ok(metrics.compactActionsFocusOpacity >= 0.95, "List actions should reveal on keyboard focus");
     assert.equal(metrics.compactArchiveDecisionMode, true, "List archive action should open decision mode");
-    assert.ok(metrics.compactArchiveDropTrayOpacity >= 0.95, "List archive action should show the bottom decision tray");
+    assert.ok(metrics.compactArchiveDropTrayOpacity >= 0.95, "List archive action should show the center decision tray");
     assert.equal(metrics.compactArchiveFocusedAfterPointer, false, "Pointer-clicking List archive should not leave the archive action focused");
     assert.equal(metrics.compactDecisionModeAfterCancel, false, "Cancelling List archive should close decision mode");
     assert.equal(metrics.compactDraggingModeAfterCancel, false, "Cancelling List archive should not leave drag mode active");
@@ -964,18 +1086,24 @@ async function main() {
     assert.doesNotMatch(metrics.shortlistResetCountText, /^1 of /, "Removing the last star should refresh the scoped summary count");
     assert.equal(metrics.clickModeClass, true, "Archive button should open global decision mode");
     assert.equal(metrics.inlineTrayExists, false, "Archive button should not render an inline decision tray under the card");
-    assert.ok(metrics.clickModeScrimOpacity >= 0.95, "Decision mode should dim the panel above the bottom tray");
-    assert.ok(metrics.clickModeDropTrayOpacity >= 0.95, "Archive button should reveal the bottom decision tray");
-    assert.equal(metrics.clickModeDropTrayPointerEvents, "auto", "Bottom tray should accept clicks in decision mode");
+    assert.ok(metrics.clickModeScrimOpacity >= 0.95, "Decision mode should dim the panel behind the center tray");
+    assert.ok(metrics.clickModeDropTrayOpacity >= 0.95, "Archive button should reveal the center decision tray");
+    assert.equal(metrics.clickModeDropTrayPointerEvents, "auto", "Center tray should accept clicks in decision mode");
+    assert.ok(metrics.decisionTrayCenterXDelta <= 3, `Decision actions should be centered horizontally: ${metrics.decisionTrayCenterXDelta}px`);
+    assert.ok(metrics.decisionTrayCenterYDelta <= 32, `Decision actions should sit near the panel center: ${metrics.decisionTrayCenterYDelta}px`);
+    assert.equal(metrics.decisionIconCenterInsideBox, true, "Decision icon should sit inside its box");
+    assert.ok(metrics.decisionIconBoxCenterDelta <= 6, `Decision icon should be centered in the box: ${metrics.decisionIconBoxCenterDelta}px`);
+    assert.equal(metrics.decisionLabelInsideBox, true, "Decision label should stay inside the box");
+    assert.ok(metrics.boughtDecisionLabelOpacity <= 0.05, `Decision label should stay hidden until hover/focus: ${metrics.boughtDecisionLabelOpacity}`);
     assert.equal(metrics.decisionModeAfterCancel, false, "Clicking the dimmed panel should cancel decision mode");
     assert.equal(metrics.dragClass, true, "Dragging a card should mark the shell as dragging");
     assert.ok(metrics.dropTrayOpacity >= 0.95, "Drag mode should reveal the drop tray");
     assert.equal(metrics.dropTrayPointerEvents, "auto", "Drop tray should accept drops while dragging");
-    assert.match(metrics.dropTrayBackground, /linear-gradient/i, "Drop tray should fade upward with a gradient");
+    assert.match(metrics.dropTrayBackground, /^none$/, "Center decision tray should rely on the shared scrim instead of a bottom gradient");
     assert.equal(metrics.decisionModeAfterDrop, false, "Dropping on Bought should close decision mode");
     assert.equal(metrics.draggingModeAfterDrop, false, "Dropping on Bought should clear drag mode");
-    assert.ok(metrics.dropTrayOpacityAfterDecision <= 0.05, "Dropping on Bought should hide the bottom decision tray");
-    assert.equal(metrics.dropTrayPointerEventsAfterDecision, "none", "Dropping on Bought should disable bottom tray hit testing");
+    assert.ok(metrics.dropTrayOpacityAfterDecision <= 0.05, "Dropping on Bought should hide the center decision tray");
+    assert.equal(metrics.dropTrayPointerEventsAfterDecision, "none", "Dropping on Bought should disable center tray hit testing");
     assert.equal(metrics.decisionIconCount, 3, "Drop tray decisions should render icons");
     assert.equal(metrics.archiveViewOpen, true, "After a decision the archive list should open");
     assert.equal(metrics.archivedCardVisible, true, "Decided item should be visible in the archive list");
@@ -1001,6 +1129,10 @@ async function main() {
     assert.ok(metrics.archivedCompactPriceCenterDelta <= 8, `Archive compact price should be vertically centered: ${metrics.archivedCompactPriceCenterDelta}px`);
     assert.equal(metrics.archivedCompactActionsBelowTitle, true, "Archive compact actions should sit below the title");
     assert.ok(metrics.archivedCompactRowHeight <= 124, `Archived list row should stay dense: ${metrics.archivedCompactRowHeight}px`);
+    assert.equal(metrics.archiveScopedFilterActive, true, "Archive should preserve the active category as a child filter");
+    assert.equal(metrics.archiveScopedFilterClearExists, true, "Archive-scoped category should expose its inline clear affordance");
+    assert.equal(metrics.archiveAfterFilterClearStillOpen, true, "Clearing category inside Archive should keep Archive open");
+    assert.equal(metrics.archiveAfterFilterClearChipActive, true, "Clearing category inside Archive should keep the archive chip active");
     assert.equal(metrics.listArchiveOffClickHitArchive, true, `List archive off click should hit the archive chip, hit ${metrics.listArchiveOffHitTarget}`);
     assert.equal(metrics.listArchiveOffCompact, true, "Turning archive off from List view should keep List view enabled");
     assert.equal(metrics.listArchiveOffArchiveView, false, "Turning archive off from List view should leave archive scope");
@@ -1026,10 +1158,10 @@ async function main() {
     assert.equal(metrics.archiveToggleClearExists, true, "Active archive chip should expose an inline close affordance");
     assert.equal(metrics.decisionStatusText, "Bought", "Archived card should display the persisted Bought decision");
     assert.match(metrics.decisionStatusClass, /is-bought/, "Bought decision badge should use bought styling");
-    assert.equal(metrics.clickBoughtDecisionModeAfterChoice, false, "Clicking Bought in the bottom tray should close decision mode");
+    assert.equal(metrics.clickBoughtDecisionModeAfterChoice, false, "Clicking Bought in the center tray should close decision mode");
     assert.equal(metrics.clickBoughtDraggingModeAfterChoice, false, "Clicking Bought should leave drag mode closed");
-    assert.ok(metrics.clickBoughtDropTrayOpacityAfterDecision <= 0.05, "Clicking Bought should hide the bottom decision tray");
-    assert.equal(metrics.clickBoughtDropTrayPointerEventsAfterDecision, "none", "Clicking Bought should disable bottom tray hit testing");
+    assert.ok(metrics.clickBoughtDropTrayOpacityAfterDecision <= 0.05, "Clicking Bought should hide the center decision tray");
+    assert.equal(metrics.clickBoughtDropTrayPointerEventsAfterDecision, "none", "Clicking Bought should disable center tray hit testing");
     assert.equal(metrics.clickBoughtArchivedCardVisible, true, "Clicking Bought should move the item into the archive view");
 
     const stored = await worker.evaluate((key) => chrome.storage.local.get(key), storageKey);

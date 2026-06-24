@@ -81,7 +81,7 @@ function renderPanelDecisionPill(itemId, action, options = {}) {
   return `
     <button class="wp-decision-pill ${escapeAttribute(action.className)}" type="button" ${data}>
       ${renderPanelDecisionIcon(action)}
-      <span>${escapeHtml(t(action.label))}</span>
+      <span class="wp-decision-pill-label">${escapeHtml(t(action.label))}</span>
     </button>
   `;
 }
@@ -145,7 +145,6 @@ function openPanelArchivedDecisionList() {
   panelState.brandFilterLabel = "";
   panelState.searchOpen = false;
   panelState.searchQuery = "";
-  panelState.activeCategory = "all";
   panelState.filterMenuOpen = false;
   panelState.sortMenuOpen = false;
   panelState.categoryComposerOpen = false;

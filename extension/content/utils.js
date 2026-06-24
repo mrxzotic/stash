@@ -115,7 +115,7 @@ function toAbsoluteUrlFor(value, baseUrl) {
 }
 
 function looksLikePrice(value) {
-  const text = String(value || "");
+  const text = normalizePriceText(value);
   return (
     /[$€£¥₽₴]\s?\d|\d[\d\s.,]*\s?[$€£¥₽₴]/i.test(text) ||
     new RegExp(`\\d[\\d\\s.,]*\\s?(?:${CURRENCY_CODE_PATTERN})\\b`, "i").test(text) ||
@@ -128,7 +128,7 @@ function numericPrice(value) {
     return value;
   }
 
-  const match = String(value || "").match(/[\d][\d\s.,]*/);
+  const match = normalizePriceText(value).match(/[\d][\d\s.,]*/);
   if (!match) {
     return undefined;
   }
@@ -137,7 +137,7 @@ function numericPrice(value) {
 }
 
 function currencyFromText(value) {
-  const text = String(value || "");
+  const text = normalizePriceText(value);
   if (text.includes("$") || /\bUSD\b/i.test(text)) return "USD";
   if (text.includes("€") || /\bEUR\b/i.test(text)) return "EUR";
   if (text.includes("£") || /\bGBP\b/i.test(text)) return "GBP";
@@ -146,6 +146,53 @@ function currencyFromText(value) {
   if (text.includes("₴") || /\bUAH\b/i.test(text)) return "UAH";
   const code = text.match(new RegExp(`\\b(${CURRENCY_CODE_PATTERN})\\b`, "i"))?.[0];
   return code || "";
+}
+
+function normalizePriceText(value) {
+  return String(value || "")
+    .replace(/&nbsp;|&#160;|&#xA0;|&#8239;|&#x202F;/gi, " ")
+    .replace(/&#8381;|&#x20BD;|&rub;/gi, "₽")
+    .replace(/&#8364;|&#x20AC;|&euro;/gi, "€")
+    .replace(/&#163;|&#xA3;|&pound;/gi, "£")
+    .replace(/&#165;|&#xA5;|&yen;/gi, "¥")
+    .replace(/&#8372;|&#x20B4;/gi, "₴");
+}
+
+function repairKnownInstallmentPrice(price, productUrl) {
+  const amount = numericPrice(price?.amount);
+  const compareAtAmount = numericPrice(price?.compareAtAmount);
+  const currency = cleanText(price?.currency).toUpperCase();
+  if (
+    !isBrandshopUrl(productUrl) ||
+    currency !== "RUB" ||
+    !Number.isFinite(amount) ||
+    !Number.isFinite(compareAtAmount) ||
+    compareAtAmount <= amount ||
+    !isQuarterInstallmentAmount(amount, compareAtAmount)
+  ) {
+    return price;
+  }
+
+  return compactObject({
+    ...price,
+    amount: compareAtAmount,
+    originalText: price.compareAtText || formatOriginalPrice(compareAtAmount, currency) || price.originalText,
+    compareAtAmount: undefined,
+    compareAtText: undefined,
+    isSale: false
+  });
+}
+
+function isBrandshopUrl(value) {
+  try {
+    return /(^|\.)brandshop\.ru$/i.test(new URL(value || location.href, location.href).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isQuarterInstallmentAmount(amount, total) {
+  return Math.abs(total - amount * 4) <= Math.max(8, total * 0.002);
 }
 
 function currencyFromSymbol(symbol) {

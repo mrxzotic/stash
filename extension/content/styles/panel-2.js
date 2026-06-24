@@ -219,8 +219,7 @@ function panelStylesChunk2() {
       color: rgba(244, 244, 240, 0.76);
     }
 
-    .wp-filter:hover,
-    .wp-text-button:hover {
+    .wp-filter:hover {
       background: var(--hover);
     }
 
@@ -249,29 +248,11 @@ function panelStylesChunk2() {
       flex: 0 0 auto;
       width: 20px;
       height: 20px;
-      font-size: 20px;
+      font-size: inherit;
       color: currentColor;
       background-color: currentColor;
       -webkit-mask: var(--wp-icon-url) center / contain no-repeat;
       mask: var(--wp-icon-url) center / contain no-repeat;
-    }
-
-    .wp-remove-category::before,
-    .wp-remove-category::after {
-      content: "";
-      position: absolute;
-      width: 13px;
-      height: 1.5px;
-      border-radius: var(--radius);
-      background: currentColor;
-    }
-
-    .wp-remove-category::before {
-      transform: rotate(45deg);
-    }
-
-    .wp-remove-category::after {
-      transform: rotate(-45deg);
     }
 
     .wp-popover {
@@ -290,108 +271,5 @@ function panelStylesChunk2() {
       animation: wpPanelIn 160ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
-    .wp-settings.wp-popover {
-      width: min(336px, calc(100% - 48px));
-      max-height: min(560px, calc(100vh - 116px));
-      padding: 16px;
-      overflow-y: auto;
-      scrollbar-width: none;
-      background: var(--wp-popover-bg);
-      border-color: var(--wp-popover-border);
-      box-shadow: var(--wp-popover-shadow);
-    }
-
-    .wp-settings.wp-popover::-webkit-scrollbar {
-      display: none;
-    }
-
-    .wp-settings[hidden] {
-      display: none;
-    }
-
-    .wp-settings-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 0;
-      margin: 0 0 8px;
-    }
-
-    .wp-settings h2 {
-      margin: 0;
-      font-size: var(--text-heading);
-      line-height: 1.2;
-      font-weight: 780;
-      letter-spacing: 0;
-    }
-
-    .wp-text-button,
-    .wp-category-form button {
-      height: 32px;
-      padding: 0 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--primary);
-      color: var(--primary-foreground);
-      font-size: var(--text-control);
-      font-weight: 700;
-    }
-
-    .wp-text-button {
-      height: auto;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      font-size: var(--text-control);
-      font-weight: 680;
-    }
-
-    .wp-settings-section {
-      display: grid;
-      gap: 8px;
-      padding: 0;
-      margin-top: 16px;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-    }
-
-    .wp-settings-section + .wp-settings-section {
-      padding-top: 16px;
-      margin-top: 16px;
-      border-top: 1px solid rgba(60, 60, 67, 0.12);
-    }
-
-    .wp-settings-section-title,
-    .wp-settings-section-head {
-      color: var(--muted);
-      font-size: var(--text-caption);
-      line-height: 1;
-      font-weight: 700;
-      margin: 0;
-    }
-
-    .wp-settings-section-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .wp-settings-row {
-      width: 100%;
-      min-height: 40px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 16px;
-      padding: 0;
-      border: 0;
-      border-radius: var(--radius);
-      background: transparent;
-    }
-
-    .wp-settings-row + .wp-settings-row {`;
+`;
 }
