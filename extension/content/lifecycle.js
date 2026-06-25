@@ -97,10 +97,23 @@ function showSavedItemInPanel(item, items, categories, options = {}) {
     if (!panelState.open || panelState.highlightedItemId !== item.id) {
       return;
     }
+    const highlightedItemId = panelState.highlightedItemId;
+    const displacedItemId = panelState.displacedItemId;
     panelState.highlightedItemId = "";
     panelState.displacedItemId = "";
-    renderTuckioPanel();
+    clearPanelSaveMotionState(highlightedItemId, displacedItemId);
   }, 1400);
+}
+
+function clearPanelSaveMotionState(highlightedItemId, displacedItemId) {
+  const root = document.getElementById("tuckio-panel-root")?.shadowRoot;
+  if (!root) {
+    return;
+  }
+
+  root.querySelector(`[data-panel-item-id="${CSS.escape(highlightedItemId)}"]`)?.classList.remove("is-new");
+  root.querySelector(`[data-panel-item-id="${CSS.escape(highlightedItemId)}"] .wp-new-card-skeleton`)?.remove();
+  root.querySelector(`[data-panel-item-id="${CSS.escape(displacedItemId)}"]`)?.classList.remove("is-shifted-right");
 }
 
 function panelSavedItemDisplacedId(item) {

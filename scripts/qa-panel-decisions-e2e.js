@@ -182,7 +182,7 @@ async function main() {
       const immediateReturnedActive = !root.querySelector(".wp-items").classList.contains("is-archive-view");
 
       root.querySelector("[data-panel-overflow-trigger]").click();
-      await sleep(80);
+      await sleep(360);
       const overflowMenu = root.querySelector("[data-panel-overflow-menu]");
       const overflowMenuWidth = Math.round(overflowMenu.getBoundingClientRect().width);
       const languageTrigger = root.querySelector("[data-panel-language-trigger]");
@@ -193,7 +193,7 @@ async function main() {
       const languageTriggerFlagRect = languageTrigger.querySelector(".wp-language-flag").getBoundingClientRect();
       const languageTriggerFlagAfterLabel = languageTriggerFlagRect.left >= languageCurrentRect.right - 1;
       languageTrigger.click();
-      await sleep(120);
+      await sleep(360);
       const languageMenu = root.querySelector("[data-panel-language-menu]");
       const languageMenuWidth = Math.round(languageMenu.getBoundingClientRect().width);
       const languageOption = root.querySelector('[data-panel-language="en"]');
