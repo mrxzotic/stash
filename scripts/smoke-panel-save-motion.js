@@ -50,7 +50,8 @@ assert.match(constantsSource, /brandCloudSortList: false/, "Panel state should t
 assert.match(lifecycleSource, /panelState\.hasRenderedPanel = false;[\s\S]*?renderTuckioPanel\(\);/, "Opening Tuckio should replay the shell opening animation");
 assert.match(lifecycleSource, /const listContextChanged =[\s\S]*?previousActiveCategory !== panelState\.activeCategory[\s\S]*?previousSearchQuery !== panelState\.searchQuery;/, "Shift-right motion should only run in the same visible list context");
 assert.match(lifecycleSource, /panelState\.displacedItemId = listContextChanged \? "" : panelSavedItemDisplacedId\(item\);/, "Open-panel save should mark the displaced card before render");
-assert.match(lifecycleSource, /panelState\.highlightedItemId = "";[\s\S]*?panelState\.displacedItemId = "";[\s\S]*?renderTuckioPanel\(\);/, "Open-panel save motion state should clear after the reveal");
+assert.match(lifecycleSource, /panelState\.highlightedItemId = "";[\s\S]*?panelState\.displacedItemId = "";[\s\S]*?clearPanelSaveMotionState\(highlightedItemId, displacedItemId\);/, "Open-panel save motion state should clear without rebuilding the panel");
+assert.match(lifecycleSource, /function clearPanelSaveMotionState[\s\S]*?wp-new-card-skeleton[\s\S]*?remove\(\)/, "Open-panel save motion cleanup should remove the skeleton in place");
 assert.match(lifecycleSource, /function panelSavedItemDisplacedId/, "Displaced card should be derived from the visible card list");
 
 assert.match(renderSource, /const isNew = item\.id === panelState\.highlightedItemId;/, "New card should use the existing highlighted item state");

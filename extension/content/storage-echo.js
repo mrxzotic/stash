@@ -50,8 +50,24 @@ function tuckioStorageChangeIsLocalEcho(changes) {
 
 function tuckioStorageEchoSignature(value) {
   try {
-    return JSON.stringify(value);
+    return JSON.stringify(tuckioStableStorageEchoValue(value));
   } catch {
     return String(value);
   }
+}
+
+function tuckioStableStorageEchoValue(value) {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(tuckioStableStorageEchoValue);
+  }
+
+  return Object.fromEntries(
+    Object.keys(value)
+      .sort()
+      .map((key) => [key, tuckioStableStorageEchoValue(value[key])])
+  );
 }

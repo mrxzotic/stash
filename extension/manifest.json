@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tuckio",
-  "version": "0.1.457",
+  "version": "0.1.458",
   "description": "Save products from any shop into a compact local library.",
   "permissions": ["activeTab", "contextMenus", "scripting", "storage"],
   "background": {
