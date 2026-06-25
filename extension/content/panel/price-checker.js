@@ -62,7 +62,7 @@ async function checkPanelPrices() {
       nextItems = replacePanelPriceCheckItem(nextItems, updatedItem);
       panelState.items = nextItems;
       shouldStore = true;
-      priceChanged = priceChanged || Boolean(price && panelItemPriceChanged(item, updatedItem));
+      priceChanged = priceChanged || Boolean(price && panelItemStoredPriceChanged(item, updatedItem));
       checked.push({ id: item.id, state });
     }
 

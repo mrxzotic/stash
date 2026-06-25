@@ -214,11 +214,13 @@ function panelBrandCloudItems(items) {
   const sorted = panelSortedBrandCloudItems(Array.from(brands.values())).slice(0, 40);
   const maxCount = sorted[0]?.count || 1;
   const countRange = Math.max(1, maxCount - 1);
+  const baseScale = 1.08;
+  const scaleRange = panelState.brandCloudSortList ? 0.16 : 0.36;
   return sorted.map((brand) => ({
     ...brand,
-    scale: panelState.brandCloudSortList
-      ? 1.3
-      : maxCount <= 1 ? 1 : 1 + Math.pow((brand.count - 1) / countRange, 0.75) * 0.82
+    scale: maxCount <= 1
+      ? baseScale
+      : baseScale + Math.pow((brand.count - 1) / countRange, 0.75) * scaleRange
   }));
 }
 

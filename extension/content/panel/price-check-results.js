@@ -44,11 +44,16 @@ function panelItemPriceChanged(currentItem, nextItem) {
     return false;
   }
 
+  return panelItemStoredPriceChanged(currentItem, nextItem);
+}
+
+function panelItemStoredPriceChanged(currentItem, nextItem) {
   const current = normalizePanelItem(currentItem).price || {};
   const next = normalizePanelItem(nextItem).price || {};
   return [
     "amount",
     "currency",
+    "originalText",
     "compareAtAmount",
     "compareAtText",
     "isSale"

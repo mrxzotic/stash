@@ -140,6 +140,22 @@ assert.equal(
   "up"
 );
 assert.equal(
+  vm.runInContext(`panelItemStoredPriceChanged(
+    { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 165, currency: 'EUR', originalText: '165 €', compareAtAmount: 275, compareAtText: '275 €', isSale: true } },
+    { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 275, currency: 'EUR', originalText: '275 €' } }
+  )`, sandbox),
+  true,
+  "P448 quiet correction should still trigger storage/UI refresh"
+);
+assert.equal(
+  vm.runInContext(`panelItemPriceChanged(
+    { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 165, currency: 'EUR', originalText: '165 €', compareAtAmount: 275, compareAtText: '275 €', isSale: true } },
+    { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 275, currency: 'EUR', originalText: '275 €' } }
+  )`, sandbox),
+  false,
+  "P448 quiet correction should not show as a user-facing price movement"
+);
+assert.equal(
   vm.runInContext(`panelPriceCheckState(
     { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 275, currency: 'EUR', originalText: '275 €' } },
     { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 165, currency: 'EUR', originalText: '165 €', compareAtAmount: 275, compareAtText: '275 €', isSale: true } }
@@ -263,6 +279,40 @@ vm.runInContext(`panelItemWithCheckedPrice(
     assert.equal(sandbox.summaryOptions, undefined);
     assert.equal(sandbox.refreshedSummaryRate, false);
     assert.equal(sandbox.panelState.items[0].priceCheck.state, "missed");
+    sandbox.panelState.items = [{
+      id: "p448-stale",
+      url: "https://p448.com/products/s26monza1-w-420",
+      price: {
+        amount: 165,
+        currency: "EUR",
+        originalText: "165 €",
+        compareAtAmount: 275,
+        compareAtText: "275 €",
+        isSale: true
+      }
+    }];
+    sandbox.renderedItems = false;
+    sandbox.renderedPrices = false;
+    sandbox.summaryOptions = undefined;
+    sandbox.refreshedSummaryRate = false;
+    sandbox.checkedResults = [];
+    sandbox.fetchPanelItemPrice = async () => ({
+      amount: 275,
+      currency: "EUR",
+      originalText: "275 €"
+    });
+    return vm.runInContext("checkPanelPrices()", sandbox);
+  })
+  .then(() => {
+    assert.equal(sandbox.panelState.items[0].price.amount, 275);
+    assert.equal(sandbox.panelState.items[0].price.compareAtAmount, undefined);
+    assert.equal(sandbox.panelState.items[0].priceCheck.state, "same");
+    assert.equal(sandbox.renderedItems, true);
+    assert.deepEqual({ ...sandbox.summaryOptions }, { animate: true });
+    assert.equal(sandbox.refreshedSummaryRate, true);
+    assert.deepEqual(JSON.parse(JSON.stringify(sandbox.checkedResults)), [
+      { id: "p448-stale", state: "same" }
+    ]);
     console.log("panel price checker smoke passed");
   })
   .catch((error) => {

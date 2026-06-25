@@ -41,7 +41,7 @@ assert.ok(
   backgroundSource.includes(`CONTENT_SCRIPT_VERSION = "${contentVersion}"`),
   "Background should inject the active panel save motion version"
 );
-assert.match(backgroundSource, /"content\/panel\/empty\.js",\s*"content\/panel\/motion\.js",\s*"content\/panel\/filters\.js",\s*"content\/panel\/filter-rail\.js",\s*"content\/panel\/preferences\.js",\s*"content\/panel\/render\.js",\s*"content\/panel\/reorder\.js"/, "Panel motion, filter, preference, and reorder helpers should load before item-only flows");
+assert.match(backgroundSource, /"content\/panel\/empty\.js",\s*"content\/panel\/motion\.js",\s*"content\/panel\/filters\.js",\s*"content\/panel\/filter-rail\.js",\s*"content\/panel\/preferences\.js",\s*"content\/panel\/delete-dialog\.js",\s*"content\/panel\/render\.js",\s*"content\/panel\/reorder\.js"/, "Panel motion, filter, preference, dialog, and reorder helpers should load before item-only flows");
 assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content\/styles\/panel-decision-ui\.js",\s*"content\/styles\/panel-decision-motion\.js",\s*"content\/styles\/panel-edit\.js",\s*"content\/styles\/panel-rebuild-motion\.js",\s*"content\/styles\/panel-save-motion\.js",\s*"content\/styles\/panel-interaction-motion\.js",\s*"content\/styles\/panel-price-checker\.js",\s*"content\/styles\/panel-hints\.js",\s*"content\/styles\/panel\.js"/, "Panel motion styles should load before panel style composition");
 
 assert.match(constantsSource, /displacedItemId: ""/, "Panel state should track the card displaced by an open-panel save");
@@ -61,13 +61,14 @@ assert.match(renderSource, /capturePanelItemLayout\(root\)/, "Panel render shoul
 assert.match(renderSource, /animatePanelItemLayout\(root, previousItemRects\)/, "Panel render should animate card position changes after rebuilds");
 assert.match(renderSource, /getPropertyValue\("--wp-items-padding-top"\) !== nextTop/, "Panel top offset sync should avoid redundant layout writes");
 assert.match(renderSource, /function syncPanelItemsTopOffset\(root, options = \{\}\)/, "Panel top offset sync should support immediate row-control measurement");
-assert.match(renderSource, /const chromeBottom = filters \? panelVisibleFiltersBottom\(filters\) : topbar\.getBoundingClientRect\(\)\.bottom;/, "Panel top offset should fall back to the topbar when the filter row is absent");
-assert.match(renderSource, /const baseTop = filters[\s\S]*?\? \(panelState\.compactView \? 96 : 112\)[\s\S]*?: 80;/, "Zero-item panels should reserve topbar-only content padding");
-assert.match(renderSource, /const measuredTop = chromeBottom - shellTop \+ 16;/, "Panel item list should reserve one grid step under the visible chrome");
+assert.match(renderSource, /const chromeBottom = filters[\s\S]*?\? panelVisibleFiltersBottom\(shell, filters\)[\s\S]*?: panelElementLayoutBottomWithinShell\(shell, topbar\);/, "Panel top offset should measure stable shell-local chrome geometry");
+assert.match(renderSource, /const baseTop = filters[\s\S]*?\? \(panelState\.compactView \? 96 : 104\)[\s\S]*?: 80;/, "Zero-item panels should reserve topbar-only content padding");
+assert.match(renderSource, /const measuredTop = Number\.isFinite\(chromeBottom\) \? chromeBottom \+ 8 : baseTop;/, "Panel item list should reserve one grid step under the visible chrome");
 assert.match(renderSource, /roundPanelGridOffset\(Math\.max\(baseTop, measuredTop\)\)/, "Brand cloud and card grid should share the same 8px-aligned content origin");
 assert.match(renderSource, /function roundPanelGridOffset\(value\)[\s\S]*?Math\.ceil\(value \/ 8\) \* 8;/, "Panel content origin should snap to the 8px grid");
 assert.doesNotMatch(renderSource, /isBrandCloudRoot \? baseTop : Math\.max\(baseTop, measuredTop\)/, "Brand cloud should not use a separate vertical offset from the item grid");
-assert.match(renderSource, /function panelVisibleFilterChildBottom\(filters, child\)[\s\S]*?style\.visibility === "hidden"/, "Panel top offset should ignore hidden filter controls");
+assert.match(renderSource, /function panelVisibleFilterChildBottom\(shell, filters, child\)[\s\S]*?style\.visibility === "hidden"/, "Panel top offset should ignore hidden filter controls");
+assert.match(renderSource, /function panelElementLayoutBottomWithinShell\(shell, element\)[\s\S]*?offsetHeight[\s\S]*?offsetTop/, "Panel top offset should ignore animated transform rects when measuring chrome");
 assert.match(renderSource, /function panelOptionalFilterControlIsVisible\(filters, child\)[\s\S]*?is-controls-visible/, "Panel top offset should include optional controls when the third row is visible");
 assert.match(renderSource, /function panelIsOptionalFilterControl\(child\)[\s\S]*?wp-filter-add/, "Panel top offset should treat only add-category as optional chrome");
 assert.match(renderSource, /const isShiftedRight = item\.id === panelState\.displacedItemId;/, "Displaced card should get a render-time class");
@@ -79,7 +80,7 @@ assert.match(renderSource, /const filtersNav = renderPanelFiltersNav\(filterCate
 assert.match(filtersSource, /if \(!railControls\.trim\(\) && !viewControls\.trim\(\)\) \{[\s\S]*?return "";/, "Zero-item panels should not render an empty filter rail");
 assert.match(sortSource, /function panelShouldShowSearchControl\(items = panelState\.items\)[\s\S]*?panelSearchableItems\(items\)\.length >= 3;/, "Search should appear only for a meaningful searchable scope");
 assert.match(renderSource, /function renderPanelSearchTrigger\(\)[\s\S]*?panelShouldShowSearchControl\(\)/, "Topbar search trigger should render from the search threshold");
-assert.match(panelLayoutTailStyles, /\.wp-empty\s*\{[\s\S]*?top: var\(--wp-items-padding-top, 112px\);/, "Empty CTA should center from the measured chrome padding");
+assert.match(panelLayoutTailStyles, /\.wp-empty\s*\{[\s\S]*?top: var\(--wp-items-padding-top, 104px\);/, "Empty CTA should center from the measured chrome padding");
 assert.match(emptySource, /Use \+ or right-click a product page\./, "First-save empty copy should stay short");
 assert.match(emptySource, /No active products[\s\S]*?data-archive-view-toggle/, "No-active-items empty state should offer a direct archive action when archive has items");
 assert.match(panelLayoutTailStyles, /\.wp-empty-action\s*\{[\s\S]*?background: transparent;[\s\S]*?pointer-events: auto;/, "Empty archive action should stay as text while remaining clickable");
@@ -158,12 +159,14 @@ assert.match(panelStylesSource, /panelInteractionMotionStyles\(\)/, "Panel style
 assert.match(panelContentStylesSource, /\.wp-items\s*\{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[\s\S]*?column-gap: 16px;/, "Card mode should keep two visual columns");
 assert.match(panelContentStylesSource, /\.wp-item-column\s*\{[\s\S]*?display: grid;[\s\S]*?gap: 16px;/, "Card mode columns should stack variable-height cards tightly");
 assert.match(panelContentStylesSource, /\.wp-item-column \.wp-item:nth-child\(2\)[\s\S]*?animation-delay: 34ms;/, "Card entrance should use a restrained stagger");
-assert.match(panelContentStylesSource, /\.wp-brand-cloud\.is-sort-list[\s\S]*?flex-direction: column;[\s\S]*?align-items: center;/, "Sorted brand mode should switch the cloud to a vertical list");
-assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list\s*\{[\s\S]*?max-height: min\(540px, calc\(100svh - var\(--wp-items-padding-top, 112px\) - 96px\)\);[\s\S]*?overflow-y: auto;[\s\S]*?scroll-snap-type: y proximity;[\s\S]*?mask-image: linear-gradient/, "Sorted brand list should become an internal wheel-scroll surface");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud\s*\{[\s\S]*?display: flex;[\s\S]*?flex-wrap: wrap;[\s\S]*?gap: 24px 16px;/, "Default brand cloud should stay an organic wrapped cloud");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list\s*\{[\s\S]*?flex-direction: row;[\s\S]*?flex-wrap: wrap;[\s\S]*?gap: 16px;/, "Sorted brand mode should keep the brand cloud wrapped instead of becoming a list");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list\s*\{[\s\S]*?max-height: min\(360px, calc\(100svh - var\(--wp-items-padding-top, 104px\) - 96px\)\);[\s\S]*?overflow-y: auto;[\s\S]*?scroll-snap-type: y proximity;[\s\S]*?mask-image: linear-gradient/, "Sorted brand cloud should remain an internal scroll surface when it overflows");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud-item::before\s*\{[\s\S]*?inset: -5px -10px -3px;[\s\S]*?radial-gradient\(circle at 20% 18%, rgba\(116, 196, 255, 0\.5\)[\s\S]*?filter: blur\(8px\) saturate\(1\.18\);/, "Brand cloud hover should keep a visible iridescent glow instead of a flat text hover");
+assert.match(panelChunk5Styles, /\.wp-brand-cloud-item:hover::before,[\s\S]*?\.wp-brand-cloud-item:focus-visible::before\s*\{[\s\S]*?opacity: 0\.86;[\s\S]*?scale3d\(1, 1, 1\)/, "Brand cloud hover glow should become visibly iridescent on hover/focus");
 assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list::-webkit-scrollbar\s*\{[\s\S]*?display: none;/, "Brand wheel should hide native WebKit scrollbars");
 assert.match(panelChunk5Styles, /\.wp-brand-cloud\.is-sort-list \.wp-brand-cloud-item\s*\{[\s\S]*?scroll-snap-align: center;/, "Brand wheel items should snap toward the center");
-assert.match(panelContentStylesSource, /\.wp-items\.is-brand-cloud\s*\{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;[\s\S]*?justify-content: safe center;[\s\S]*?padding: var\(--wp-items-padding-top, 112px\) 24px 48px;/, "Brand cloud view should be centered inside the area that starts under the filters");
-assert.match(panelContentStylesSource, /\.wp-brand-cloud\s*\{[\s\S]*?align-content: flex-start;[\s\S]*?padding: 8px;/, "Default brand cloud should keep its centered cloud spacing");
+assert.match(panelContentStylesSource, /\.wp-items\.is-brand-cloud\s*\{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;[\s\S]*?justify-content: safe center;[\s\S]*?padding: var\(--wp-items-padding-top, 104px\) 24px 48px;/, "Brand cloud view should be centered inside the area that starts under the filters");
 
 for (const animation of [
   "wpPanelViewRebuild",

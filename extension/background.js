@@ -3,7 +3,7 @@ const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const COMMAND_SAVE_CURRENT = "save-to-tuckio";
 const COMMAND_TOGGLE_PANEL = "toggle-tuckio";
-const CONTENT_SCRIPT_VERSION = "2026-06-25-brand-cloud-hitbox-v121";
+const CONTENT_SCRIPT_VERSION = "2026-06-26-p448-price-refresh-v140";
 const MESSAGE_PING = "TUCKIO_PING_V2";
 const MESSAGE_SAVE = "TUCKIO_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "TUCKIO_TOGGLE_PANEL_V2";
@@ -26,6 +26,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/panel/filters.js",
   "content/panel/filter-rail.js",
   "content/panel/preferences.js",
+  "content/panel/delete-dialog.js",
   "content/panel/render.js",
   "content/panel/reorder.js",
   "content/panel/search.js",

@@ -109,6 +109,25 @@ const p448ShippingThresholdPrice = sandbox.bestProductPrice({
 assert.equal(p448ShippingThresholdPrice.amount, 275);
 assert.equal(p448ShippingThresholdPrice.compareAtAmount, undefined);
 assert.equal(p448ShippingThresholdPrice.isSale, undefined);
+const p448VisibleOnlyShippingThresholdPrice = sandbox.bestProductPrice({
+  url: "https://p448.com/products/s26monza1-w-420",
+  pagePriceProduct: {
+    priceText: "165 € 275 €",
+    priceAmount: 165,
+    currency: "EUR",
+    compareAtPriceText: "275 €",
+    compareAtPriceAmount: 275,
+    isSale: true
+  },
+  commonSelectorProduct: {},
+  contextualProduct: {},
+  priceSources: []
+});
+assert.equal(p448VisibleOnlyShippingThresholdPrice.amount, 275);
+assert.equal(p448VisibleOnlyShippingThresholdPrice.currency, "EUR");
+assert.equal(p448VisibleOnlyShippingThresholdPrice.originalText, "275 €");
+assert.equal(p448VisibleOnlyShippingThresholdPrice.compareAtAmount, undefined);
+assert.equal(p448VisibleOnlyShippingThresholdPrice.isSale, undefined);
 assert.equal(
   sandbox.parsePricesFromText("FREE SHIPPING ON EU ORDERS €165+").length,
   0
@@ -137,6 +156,52 @@ const baliCollapsedChromePrice = sandbox.findBestPrice(
 );
 assert.equal(baliCollapsedChromePrice.amount, 249);
 assert.equal(baliCollapsedChromePrice.compareAtAmount, undefined);
+
+const monzaProductUrl = "https://p448.com/products/s26monza1-w-420";
+const monzaFetchedDoc = {
+  title: "Monza Patina Sky - P448",
+  body: {
+    textContent: "SHOP SALE FREE SHIPPING ON EU ORDERS €165+ MONZA PATINA SKY €275,00 3 payments of €91.66 with Klarna Shipping & returns"
+  },
+  querySelectorAll(selector) {
+    if (selector === 'script[type="application/ld+json"]') {
+      return [{
+        textContent: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: "Monza Patina Sky",
+          brand: { "@type": "Brand", name: "P448" },
+          url: monzaProductUrl,
+          image: ["https://p448.com/cdn/shop/files/monza.jpg"],
+          offers: {
+            "@type": "Offer",
+            url: monzaProductUrl,
+            price: "275.00",
+            priceCurrency: "EUR"
+          }
+        })
+      }];
+    }
+    return [];
+  },
+  querySelector(selector) {
+    const meta = {
+      'meta[property="og:title"], meta[name="og:title"]': "Monza Patina Sky",
+      'meta[property="og:url"], meta[name="og:url"]': monzaProductUrl,
+      'meta[property="og:image"], meta[name="og:image"]': "https://p448.com/cdn/shop/files/monza.jpg",
+      'meta[property="og:price:amount"], meta[name="og:price:amount"]': "275,00",
+      'meta[property="og:price:currency"], meta[name="og:price:currency"]': "EUR",
+      'meta[property="product:price:amount"], meta[name="product:price:amount"]': "275,00",
+      'meta[property="product:price:currency"], meta[name="product:price:currency"]': "EUR"
+    }[selector];
+    return meta ? { content: meta } : null;
+  }
+};
+const monzaFetchedProduct = sandbox.extractFromFetchedProductPage(monzaFetchedDoc, monzaProductUrl);
+assert.equal(monzaFetchedProduct.priceAmount, 275);
+assert.equal(monzaFetchedProduct.currency, "EUR");
+assert.equal(monzaFetchedProduct.compareAtPriceAmount, undefined);
+assert.equal(monzaFetchedProduct.isSale, undefined);
 
 sandbox.findJsonLdProduct = () => ({
   title: "John Nightfall",

@@ -344,12 +344,31 @@ async function main() {
       const brandCloudItemBeforePointerEvents = brandCloudItem ? getComputedStyle(brandCloudItem, "::before").pointerEvents : "";
       const brandCloudItemBeforeBackground = brandCloudItem ? getComputedStyle(brandCloudItem, "::before").backgroundImage : "";
       const brandCloudItemAfterPointerEvents = brandCloudItem ? getComputedStyle(brandCloudItem, "::after").pointerEvents : "";
+      const brandCloud = root.querySelector(".wp-brand-cloud");
+      const brandCloudStyle = getComputedStyle(brandCloud);
+      const brandCloudDisplay = brandCloudStyle.display;
+      const brandCloudFlexWrap = brandCloudStyle.flexWrap;
+      const brandCloudGap = brandCloudStyle.gap;
       const brandCloudItems = Array.from(root.querySelectorAll(".wp-brand-cloud-item"));
+      const brandCloudShellRect = root.querySelector(".wp-shell").getBoundingClientRect();
       const brandCloudHitResults = brandCloudItems.map((item) => {
         const rect = item.getBoundingClientRect();
+        const visible = rect.bottom > brandCloudShellRect.top &&
+          rect.top < brandCloudShellRect.bottom &&
+          rect.right > brandCloudShellRect.left &&
+          rect.left < brandCloudShellRect.right;
+        if (!visible) {
+          return {
+            ok: true,
+            skipped: true,
+            item: item.textContent.trim().replace(/\s+/g, " "),
+            hit: "offscreen"
+          };
+        }
         const hit = root.elementFromPoint(rect.left + (rect.width / 2), rect.top + (rect.height / 2));
         return {
           ok: item === hit || item.contains(hit),
+          skipped: false,
           item: item.textContent.trim().replace(/\s+/g, " "),
           hit: hit?.className || hit?.tagName || ""
         };
@@ -359,6 +378,7 @@ async function main() {
       );
       const brandCloudCenterHitAll = brandCloudHitResults.every((result) => result.ok);
       const brandCloudCenterHitMisses = brandCloudHitResults.filter((result) => !result.ok);
+      const brandCloudCenterHitCheckedCount = brandCloudHitResults.filter((result) => !result.skipped).length;
       const brandCloudDecisionScrimPointerEvents = getComputedStyle(root.querySelector(".wp-decision-scrim")).pointerEvents;
       const brandCloudDecisionTrayPointerEvents = getComputedStyle(root.querySelector(".wp-decision-drop-tray")).pointerEvents;
       const brandTopbarStable = root.querySelector(".wp-topbar") === stableTopbar;
@@ -380,6 +400,9 @@ async function main() {
         brandWheelStyle.getPropertyValue("-webkit-mask-image");
       const brandWheelScrollable = brandWheel.scrollHeight > brandWheel.clientHeight + 8;
       const brandWheelOverflowY = brandWheelStyle.overflowY;
+      const brandWheelFlexDirection = brandWheelStyle.flexDirection;
+      const brandWheelFlexWrap = brandWheelStyle.flexWrap;
+      const brandWheelGap = brandWheelStyle.gap;
       const brandWheelSnapType = brandWheelStyle.scrollSnapType;
       const brandWheelSnapAlign = brandWheelItemStyle.scrollSnapAlign;
       const brandWheelScrollbarWidth = brandWheelStyle.scrollbarWidth;
@@ -795,12 +818,19 @@ async function main() {
         brandCloudItemBeforePointerEvents,
         brandCloudItemBeforeBackground,
         brandCloudItemAfterPointerEvents,
+        brandCloudDisplay,
+        brandCloudFlexWrap,
+        brandCloudGap,
         brandCloudCenterHitAll,
         brandCloudCenterHitMisses,
+        brandCloudCenterHitCheckedCount,
         brandCloudDecisionScrimPointerEvents,
         brandCloudDecisionTrayPointerEvents,
         brandWheelScrollable,
         brandWheelOverflowY,
+        brandWheelFlexDirection,
+        brandWheelFlexWrap,
+        brandWheelGap,
         brandWheelSnapType,
         brandWheelSnapAlign,
         brandWheelScrollbarWidth,
@@ -1057,9 +1087,13 @@ async function main() {
     assert.equal(metrics.brandActiveClearExists, true, "Active Brands should expose an inline close affordance");
     assert.ok(metrics.brandCloudItemMinHeight >= 30, `Brand cloud items should keep a forgiving hover target: ${metrics.brandCloudItemMinHeight}px`);
     assert.equal(metrics.brandCloudItemPointerEvents, "auto", "Brand cloud items should accept pointer events directly");
+    assert.equal(metrics.brandCloudDisplay, "flex", "Brand cloud should render as a flexible cloud, not a rigid selector grid");
+    assert.equal(metrics.brandCloudFlexWrap, "wrap", "Brand cloud should keep wrapping naturally");
+    assert.match(metrics.brandCloudGap, /24px 16px|16px 24px/, `Brand cloud should keep 8px-rhythm spacing: ${metrics.brandCloudGap}`);
     assert.equal(metrics.brandCloudItemBeforePointerEvents, "none", "Brand cloud glow should not intercept hover hit testing");
     assert.match(metrics.brandCloudItemBeforeBackground, /linear-gradient/i, "Brand cloud hover should keep a subtle iridescent wash");
     assert.equal(metrics.brandCloudItemAfterPointerEvents, "none", "Brand cloud underline should not intercept hover hit testing");
+    assert.ok(metrics.brandCloudCenterHitCheckedCount > 0, "Brand cloud E2E should check visible item hit targets");
     assert.equal(
       metrics.brandCloudCenterHitAll,
       true,
@@ -1069,10 +1103,13 @@ async function main() {
     assert.equal(metrics.brandCloudDecisionTrayPointerEvents, "none", "Inactive decision tray should not block Brand cloud hover");
     assert.equal(metrics.brandWheelScrollable, true, "Sorted brand list should scroll internally when brands overflow");
     assert.equal(metrics.brandWheelOverflowY, "auto", "Sorted brand list should accept mouse-wheel scrolling");
+    assert.equal(metrics.brandWheelFlexDirection, "row", "Sorted brand mode should stay a cloud instead of a vertical list");
+    assert.equal(metrics.brandWheelFlexWrap, "wrap", "Sorted brand mode should preserve cloud wrapping");
+    assert.match(metrics.brandWheelGap, /^16px( 16px)?$/, `Sorted brand cloud should keep compact 8px-rhythm spacing: ${metrics.brandWheelGap}`);
     assert.match(metrics.brandWheelSnapType, /y/, "Sorted brand list should use vertical scroll snap");
     assert.match(metrics.brandWheelSnapAlign, /center/, "Sorted brand rows should snap toward the center");
     assert.equal(metrics.brandWheelScrollbarWidth, "none", "Sorted brand list should hide native scrollbars");
-    assert.equal(metrics.brandWheelJustifyContent, "flex-start", "Sorted brand list should scroll from the top instead of overflowing around center");
+    assert.equal(metrics.brandWheelJustifyContent, "center", "Sorted brand mode should keep the cloud centered while reordering");
     assert.match(metrics.brandWheelMask, /linear-gradient/i, "Sorted brand list should fade at the top and bottom like a wheel");
     assert.equal(metrics.brandClosedActive, false, "Clicking active Brands should return to the main list state");
     assert.ok(metrics.filterExpandedWidth > metrics.filterTriggerWidth, "Filter label should expand inside the trigger pill");

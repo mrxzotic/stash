@@ -1,3 +1,5 @@
+var PANEL_CLOSE_MOTION_MS = 180;
+
 async function saveCurrentProduct(message) {
   const product = await enrichProduct(extractProduct(message.context || {}));
   const [categories, settings] = await Promise.all([getCategories(), getPanelSettings()]);
@@ -36,7 +38,9 @@ async function toggleTuckioPanel() {
 }
 
 async function openTuckioPanel() {
+  cancelPanelCloseMotion();
   await loadPanelData();
+  cancelPanelCloseMotion();
   panelState.open = true;
   panelState.hasRenderedPanel = false;
   renderTuckioPanel();
@@ -47,9 +51,37 @@ function closeTuckioPanel() {
   if (typeof unbindPanelDismissEvents === "function") {
     unbindPanelDismissEvents(host?.shadowRoot);
   }
-  if (host) {
-    host.remove();
+  resetClosedPanelState();
+  if (!host) {
+    return;
   }
+
+  window.clearTimeout(host.__tuckioPanelCloseTimer);
+  const shell = host.shadowRoot?.querySelector(".wp-shell");
+  if (!shell || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+    host.remove();
+    return;
+  }
+
+  shell.classList.add("is-closing");
+  shell.setAttribute("aria-hidden", "true");
+  host.__tuckioPanelCloseTimer = window.setTimeout(() => {
+    host.remove();
+  }, PANEL_CLOSE_MOTION_MS);
+}
+
+function cancelPanelCloseMotion() {
+  const host = document.getElementById("tuckio-panel-root");
+  if (host) {
+    window.clearTimeout(host.__tuckioPanelCloseTimer);
+    host.__tuckioPanelCloseTimer = 0;
+    const shell = host.shadowRoot?.querySelector(".wp-shell");
+    shell?.classList.remove("is-closing");
+    shell?.removeAttribute("aria-hidden");
+  }
+}
+
+function resetClosedPanelState() {
   panelState.open = false;
   panelState.settingsOpen = false;
   panelState.categoryComposerOpen = false;
