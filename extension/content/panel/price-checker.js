@@ -272,7 +272,7 @@ function panelPriceCheckSummaryStateFor(checked) {
 }
 
 function animatePanelPriceCheckCards(root, checked) {
-  checked.filter((entry) => panelPriceCheckShouldRenderCardStatus(entry?.state)).forEach((entry, index) => {
+  checked.forEach((entry, index) => {
     const card = root.querySelector(`[data-panel-item-id="${CSS.escape(entry.id)}"]`);
     if (!card) {
       return;
@@ -286,13 +286,12 @@ function restartPanelPriceCheckCardMotion(card, state) {
   card.querySelector?.(".wp-price-check-status")?.remove();
   card.classList.remove("is-price-check-up", "is-price-check-down", "is-price-check-updated");
   void card.offsetWidth;
-  if (!panelPriceCheckShouldRenderCardStatus(state)) {
-    card.__tuckioPriceCheckTimer = 0;
-    return;
-  }
 
   card.appendChild(elementFromHtml(renderPanelPriceCheckStatusIcon(state)));
-  card.classList.add(`is-price-check-${panelPriceCheckSafeState(state)}`);
+  const safeState = panelPriceCheckSafeState(state);
+  if (panelPriceCheckShouldPulsePrice(safeState)) {
+    card.classList.add(`is-price-check-${safeState}`);
+  }
   card.__tuckioPriceCheckTimer = window.setTimeout(() => {
     card.querySelector?.(".wp-price-check-status")?.remove();
     card.classList.remove("is-price-check-up", "is-price-check-down", "is-price-check-updated");
@@ -305,7 +304,7 @@ function renderPanelPriceCheckStatusIcon(state) {
   return `<span class="wp-price-check-status is-${safeState}" aria-hidden="true">${renderPanelPriceCheckGlyph(safeState, "wp-price-check-status-icon")}</span>`;
 }
 
-function panelPriceCheckShouldRenderCardStatus(state) {
+function panelPriceCheckShouldPulsePrice(state) {
   return /^(up|down|updated)$/.test(panelPriceCheckSafeState(state));
 }
 

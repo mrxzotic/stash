@@ -149,16 +149,24 @@ assert.match(
   vm.runInContext("renderPanelPriceCheckStatusIcon('down')", sandbox),
   /is-down[\s\S]*is-arrow-down/
 );
+assert.match(
+  vm.runInContext("renderPanelPriceCheckStatusIcon('same')", sandbox),
+  /is-same[\s\S]*is-check/
+);
+assert.match(
+  vm.runInContext("renderPanelPriceCheckStatusIcon('missed')", sandbox),
+  /is-missed[\s\S]*wp-price-checker-icon/
+);
 assert.equal(
-  vm.runInContext("panelPriceCheckShouldRenderCardStatus('missed')", sandbox),
+  vm.runInContext("panelPriceCheckShouldPulsePrice('missed')", sandbox),
   false
 );
 assert.equal(
-  vm.runInContext("panelPriceCheckShouldRenderCardStatus('same')", sandbox),
+  vm.runInContext("panelPriceCheckShouldPulsePrice('same')", sandbox),
   false
 );
 assert.equal(
-  vm.runInContext("panelPriceCheckShouldRenderCardStatus('updated')", sandbox),
+  vm.runInContext("panelPriceCheckShouldPulsePrice('updated')", sandbox),
   true
 );
 assert.equal(
