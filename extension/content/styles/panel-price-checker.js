@@ -140,6 +140,57 @@ function panelPriceCheckerStyles() {
       animation: wpCardPriceCount 720ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
+    .wp-price-check-line {
+      min-width: 0;
+      max-width: 100%;
+      color: rgba(8, 11, 16, 0.42);
+      font-family: var(--ui-font);
+      font-size: var(--text-micro);
+      font-weight: 680;
+      line-height: 1.2;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .wp-price-check-line.is-down {
+      color: #0f8f64;
+    }
+
+    .wp-price-check-line.is-up {
+      color: #b42318;
+    }
+
+    .wp-price-check-line.is-missed {
+      color: rgba(8, 11, 16, 0.34);
+    }
+
+    .wp-price-check-line.is-updated {
+      color: rgba(8, 84, 154, 0.62);
+    }
+
+    .wp-price-check-compact {
+      display: none;
+    }
+
+    .wp-compact-price .wp-price-check-line {
+      max-width: 100%;
+      justify-self: end;
+      font-size: var(--text-micro);
+      font-weight: 700;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wp-compact-price .wp-price-check-detail {
+      display: none;
+    }
+
+    .wp-compact-price .wp-price-check-compact {
+      display: inline;
+    }
+
     .wp-theme-graphite .wp-price-checker {
       color: rgba(244, 244, 240, 0.72);
     }
@@ -179,6 +230,26 @@ function panelPriceCheckerStyles() {
 
     .wp-theme-graphite .wp-price-check-summary.is-missed {
       color: rgba(244, 244, 240, 0.34);
+    }
+
+    .wp-theme-graphite .wp-price-check-line {
+      color: rgba(244, 244, 240, 0.44);
+    }
+
+    .wp-theme-graphite .wp-price-check-line.is-down {
+      color: #53d29f;
+    }
+
+    .wp-theme-graphite .wp-price-check-line.is-up {
+      color: #ff7a72;
+    }
+
+    .wp-theme-graphite .wp-price-check-line.is-missed {
+      color: rgba(244, 244, 240, 0.34);
+    }
+
+    .wp-theme-graphite .wp-price-check-line.is-updated {
+      color: rgba(134, 191, 255, 0.68);
     }
 
     @keyframes wpPriceCheckSpin {

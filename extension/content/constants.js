@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-25-price-checker-live-sale-v105";
+var CONTENT_VERSION = "2026-06-25-price-missed-hidden-v113";
 
 
 var STORAGE_KEY = "tuckio.items.v1";
@@ -146,6 +146,7 @@ var RATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 var PANEL_SORT_FIELD_RECENT = "recent";
 var PANEL_SORT_FIELD_NAME = "name";
 var PANEL_SORT_FIELD_PRICE = "price";
+var PANEL_SORT_FIELD_PRICE_DROP = "priceDrop";
 var PANEL_SORT_ASC = "asc";
 var PANEL_SORT_DESC = "desc";
 var BRAND_ALIASES = new Map([

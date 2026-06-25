@@ -8,6 +8,7 @@ const sandbox = {
   PANEL_SORT_FIELD_RECENT: "recent",
   PANEL_SORT_FIELD_NAME: "name",
   PANEL_SORT_FIELD_PRICE: "price",
+  PANEL_SORT_FIELD_PRICE_DROP: "priceDrop",
   PANEL_SORT_ASC: "asc",
   PANEL_SORT_DESC: "desc",
   panelState: {
@@ -45,6 +46,10 @@ const filtersSource = fs.readFileSync(
   path.join(root, "extension/content/panel/filters.js"),
   "utf8"
 );
+const filterRailSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/filter-rail.js"),
+  "utf8"
+);
 const compactViewSource = fs.readFileSync(
   path.join(root, "extension/content/panel/compact-view.js"),
   "utf8"
@@ -63,7 +68,7 @@ const decisionsSource = fs.readFileSync(
 );
 
 vm.runInContext(
-  `${filterControlsSource}\n${filtersSource}\n${sortSource}`,
+  `${filterControlsSource}\n${filtersSource}\n${filterRailSource}\n${sortSource}`,
   sandbox,
   { filename: "content/panel/sort.js" }
 );
@@ -77,10 +82,10 @@ const filterStylesSource = fs.readFileSync(
   path.join(root, "extension/content/styles/panel-4.js"),
   "utf8"
 );
-const filterMenuStylesSource = fs.readFileSync(
-  path.join(root, "extension/content/styles/panel-filter-menu.js"),
-  "utf8"
-);
+const filterMenuStylesSource = [
+  "extension/content/styles/panel-filter-menu.js",
+  "extension/content/styles/panel-filter-menu-popover.js"
+].map((file) => fs.readFileSync(path.join(root, file), "utf8")).join("\n");
 
 assert.match(
   sortStylesSource,
@@ -133,17 +138,17 @@ assert.match(
   "View toggle should be hidden while the brand cloud owns the view"
 );
 assert.match(
-  filtersSource,
+  filterRailSource,
   /panelFilterRailIsCrowded[\s\S]*?getBoundingClientRect[\s\S]*?rect\.right > rightEdge/,
   "Crowding detection should catch clipped chip geometry, not only scroll width"
 );
 assert.match(
-  filtersSource,
+  filterRailSource,
   /scrollPanelFilterChipIntoView\(rail, active\);[\s\S]*?applyPanelFilterCrowding\(root, rail\);[\s\S]*?scrollPanelFilterChipIntoView\(rail, active\);/,
   "Active filter chips should be scrolled into view before and after crowded compaction"
 );
 assert.match(
-  filtersSource,
+  filterRailSource,
   /ResizeObserver[\s\S]*?schedulePanelFilterRailLayout\(root\)/,
   "Crowding should be remeasured when the rail or right-side controls resize"
 );
@@ -501,9 +506,21 @@ assert.match(
 );
 
 const items = [
-  { title: "Cabin", brand: "RIMOWA", createdAt: "2026-06-18T10:00:00.000Z", price: { rubAmount: 300 } },
+  {
+    title: "Cabin",
+    brand: "RIMOWA",
+    createdAt: "2026-06-18T10:00:00.000Z",
+    price: { rubAmount: 300 },
+    priceCheck: { state: "down", deltaRubAmount: -50, checkedAt: "2026-06-23T10:00:00.000Z" }
+  },
   { title: "Alpha Bag", brand: "Loewe", createdAt: "2026-06-20T10:00:00.000Z", price: { rubAmount: 100 } },
-  { title: "Zip Hoodie", brand: "LIME", createdAt: "2026-06-19T10:00:00.000Z", price: { rubAmount: 200 } }
+  {
+    title: "Zip Hoodie",
+    brand: "LIME",
+    createdAt: "2026-06-19T10:00:00.000Z",
+    price: { rubAmount: 200 },
+    priceCheck: { state: "down", deltaRubAmount: -200, checkedAt: "2026-06-24T10:00:00.000Z" }
+  }
 ];
 
 sandbox.panelScopedItems = (candidateItems) => candidateItems;
@@ -618,6 +635,7 @@ assert.deepEqual(sortedTitles("name", "asc"), ["Alpha Bag", "Cabin", "Zip Hoodie
 assert.deepEqual(sortedTitles("name", "desc"), ["Zip Hoodie", "Cabin", "Alpha Bag"]);
 assert.deepEqual(sortedTitles("price", "asc"), ["Alpha Bag", "Zip Hoodie", "Cabin"]);
 assert.deepEqual(sortedTitles("price", "desc"), ["Cabin", "Zip Hoodie", "Alpha Bag"]);
+assert.deepEqual(sortedTitles("priceDrop", "desc"), ["Zip Hoodie", "Cabin", "Alpha Bag"]);
 
 let renderedItems = 0;
 let reorderedItems = 0;

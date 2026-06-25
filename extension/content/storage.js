@@ -3,9 +3,12 @@ async function upsertItem(item) {
   const currentItems = Array.isArray(stored[STORAGE_KEY])
     ? stored[STORAGE_KEY]
     : [];
+  const itemKey = productIdentityKey(item.url) || item.url;
   const nextItems = [
     item,
-    ...currentItems.filter((existing) => existing.url !== item.url)
+    ...currentItems.filter((existing) =>
+      (productIdentityKey(existing.url) || existing.url) !== itemKey
+    )
   ].slice(0, 300);
 
   const storedItems = await setLocalStorageValue(STORAGE_KEY, nextItems);
@@ -16,7 +19,7 @@ async function setLocalStorageValue(key, value) {
   assertKnownStorageKeys(key);
   const sanitized = sanitizeStorageValue(storageValueForWrite(key, value));
   try {
-    await chrome.storage.local.set({ [key]: sanitized });
+    await setTuckioLocalStorageValue(key, sanitized);
     return sanitized;
   } catch (error) {
     if (shouldRetryStorageQuotaWrite(key, value, error)) {
@@ -85,6 +88,8 @@ function compactSavedItemForStorage(item, options = {}) {
     title: normalized.title,
     brand: normalized.brand,
     price: storedPrice,
+    priceCheck: compactStoragePriceCheck(item.priceCheck),
+    extraction: normalizeExtractionQuality(item.extraction),
     category: normalized.category,
     shortlistedAt: compactStorageDate(item.shortlistedAt),
     decision: compactStorageDecision(item.decision),

@@ -8,7 +8,7 @@ async function retryQuotaStorageWrite(key, value, sanitized, initialError) {
 
   for (const retryValue of storageQuotaRetryValues(key, value, sanitized)) {
     try {
-      await chrome.storage.local.set({ [key]: retryValue });
+      await setTuckioLocalStorageValue(key, retryValue);
       return retryValue;
     } catch (error) {
       lastError = error;
@@ -31,7 +31,7 @@ async function resetOversizedStorageKeyAndWriteTinyValue(key, value, initialErro
   const tinyValue = sanitizeStorageValue(storageValueForWrite(key, value, { mode: "tiny" }));
   try {
     await removeStorageKeys([key, LEGACY_STORAGE_KEYS.get(key)]);
-    await chrome.storage.local.set({ [key]: tinyValue });
+    await setTuckioLocalStorageValue(key, tinyValue);
     return tinyValue;
   } catch (error) {
     throw normalizeExtensionError(error || initialError);

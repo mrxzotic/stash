@@ -84,6 +84,33 @@ function sameProductPageUrl(left, right) {
   }
 }
 
+function productIdentityKey(value) {
+  try {
+    const url = new URL(value || location.href, location.href);
+    if (!/^https?:$/i.test(url.protocol)) {
+      return "";
+    }
+
+    url.hash = "";
+    const origin = url.origin.toLowerCase();
+    const handle = productHandleFromUrl(url);
+    if (handle) {
+      return `${origin}/products/${handle}`;
+    }
+
+    const pathname = url.pathname.replace(/\/+$/, "") || "/";
+    if (typeof isProductLikeUrl === "function" && isProductLikeUrl(url.toString())) {
+      return `${origin}${pathname}`;
+    }
+
+    const normalized = new URL(normalizeUrl(url.toString()), location.href);
+    normalized.hash = "";
+    return normalized.toString();
+  } catch {
+    return cleanText(value);
+  }
+}
+
 function productHandleFromUrl(url) {
   return decodeURIComponent(url.pathname.match(/\/products\/([^/?#]+)/i)?.[1] || "")
     .toLocaleLowerCase();
@@ -283,9 +310,10 @@ function formatSummaryCurrency(value, currency) {
 }
 
 function productId(url) {
+  const identity = productIdentityKey(url) || cleanText(url);
   let hash = 0;
-  for (let index = 0; index < url.length; index += 1) {
-    hash = (hash << 5) - hash + url.charCodeAt(index);
+  for (let index = 0; index < identity.length; index += 1) {
+    hash = (hash << 5) - hash + identity.charCodeAt(index);
     hash |= 0;
   }
   return `tuckio-${Math.abs(hash)}`;

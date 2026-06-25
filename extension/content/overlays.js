@@ -193,10 +193,12 @@ async function cancelSavedOverlayAddition(root, item) {
   const currentItems = Array.isArray(stored[STORAGE_KEY]) ? stored[STORAGE_KEY] : [];
   const itemId = item.id || productId(item.url);
   const itemUrl = normalizeUrl(item.url);
+  const itemKey = productIdentityKey(itemUrl) || itemUrl;
   const nextItems = currentItems.filter((savedItem) => {
     const savedUrl = normalizeUrl(savedItem.url);
     const savedId = savedItem.id || productId(savedUrl);
-    return savedId !== itemId && savedUrl !== itemUrl;
+    const savedKey = productIdentityKey(savedUrl) || savedUrl;
+    return savedId !== itemId && savedUrl !== itemUrl && savedKey !== itemKey;
   });
 
   await setLocalStorageValue(STORAGE_KEY, nextItems);

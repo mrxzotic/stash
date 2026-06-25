@@ -44,7 +44,9 @@ async function checkPanelPrices() {
 
   const checked = [];
   let nextItems = panelState.items;
-  let changed = false;
+  let shouldStore = false;
+  let priceChanged = false;
+  const checkedAt = new Date().toISOString();
 
   panelPriceCheckRunning = true;
   syncPanelPriceCheckerButton(root);
@@ -52,24 +54,28 @@ async function checkPanelPrices() {
   try {
     for (const item of items) {
       const price = await fetchPanelItemPrice(item);
-      const updatedItem = price ? await panelItemWithCheckedPrice(item, price) : null;
-      const state = updatedItem ? panelPriceCheckState(item, updatedItem) : "missed";
-      if (updatedItem && panelItemPriceChanged(item, updatedItem)) {
-        nextItems = replacePanelPriceCheckItem(nextItems, updatedItem);
-        panelState.items = nextItems;
-        changed = true;
-        checked.push({ id: item.id, state });
-      } else {
-        checked.push({ id: item.id, state });
-      }
+      const updatedItem = price
+        ? await panelItemWithCheckedPrice(item, price, checkedAt)
+        : panelItemWithMissedPriceCheck(item, checkedAt);
+      const state = updatedItem.priceCheck?.state || "missed";
+
+      nextItems = replacePanelPriceCheckItem(nextItems, updatedItem);
+      panelState.items = nextItems;
+      shouldStore = true;
+      priceChanged = priceChanged || Boolean(price && panelItemPriceChanged(item, updatedItem));
+      checked.push({ id: item.id, state });
     }
 
-    if (changed) {
+    if (shouldStore) {
       const storedItems = await setLocalStorageValue(STORAGE_KEY, nextItems);
       panelState.items = Array.isArray(storedItems) ? storedItems : nextItems;
-      renderPanelItemsOnly(root);
-      renderPanelSummaryOnly({ animate: true });
-      refreshPanelSummaryRate({ animateSummary: true });
+      if (priceChanged) {
+        renderPanelItemsOnly(root);
+        renderPanelSummaryOnly({ animate: true });
+        refreshPanelSummaryRate({ animateSummary: true });
+      } else {
+        renderPanelPricesOnly();
+      }
     }
 
     showPanelPriceCheckSummaryStatus(root, checked);
@@ -179,85 +185,6 @@ function normalizeCheckedPrice(product, productUrl) {
   return Number.isFinite(price.amount) && price.currency ? price : null;
 }
 
-async function panelItemWithCheckedPrice(item, price) {
-  const rubPrice = await convertPriceToRub(price);
-  const nextPrice = {
-    amount: price.amount,
-    currency: price.currency,
-    originalText: price.originalText,
-    compareAtAmount: price.compareAtAmount,
-    compareAtText: price.compareAtText,
-    isSale: price.isSale,
-    rubAmount: rubPrice.amount,
-    rubText: rubPrice.text,
-    rate: rubPrice.rate,
-    rateSource: rubPrice.source
-  };
-
-  return {
-    ...item,
-    price: nextPrice,
-    priceText: price.originalText,
-    priceAmount: price.amount,
-    currency: price.currency,
-    compareAtPriceText: price.compareAtText,
-    compareAtPriceAmount: price.compareAtAmount,
-    isSale: price.isSale,
-    rubPriceText: rubPrice.text,
-    rubPriceAmount: rubPrice.amount,
-    updatedAt: new Date().toISOString()
-  };
-}
-
-function panelItemPriceChanged(currentItem, nextItem) {
-  const current = normalizePanelItem(currentItem).price || {};
-  const next = normalizePanelItem(nextItem).price || {};
-  return [
-    "amount",
-    "currency",
-    "compareAtAmount",
-    "compareAtText",
-    "isSale",
-    "rubAmount"
-  ].some((key) => cleanText(current[key]) !== cleanText(next[key]));
-}
-
-function panelPriceCheckState(currentItem, nextItem) {
-  const current = normalizePanelItem(currentItem).price || {};
-  const next = normalizePanelItem(nextItem).price || {};
-  const delta = panelPriceCheckPriceDelta(current, next);
-  if (Number.isFinite(delta) && delta < 0) {
-    return "down";
-  }
-  if (Number.isFinite(delta) && delta > 0) {
-    return "up";
-  }
-  return panelItemPriceChanged(currentItem, nextItem) ? "updated" : "same";
-}
-
-function panelPriceCheckPriceDelta(current, next) {
-  const currentRub = numericPrice(current.rubAmount);
-  const nextRub = numericPrice(next.rubAmount);
-  if (Number.isFinite(currentRub) && Number.isFinite(nextRub)) {
-    return nextRub - currentRub;
-  }
-
-  const currentCurrency = cleanText(current.currency).toUpperCase();
-  const nextCurrency = cleanText(next.currency).toUpperCase();
-  const currentAmount = numericPrice(current.amount);
-  const nextAmount = numericPrice(next.amount);
-  if (currentCurrency && currentCurrency === nextCurrency && Number.isFinite(currentAmount) && Number.isFinite(nextAmount)) {
-    return nextAmount - currentAmount;
-  }
-
-  return undefined;
-}
-
-function replacePanelPriceCheckItem(items, updatedItem) {
-  const id = normalizePanelItem(updatedItem).id;
-  return items.map((item) => normalizePanelItem(item).id === id ? updatedItem : item);
-}
-
 function syncPanelPriceCheckerButton(root = document.getElementById("tuckio-panel-root")?.shadowRoot) {
   const button = root?.querySelector?.("[data-price-checker-trigger]");
   if (!button) {
@@ -345,7 +272,7 @@ function panelPriceCheckSummaryStateFor(checked) {
 }
 
 function animatePanelPriceCheckCards(root, checked) {
-  checked.forEach((entry, index) => {
+  checked.filter((entry) => panelPriceCheckShouldRenderCardStatus(entry?.state)).forEach((entry, index) => {
     const card = root.querySelector(`[data-panel-item-id="${CSS.escape(entry.id)}"]`);
     if (!card) {
       return;
@@ -359,10 +286,13 @@ function restartPanelPriceCheckCardMotion(card, state) {
   card.querySelector?.(".wp-price-check-status")?.remove();
   card.classList.remove("is-price-check-up", "is-price-check-down", "is-price-check-updated");
   void card.offsetWidth;
-  card.appendChild(elementFromHtml(renderPanelPriceCheckStatusIcon(state)));
-  if (state === "up" || state === "down" || state === "updated") {
-    card.classList.add(`is-price-check-${state}`);
+  if (!panelPriceCheckShouldRenderCardStatus(state)) {
+    card.__tuckioPriceCheckTimer = 0;
+    return;
   }
+
+  card.appendChild(elementFromHtml(renderPanelPriceCheckStatusIcon(state)));
+  card.classList.add(`is-price-check-${panelPriceCheckSafeState(state)}`);
   card.__tuckioPriceCheckTimer = window.setTimeout(() => {
     card.querySelector?.(".wp-price-check-status")?.remove();
     card.classList.remove("is-price-check-up", "is-price-check-down", "is-price-check-updated");
@@ -373,6 +303,10 @@ function restartPanelPriceCheckCardMotion(card, state) {
 function renderPanelPriceCheckStatusIcon(state) {
   const safeState = panelPriceCheckSafeState(state);
   return `<span class="wp-price-check-status is-${safeState}" aria-hidden="true">${renderPanelPriceCheckGlyph(safeState, "wp-price-check-status-icon")}</span>`;
+}
+
+function panelPriceCheckShouldRenderCardStatus(state) {
+  return /^(up|down|updated)$/.test(panelPriceCheckSafeState(state));
 }
 
 function renderPanelPriceCheckGlyph(state, className) {

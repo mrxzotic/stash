@@ -8,6 +8,10 @@ const archiveSource = fs.readFileSync(
   path.join(root, "extension/content/panel/archive.js"),
   "utf8"
 );
+const shortlistSyncSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/shortlist-sync.js"),
+  "utf8"
+);
 const decisionsSource = fs.readFileSync(
   path.join(root, "extension/content/panel/decisions.js"),
   "utf8"
@@ -62,6 +66,7 @@ const sandbox = {
 vm.createContext(sandbox);
 vm.runInContext(decisionsSource, sandbox, { filename: "content/panel/decisions.js" });
 vm.runInContext(archiveSource, sandbox, { filename: "content/panel/archive.js" });
+vm.runInContext(shortlistSyncSource, sandbox, { filename: "content/panel/shortlist-sync.js" });
 
 const summaryScopeItems = [
   { id: "active-item", title: "Active", url: "https://example.com/active" },

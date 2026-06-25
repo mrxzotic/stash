@@ -41,6 +41,7 @@ function panelSortOptions() {
     { field: PANEL_SORT_FIELD_NAME, direction: PANEL_SORT_DESC, label: t("Name Z-A"), shortLabel: t("Name") },
     { field: PANEL_SORT_FIELD_PRICE, direction: PANEL_SORT_ASC, label: t("Price low-high"), shortLabel: t("Price") },
     { field: PANEL_SORT_FIELD_PRICE, direction: PANEL_SORT_DESC, label: t("Price high-low"), shortLabel: t("Price") },
+    { field: PANEL_SORT_FIELD_PRICE_DROP, direction: PANEL_SORT_DESC, label: t("Price drops"), shortLabel: t("Price") },
     { field: PANEL_SORT_FIELD_RECENT, direction: PANEL_SORT_DESC, label: t("Date newest"), shortLabel: t("Date") },
     { field: PANEL_SORT_FIELD_RECENT, direction: PANEL_SORT_ASC, label: t("Date oldest"), shortLabel: t("Date") }
   ];
@@ -265,6 +266,13 @@ function panelCompareSortEntries(left, right, sortField, sortDirection) {
     }
   }
 
+  if (sortField === PANEL_SORT_FIELD_PRICE_DROP) {
+    const comparison = panelComparePriceDropEntries(left.item, right.item);
+    if (comparison !== 0) {
+      return sortDirection === PANEL_SORT_ASC ? -comparison : comparison;
+    }
+  }
+
   return panelCompareRecentEntries(left, right, sortDirection);
 }
 
@@ -302,9 +310,45 @@ function panelComparePriceEntries(left, right) {
   return panelCompareNameEntries(left, right);
 }
 
+function panelComparePriceDropEntries(left, right) {
+  const leftDrop = panelPriceDropSortValue(left);
+  const rightDrop = panelPriceDropSortValue(right);
+  if (leftDrop !== rightDrop) {
+    return rightDrop - leftDrop;
+  }
+
+  const leftCheckedAt = panelPriceCheckSortTime(left);
+  const rightCheckedAt = panelPriceCheckSortTime(right);
+  if (leftCheckedAt !== rightCheckedAt) {
+    return rightCheckedAt - leftCheckedAt;
+  }
+
+  return 0;
+}
+
 function panelSortPrice(item) {
   const price = item?.price || normalizePanelPrice(item || {});
   return numericPrice(price.rubAmount ?? price.amount);
+}
+
+function panelPriceDropSortValue(item) {
+  const check = item?.priceCheck || {};
+  if (check.state !== "down") {
+    return 0;
+  }
+
+  const rubDelta = numericPrice(check.deltaRubAmount);
+  if (Number.isFinite(rubDelta) && rubDelta < 0) {
+    return Math.abs(rubDelta);
+  }
+
+  const delta = numericPrice(check.deltaAmount);
+  return Number.isFinite(delta) && delta < 0 ? Math.abs(delta) : 0;
+}
+
+function panelPriceCheckSortTime(item) {
+  const time = Date.parse(item?.priceCheck?.checkedAt || "");
+  return Number.isFinite(time) ? time : 0;
 }
 
 function panelSortText(value) {
@@ -325,6 +369,7 @@ function panelDefaultSortDirection(field) {
 function isPanelSortField(value) {
   return value === PANEL_SORT_FIELD_NAME ||
     value === PANEL_SORT_FIELD_PRICE ||
+    value === PANEL_SORT_FIELD_PRICE_DROP ||
     value === PANEL_SORT_FIELD_RECENT;
 }
 

@@ -1,4 +1,5 @@
 function renderTuckioPanel(options = {}) {
+  if (tuckioPanelRenderSuppressedForLocalWrite()) return;
   const root = getPanelRoot();
   const previousItemRects = panelState.hasRenderedPanel ? capturePanelItemLayout(root) : null;
   const rebuildMotionClass = panelState.hasRenderedPanel
@@ -359,7 +360,6 @@ function bindImageFallbacks(root) {
       fallback();
     }
   });
-
 }
 
 function replaceBrokenProductImage(image) {
