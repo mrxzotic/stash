@@ -1,6 +1,6 @@
 async function panelItemWithCheckedPrice(item, price, checkedAt = new Date().toISOString()) {
   const previousPrice = normalizePanelItem(item).price || {};
-  const nextPrice = {
+  const checkedPrice = {
     amount: price.amount,
     currency: price.currency,
     originalText: price.originalText,
@@ -8,15 +8,18 @@ async function panelItemWithCheckedPrice(item, price, checkedAt = new Date().toI
     compareAtText: price.compareAtText,
     isSale: price.isSale
   };
+  const nextPrice = panelPriceCheckShouldKeepCurrentP448Sale(item, checkedPrice)
+    ? previousPrice
+    : checkedPrice;
   const nextItem = {
     ...item,
     price: nextPrice,
-    priceText: price.originalText,
-    priceAmount: price.amount,
-    currency: price.currency,
-    compareAtPriceText: price.compareAtText,
-    compareAtPriceAmount: price.compareAtAmount,
-    isSale: price.isSale,
+    priceText: nextPrice.originalText,
+    priceAmount: nextPrice.amount,
+    currency: nextPrice.currency,
+    compareAtPriceText: nextPrice.compareAtText,
+    compareAtPriceAmount: nextPrice.compareAtAmount,
+    isSale: nextPrice.isSale,
     updatedAt: checkedAt
   };
   const currentPrice = normalizePanelItem(nextItem).price || nextPrice;
@@ -39,6 +42,13 @@ function panelItemWithMissedPriceCheck(item, checkedAt = new Date().toISOString(
 }
 
 function panelItemPriceChanged(currentItem, nextItem) {
+  if (
+    panelPriceCheckIsP448SaleParserCorrection(currentItem, nextItem) ||
+    panelPriceCheckShouldKeepCurrentP448Sale(currentItem, normalizePanelItem(nextItem).price || nextItem?.price || {})
+  ) {
+    return false;
+  }
+
   const current = normalizePanelItem(currentItem).price || {};
   const next = normalizePanelItem(nextItem).price || {};
   return [
@@ -51,6 +61,13 @@ function panelItemPriceChanged(currentItem, nextItem) {
 }
 
 function panelPriceCheckState(currentItem, nextItem) {
+  if (
+    panelPriceCheckIsP448SaleParserCorrection(currentItem, nextItem) ||
+    panelPriceCheckShouldKeepCurrentP448Sale(currentItem, normalizePanelItem(nextItem).price || nextItem?.price || {})
+  ) {
+    return "same";
+  }
+
   const current = normalizePanelItem(currentItem).price || {};
   const next = normalizePanelItem(nextItem).price || {};
   const delta = panelPriceCheckPriceDelta(current, next);
@@ -83,13 +100,16 @@ function replacePanelPriceCheckItem(items, updatedItem) {
 function panelPriceCheckMeta(previousPrice, currentPrice, state, checkedAt) {
   const previous = panelPriceCheckSnapshot(previousPrice);
   const current = panelPriceCheckSnapshot(currentPrice);
+  const deltaAmount = /^(up|down)$/.test(state)
+    ? panelPriceCheckAmountDelta(previous, current)
+    : undefined;
 
   return panelPriceCheckCompactObject({
     checkedAt: cleanText(checkedAt),
     state: panelPriceCheckSafeResultState(state),
     previous,
     current,
-    deltaAmount: panelPriceCheckAmountDelta(previous, current)
+    deltaAmount
   });
 }
 
@@ -123,6 +143,64 @@ function panelPriceCheckFiniteNumber(value) {
 
 function panelPriceCheckSafeResultState(state) {
   return /^(same|up|down|updated|missed)$/.test(state) ? state : "same";
+}
+
+function panelPriceCheckIsP448SaleParserCorrection(currentItem, nextItem) {
+  if (!panelPriceCheckIsP448Url(currentItem?.url || nextItem?.url)) {
+    return false;
+  }
+
+  const current = normalizePanelItem(currentItem).price || {};
+  const next = normalizePanelItem(nextItem).price || {};
+  const currentCurrency = cleanText(current.currency).toUpperCase();
+  const nextCurrency = cleanText(next.currency).toUpperCase();
+  const currentAmount = numericPrice(current.amount);
+  const nextAmount = numericPrice(next.amount);
+  const nextCompareAtAmount = numericPrice(next.compareAtAmount);
+  return Boolean(
+    currentCurrency &&
+      currentCurrency === nextCurrency &&
+      next.isSale === true &&
+      Number.isFinite(currentAmount) &&
+      Number.isFinite(nextAmount) &&
+      Number.isFinite(nextCompareAtAmount) &&
+      nextAmount < nextCompareAtAmount &&
+      Math.abs(currentAmount - nextCompareAtAmount) < 0.01 &&
+      !current.isSale
+  );
+}
+
+function panelPriceCheckShouldKeepCurrentP448Sale(currentItem, checkedPrice) {
+  if (!panelPriceCheckIsP448Url(currentItem?.url)) {
+    return false;
+  }
+
+  const current = normalizePanelItem(currentItem).price || {};
+  const currentCurrency = cleanText(current.currency).toUpperCase();
+  const nextCurrency = cleanText(checkedPrice?.currency).toUpperCase();
+  const currentAmount = numericPrice(current.amount);
+  const currentCompareAtAmount = numericPrice(current.compareAtAmount);
+  const nextAmount = numericPrice(checkedPrice?.amount);
+  return Boolean(
+    currentCurrency &&
+      currentCurrency === nextCurrency &&
+      current.isSale === true &&
+      checkedPrice?.isSale !== true &&
+      Number.isFinite(currentAmount) &&
+      Number.isFinite(currentCompareAtAmount) &&
+      Number.isFinite(nextAmount) &&
+      currentAmount < currentCompareAtAmount &&
+      Math.abs(nextAmount - currentCompareAtAmount) < 0.01
+  );
+}
+
+function panelPriceCheckIsP448Url(value) {
+  try {
+    const url = new URL(value || location.href, location.href);
+    return /^(?:.+\.)?p448\.com$/i.test(url.hostname) && /\/products\//i.test(url.pathname);
+  } catch {
+    return false;
+  }
 }
 
 function panelPriceCheckCompactObject(object) {

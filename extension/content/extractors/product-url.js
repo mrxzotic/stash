@@ -34,6 +34,15 @@ function isNikeProductUrl(value) {
   }
 }
 
+function isP448ProductUrl(value) {
+  try {
+    const url = new URL(value, location.href);
+    return /^(?:.+\.)?p448\.com$/i.test(url.hostname) && /\/products\//i.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
 function looksLikeSkuProductPath(url) {
   const segments = url.pathname.split("/").filter(Boolean);
   const skuSegment = segments.at(-1) || "";

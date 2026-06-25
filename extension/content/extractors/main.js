@@ -138,7 +138,7 @@ function bestProductPrice({ commonSelectorProduct, pagePriceProduct, contextualP
       return priceWithoutCompareAt(visiblePrice);
     }
   }
-  if (hasVariantSelectionParam(url) || isAllSaintsProductUrl(url)) {
+  if (hasVariantSelectionParam(url) || isAllSaintsProductUrl(url) || isP448ProductUrl(url)) {
     const visiblePrice = bestPriceFromSources([pagePriceProduct, commonSelectorProduct]);
     if (Number.isFinite(visiblePrice.amount) && visiblePrice.currency) {
       return visiblePrice.isSale ? visiblePrice : priceWithoutCompareAt(visiblePrice);

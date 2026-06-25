@@ -105,10 +105,10 @@ const sandbox = {
     imageUrls: item.imageUrls || [],
     price: item.price || {}
   }),
-  normalizeProductImageUrls: (urls, fallback, limit) => [
-    ...(Array.isArray(urls) ? urls : []),
-    fallback
-  ].filter(Boolean).slice(0, limit),
+  normalizeProductImageUrls: (urls, fallback, limit) => Array.from(new Set([
+    fallback,
+    ...(Array.isArray(urls) ? urls : [])
+  ].filter(Boolean))).slice(0, limit),
   cleanText: (value) => String(value || "").trim(),
   sourceNameFromUrl: () => "Example",
   normalizeExtensionError: (error) => error
@@ -145,6 +145,34 @@ async function run() {
     assert.equal(item.priceCheck.deltaRubAmount, undefined);
     assert.equal(item.extraction.needsReview, true);
     assert.equal(item.extraction.fields.title.confidence, 0.42);
+  }
+
+  sandbox.twoImageItem = {
+    ...sampleItem,
+    id: "two-images",
+    imageUrl: "https://example.com/a.jpg",
+    imageUrls: ["https://example.com/a.jpg", "https://example.com/b.jpg"],
+    priceCheck: undefined
+  };
+  await vm.runInContext("setLocalStorageValue(STORAGE_KEY, [twoImageItem])", sandbox);
+  {
+    const item = sandbox.payload["tuckio.items.v1"][0];
+    assert.equal(item.imageUrls.length, 2);
+    assert.deepEqual(item.imageUrls, ["https://example.com/a.jpg", "https://example.com/b.jpg"]);
+  }
+
+  sandbox.oneImageItem = {
+    ...sampleItem,
+    id: "one-image",
+    imageUrl: "https://example.com/only.jpg",
+    imageUrls: [],
+    priceCheck: undefined
+  };
+  await vm.runInContext("setLocalStorageValue(STORAGE_KEY, [oneImageItem])", sandbox);
+  {
+    const item = sandbox.payload["tuckio.items.v1"][0];
+    assert.equal(item.imageUrls.length, 1);
+    assert.deepEqual(item.imageUrls, ["https://example.com/only.jpg"]);
   }
 
   sandbox.writes = [];

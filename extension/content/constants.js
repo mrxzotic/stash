@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-25-native-currency-display-v117";
+var CONTENT_VERSION = "2026-06-25-p448-price-check-v118";
 
 
 var STORAGE_KEY = "tuckio.items.v1";
