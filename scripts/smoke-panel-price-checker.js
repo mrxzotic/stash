@@ -44,12 +44,6 @@ const sandbox = {
   URL,
   STORAGE_KEY: "tuckio.items.v1",
   cleanText: (value) => String(value || "").trim(),
-  convertPriceToRub: async (price) => ({
-    amount: Math.round(price.amount * 90),
-    rate: 90,
-    source: "test",
-    text: `${Math.round(price.amount * 90)} RUB`
-  }),
   document: {
     getElementById: () => ({ shadowRoot })
   },
@@ -70,17 +64,17 @@ const sandbox = {
       {
         id: "active",
         url: "https://shop.test/product-a",
-        price: { amount: 100, currency: "USD", rubAmount: 9000 }
+        price: { amount: 100, currency: "USD" }
       },
       {
         id: "missing",
         url: "https://shop.test/product-c",
-        price: { amount: 45, currency: "USD", originalText: "$45", rubAmount: 4050 }
+        price: { amount: 45, currency: "USD", originalText: "$45" }
       },
       {
         id: "archived",
         url: "https://shop.test/product-b",
-        price: { amount: 120, currency: "USD", rubAmount: 10800 },
+        price: { amount: 120, currency: "USD" },
         archivedAt: "2026-06-24T20:00:00.000Z"
       }
     ]
@@ -142,7 +136,7 @@ assert.equal(
   "same"
 );
 assert.equal(
-  vm.runInContext("panelPriceCheckState(panelState.items[0], { ...panelState.items[0], price: { amount: 120, currency: 'USD', rubAmount: 10800 } })", sandbox),
+  vm.runInContext("panelPriceCheckState(panelState.items[0], { ...panelState.items[0], price: { amount: 120, currency: 'USD' } })", sandbox),
   "up"
 );
 assert.match(
@@ -202,12 +196,12 @@ vm.runInContext("checkPanelPrices()", sandbox)
   .then(() => {
     assert.equal(sandbox.stored.key, "tuckio.items.v1");
     assert.equal(sandbox.panelState.items[0].price.amount, 80);
-    assert.equal(sandbox.panelState.items[0].rubPriceAmount, 7200);
+    assert.equal(sandbox.panelState.items[0].rubPriceAmount, undefined);
     assert.equal(sandbox.panelState.items[0].priceCheck.state, "down");
     assert.equal(sandbox.panelState.items[0].priceCheck.previous.amount, 100);
     assert.equal(sandbox.panelState.items[0].priceCheck.current.amount, 80);
     assert.equal(sandbox.panelState.items[0].priceCheck.deltaAmount, -20);
-    assert.equal(sandbox.panelState.items[0].priceCheck.deltaRubAmount, -1800);
+    assert.equal(sandbox.panelState.items[0].priceCheck.deltaRubAmount, undefined);
     assert.equal(sandbox.panelState.items[1].price.amount, 45);
     assert.equal(sandbox.panelState.items[1].priceCheck.state, "missed");
     assert.equal(sandbox.panelState.items[1].priceCheck.current.amount, 45);

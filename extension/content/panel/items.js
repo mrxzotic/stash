@@ -32,31 +32,14 @@ function normalizePanelPrice(item) {
     compareAtAmount: storedPrice.compareAtAmount ?? item.compareAtPriceAmount,
     compareAtText: storedPrice.compareAtText ?? item.compareAtPriceText
   }), item.url);
-  const storedRubAmount = numericPrice(storedPrice.rubAmount ?? item.rubPriceAmount);
-  const staleRub = parsed.currency === "RUB" && Number.isFinite(storedRubAmount) && storedRubAmount !== parsed.amount;
-  const rubAmount = staleRub ? parsed.amount : storedRubAmount ?? convertToRubSync(parsed.amount, parsed.currency);
-  const rubText = staleRub ? formatRubPrice(rubAmount) : storedPrice.rubText || item.rubPriceText || (Number.isFinite(rubAmount) ? formatRubPrice(rubAmount) : "");
-
   return {
     amount: parsed.amount,
     currency: parsed.currency,
     originalText: parsed.originalText,
     compareAtAmount: parsed.compareAtAmount,
     compareAtText: parsed.compareAtText,
-    isSale: parsed.isSale,
-    rubAmount,
-    rubText
+    isSale: parsed.isSale
   };
-}
-
-function convertToRubSync(amount, currency) {
-  const code = cleanText(currency).toUpperCase();
-  const rate = DEFAULT_RUB_RATES[code];
-  if (!Number.isFinite(amount) || !Number.isFinite(rate)) {
-    return undefined;
-  }
-
-  return Math.round(amount * rate);
 }
 
 function panelSummaryTextForItems(items) {
@@ -73,7 +56,6 @@ function panelItemsTotalSignature(items) {
     return [
       normalized.id,
       isPanelItemArchived(normalized) ? "archived" : "active",
-      price.rubAmount,
       price.amount,
       price.currency
     ].join(":");
@@ -285,78 +267,6 @@ function syncPanelSelectControl(root, { selector, datasetKey, value, label, meta
   menu?.setAttribute("hidden", "");
 }
 
-function refreshPanelSummaryRate(options = {}) {
-  const currency = cleanText(panelState.summaryCurrency).toUpperCase();
-  const currentRate = panelState.summaryRate;
-  if (!panelState.open || !currency || panelState.summaryRateLoading === currency) {
-    return;
-  }
-
-  if (
-    currentRate?.currency === currency &&
-    Number.isFinite(currentRate.value) &&
-    Date.now() - currentRate.updatedAt < RATE_MAX_AGE_MS
-  ) {
-    return;
-  }
-
-  panelState.summaryRateLoading = currency;
-  getRubRate(currency)
-    .then((rate) => {
-      if (!panelState.open || panelState.summaryCurrency !== currency) {
-        return;
-      }
-
-      const fallbackRate = DEFAULT_RUB_RATES[currency];
-      panelState.summaryRate = {
-        currency,
-        value: Number.isFinite(rate.value) ? rate.value : fallbackRate,
-        source: rate.source || "fallback",
-        updatedAt: rate.updatedAt || Date.now()
-      };
-      renderPanelSummaryOnly({
-        animate: options.animateSummary,
-        skipWhileAnimating: true
-      });
-      renderPanelPricesOnly({
-        animate: options.animateSummary
-      });
-    })
-    .catch(() => {
-      const fallbackRate = DEFAULT_RUB_RATES[currency];
-      panelState.summaryRate = {
-        currency,
-        value: fallbackRate,
-        source: "fallback",
-        updatedAt: Date.now()
-      };
-      renderPanelSummaryOnly({
-        animate: options.animateSummary,
-        skipWhileAnimating: true
-      });
-      renderPanelPricesOnly({
-        animate: options.animateSummary
-      });
-    })
-    .finally(() => {
-      if (panelState.summaryRateLoading === currency) {
-        panelState.summaryRateLoading = "";
-      }
-    });
-}
-
-function fallbackSummaryRate(currency) {
-  const code = isSummaryCurrency(currency)
-    ? cleanText(currency).toUpperCase()
-    : DEFAULT_SETTINGS.summaryCurrency;
-  return {
-    currency: code,
-    value: DEFAULT_RUB_RATES[code],
-    source: "fallback",
-    updatedAt: 0
-  };
-}
-
 function panelItemMatchesSearch(item) {
   const query = cleanText(panelState.searchQuery).toLowerCase();
   if (!query) {
@@ -369,8 +279,7 @@ function panelItemMatchesSearch(item) {
     item.category,
     categoryLabelFor(panelState.categories, item.category),
     item.sourceDomain,
-    item.price.originalText,
-    item.price.rubText
+    item.price.originalText
   ]
     .filter(Boolean)
     .join(" ")

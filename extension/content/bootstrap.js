@@ -115,7 +115,7 @@ function handleTuckioStorageChange(changes, areaName) {
     summaryCurrencyChanged = panelState.summaryCurrency !== settings.summaryCurrency;
     const languageChanged = panelState.language !== settings.language;
     panelState.summaryCurrency = settings.summaryCurrency;
-    panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
+    panelState.summaryRate = defaultSummaryRate(settings.summaryCurrency);
     panelState.backgroundTheme = settings.backgroundTheme;
     panelState.compactView = settings.compactView;
     panelState.hoverHints = settings.hoverHints;

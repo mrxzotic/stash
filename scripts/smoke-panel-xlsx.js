@@ -40,7 +40,15 @@ const sandbox = {
   DataView,
   DEFAULT_SETTINGS: { summaryCurrency: "USD" },
   cleanText: (value) => String(value || "").trim(),
-  convertRubToDisplayAmount: (rubAmount, currency) => currency === "USD" ? rubAmount / 90 : undefined,
+  convertPriceToDisplayAmount: (amount, sourceCurrency, targetCurrency) => {
+    const rates = { RUB: 1, USD: 89, EUR: 96 };
+    const source = String(sourceCurrency || "").trim().toUpperCase();
+    const target = String(targetCurrency || "USD").trim().toUpperCase();
+    const value = Number(amount);
+    return Number.isFinite(value) && rates[source] && rates[target]
+      ? (value * rates[source]) / rates[target]
+      : undefined;
+  },
   formatOriginalPrice: (amount, currency) => `${Math.round(amount)} ${currency}`,
   isPanelItemArchived: (item) => Boolean(item.archivedAt),
   isSummaryCurrency: (currency) => ["USD", "EUR", "RUB"].includes(currency),
@@ -51,9 +59,9 @@ const sandbox = {
 vm.createContext(sandbox);
 vm.runInContext(xlsxSource, sandbox);
 const bytes = vm.runInContext(`buildTuckioExcelWorkbook([
-  { brand: "Acne Studios", title: "Logo T-Shirt", url: "https://shop.example/a", price: { amount: 100, currency: "EUR", rubAmount: 9000 } },
-  { brand: "No Link", title: "Draft", price: { amount: 50, currency: "USD", rubAmount: 4500 } },
-  { brand: "RIMOWA", title: "Cabin", url: "https://shop.example/b", archivedAt: "2026-06-24T00:00:00.000Z", price: { amount: 1200, currency: "USD", rubAmount: 108000 } }
+  { brand: "Acne Studios", title: "Logo T-Shirt", url: "https://shop.example/a", price: { amount: 100, currency: "EUR" } },
+  { brand: "No Link", title: "Draft", price: { amount: 50, currency: "USD" } },
+  { brand: "RIMOWA", title: "Cabin", url: "https://shop.example/b", archivedAt: "2026-06-24T00:00:00.000Z", price: { amount: 1200, currency: "USD" } }
 ], { summaryCurrency: "USD" })`, sandbox);
 const workbookText = Buffer.from(bytes).toString("utf8");
 
@@ -72,13 +80,13 @@ assert.match(workbookText, /formatCode="#,##0"/, "XLSX bytes should contain whol
 assert.doesNotMatch(workbookText, /\[object Object\]/, "Missing links should stay blank");
 
 const activeOnlyText = Buffer.from(vm.runInContext(`buildTuckioExcelWorkbook([
-  { brand: "Acne Studios", title: "Logo T-Shirt", url: "https://shop.example/a", price: { amount: 100, currency: "EUR", rubAmount: 9000 } }
+  { brand: "Acne Studios", title: "Logo T-Shirt", url: "https://shop.example/a", price: { amount: 100, currency: "EUR" } }
 ], { summaryCurrency: "USD" })`, sandbox)).toString("utf8");
 assert.match(activeOnlyText, /Wishlist/, "Active-only exports should keep Wishlist sheet");
 assert.doesNotMatch(activeOnlyText, /Archive/, "Active-only exports should omit empty Archive sheet");
 
 const archiveOnlyText = Buffer.from(vm.runInContext(`buildTuckioExcelWorkbook([
-  { brand: "RIMOWA", title: "Cabin", url: "https://shop.example/b", archivedAt: "2026-06-24T00:00:00.000Z", price: { amount: 1200, currency: "USD", rubAmount: 108000 } }
+  { brand: "RIMOWA", title: "Cabin", url: "https://shop.example/b", archivedAt: "2026-06-24T00:00:00.000Z", price: { amount: 1200, currency: "USD" } }
 ], { summaryCurrency: "USD" })`, sandbox)).toString("utf8");
 assert.doesNotMatch(archiveOnlyText, /Wishlist/, "Archive-only exports should omit empty Wishlist sheet");
 assert.match(archiveOnlyText, /Archive/, "Archive-only exports should keep Archive sheet");

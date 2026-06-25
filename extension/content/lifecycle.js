@@ -2,7 +2,7 @@ async function saveCurrentProduct(message) {
   const product = await enrichProduct(extractProduct(message.context || {}));
   const [categories, settings] = await Promise.all([getCategories(), getPanelSettings()]);
   panelState.summaryCurrency = settings.summaryCurrency;
-  panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
+  panelState.summaryRate = defaultSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
   panelState.hoverHints = settings.hoverHints;
@@ -167,7 +167,7 @@ async function loadPanelData() {
   panelState.categories = normalizeCategories(stored[CATEGORY_STORAGE_KEY]);
   const settings = normalizePanelSettings(stored[SETTINGS_STORAGE_KEY]);
   panelState.summaryCurrency = settings.summaryCurrency;
-  panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
+  panelState.summaryRate = defaultSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
   panelState.hoverHints = settings.hoverHints;

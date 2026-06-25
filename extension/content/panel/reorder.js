@@ -195,7 +195,6 @@ function panelItemRenderSignature(item, mode) {
     item.category,
     price.amount,
     price.currency,
-    price.rubAmount,
     price.compareAtAmount,
     (item.imageUrls || []).join("|"),
     item.imageUrl || ""

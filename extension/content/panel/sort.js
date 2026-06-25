@@ -327,8 +327,13 @@ function panelComparePriceDropEntries(left, right) {
 }
 
 function panelSortPrice(item) {
-  const price = item?.price || normalizePanelPrice(item || {});
-  return numericPrice(price.rubAmount ?? price.amount);
+  const normalized = item?.price ? item : normalizePanelItem(item || {});
+  if (typeof panelPriceAmountInCurrency === "function") {
+    return panelPriceAmountInCurrency(normalized, panelState.summaryCurrency);
+  }
+
+  const price = normalized.price || {};
+  return numericPrice(price.amount);
 }
 
 function panelPriceDropSortValue(item) {
@@ -337,13 +342,16 @@ function panelPriceDropSortValue(item) {
     return 0;
   }
 
-  const rubDelta = numericPrice(check.deltaRubAmount);
-  if (Number.isFinite(rubDelta) && rubDelta < 0) {
-    return Math.abs(rubDelta);
+  const delta = numericPrice(check.deltaAmount);
+  if (!Number.isFinite(delta) || delta >= 0) {
+    return 0;
   }
 
-  const delta = numericPrice(check.deltaAmount);
-  return Number.isFinite(delta) && delta < 0 ? Math.abs(delta) : 0;
+  const currency = cleanText(check.current?.currency || check.previous?.currency || item?.price?.currency).toUpperCase();
+  const converted = typeof convertPriceToDisplayAmount === "function"
+    ? convertPriceToDisplayAmount(Math.abs(delta), currency, panelState.summaryCurrency)
+    : undefined;
+  return Number.isFinite(converted) ? converted : 0;
 }
 
 function panelPriceCheckSortTime(item) {

@@ -42,14 +42,13 @@ const sampleItem = {
     "https://example.com/c.jpg",
     "https://example.com/d.jpg"
   ],
-  price: { amount: 1178, currency: "USD", originalText: "$1,178", rubAmount: 104842, rubText: "104842 RUB" },
+  price: { amount: 1178, currency: "USD", originalText: "$1,178" },
   priceCheck: {
     checkedAt: "2026-06-25T10:30:00.000Z",
     state: "down",
-    previous: { amount: 1200, currency: "USD", originalText: "$1,200", rubAmount: 106800 },
-    current: { amount: 1178, currency: "USD", originalText: "$1,178", rubAmount: 104842 },
-    deltaAmount: -22,
-    deltaRubAmount: -1958
+    previous: { amount: 1200, currency: "USD", originalText: "$1,200" },
+    current: { amount: 1178, currency: "USD", originalText: "$1,178" },
+    deltaAmount: -22
   },
   extraction: {
     needsReview: true,
@@ -143,7 +142,7 @@ async function run() {
     assert.equal(item.priceCheck.previous.amount, 1200);
     assert.equal(item.priceCheck.current.amount, 1178);
     assert.equal(item.priceCheck.deltaAmount, -22);
-    assert.equal(item.priceCheck.deltaRubAmount, -1958);
+    assert.equal(item.priceCheck.deltaRubAmount, undefined);
     assert.equal(item.extraction.needsReview, true);
     assert.equal(item.extraction.fields.title.confidence, 0.42);
   }

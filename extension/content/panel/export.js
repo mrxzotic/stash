@@ -85,7 +85,7 @@ async function importTuckioBackupFile(file) {
   panelState.items = nextItems;
   panelState.categories = categories;
   panelState.summaryCurrency = settings.summaryCurrency;
-  panelState.summaryRate = fallbackSummaryRate(settings.summaryCurrency);
+  panelState.summaryRate = defaultSummaryRate(settings.summaryCurrency);
   panelState.backgroundTheme = settings.backgroundTheme;
   panelState.compactView = settings.compactView;
   panelState.hoverHints = settings.hoverHints;
@@ -188,8 +188,6 @@ function normalizeImportedBackupItem(item, categories, importedAt) {
     compareAtPriceText: normalized.price.compareAtText,
     compareAtPriceAmount: normalized.price.compareAtAmount,
     isSale: normalized.price.isSale,
-    rubPriceText: normalized.price.rubText,
-    rubPriceAmount: normalized.price.rubAmount,
     extraction: normalizeExtractionQuality(item.extraction),
     imageUrl: normalized.imageUrls[0] || "",
     imageUrls: normalized.imageUrls,

@@ -96,11 +96,7 @@ function buildTuckioExcelSheet(items, summaryCurrency) {
 function excelConvertedPrice(price, summaryCurrency) {
   const nativeCurrency = cleanText(price.currency).toUpperCase();
   const amount = numericPrice(price.amount);
-  if (nativeCurrency === summaryCurrency && Number.isFinite(amount)) {
-    return amount;
-  }
-
-  return convertRubToDisplayAmount(numericPrice(price.rubAmount), summaryCurrency);
+  return convertPriceToDisplayAmount(amount, nativeCurrency, summaryCurrency);
 }
 
 function excelOriginalPrice(price) {

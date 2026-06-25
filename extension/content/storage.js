@@ -74,11 +74,7 @@ function compactSavedItemForStorage(item, options = {}) {
     originalText: price.originalText,
     compareAtAmount: price.compareAtAmount,
     compareAtText: price.compareAtText,
-    isSale: price.isSale,
-    rubAmount: price.rubAmount,
-    rubText: price.rubText,
-    rate: item.price?.rate,
-    rateSource: item.price?.rateSource
+    isSale: price.isSale
   });
   const coreItem = compactStorageObject({
     id: normalized.id,
@@ -118,8 +114,6 @@ function compactSavedItemForStorage(item, options = {}) {
     compareAtPriceText: price.compareAtText,
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
-    rubPriceText: price.rubText,
-    rubPriceAmount: price.rubAmount,
     imageUrl: imageUrls[0] || "",
     imageUrls,
     category: normalized.category,
@@ -274,7 +268,6 @@ async function normalizeItem(product, category, categories) {
     compareAtAmount: product.compareAtPriceAmount,
     compareAtText: product.compareAtPriceText
   }), url);
-  const rubPrice = await convertPriceToRub(price);
   const title =
     cleanProductTitle(stripPriceFromText(product.title), product.brand, url) ||
     "Saved Product";
@@ -297,11 +290,7 @@ async function normalizeItem(product, category, categories) {
       originalText: price.originalText,
       compareAtAmount: price.compareAtAmount,
       compareAtText: price.compareAtText,
-      isSale: price.isSale,
-      rubAmount: rubPrice.amount,
-      rubText: rubPrice.text,
-      rate: rubPrice.rate,
-      rateSource: rubPrice.source
+      isSale: price.isSale
     },
     priceText: price.originalText,
     priceAmount: price.amount,
@@ -309,8 +298,6 @@ async function normalizeItem(product, category, categories) {
     compareAtPriceText: price.compareAtText,
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
-    rubPriceText: rubPrice.text,
-    rubPriceAmount: rubPrice.amount,
     imageUrl: toAbsoluteUrl(product.imageUrl),
     imageUrls: normalizeProductImageUrls(product.imageUrls, product.imageUrl, SAVED_IMAGE_URL_LIMIT),
     extraction: normalizeExtractionQuality(product.extraction),
