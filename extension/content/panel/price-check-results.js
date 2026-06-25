@@ -8,9 +8,7 @@ async function panelItemWithCheckedPrice(item, price, checkedAt = new Date().toI
     compareAtText: price.compareAtText,
     isSale: price.isSale
   };
-  const nextPrice = panelPriceCheckShouldKeepCurrentP448Sale(item, checkedPrice)
-    ? previousPrice
-    : checkedPrice;
+  const nextPrice = checkedPrice;
   const nextItem = {
     ...item,
     price: nextPrice,
@@ -42,10 +40,7 @@ function panelItemWithMissedPriceCheck(item, checkedAt = new Date().toISOString(
 }
 
 function panelItemPriceChanged(currentItem, nextItem) {
-  if (
-    panelPriceCheckIsP448SaleParserCorrection(currentItem, nextItem) ||
-    panelPriceCheckShouldKeepCurrentP448Sale(currentItem, normalizePanelItem(nextItem).price || nextItem?.price || {})
-  ) {
+  if (panelPriceCheckIsP448FullPriceCorrection(currentItem, nextItem)) {
     return false;
   }
 
@@ -61,10 +56,7 @@ function panelItemPriceChanged(currentItem, nextItem) {
 }
 
 function panelPriceCheckState(currentItem, nextItem) {
-  if (
-    panelPriceCheckIsP448SaleParserCorrection(currentItem, nextItem) ||
-    panelPriceCheckShouldKeepCurrentP448Sale(currentItem, normalizePanelItem(nextItem).price || nextItem?.price || {})
-  ) {
+  if (panelPriceCheckIsP448FullPriceCorrection(currentItem, nextItem)) {
     return "same";
   }
 
@@ -145,7 +137,7 @@ function panelPriceCheckSafeResultState(state) {
   return /^(same|up|down|updated|missed)$/.test(state) ? state : "same";
 }
 
-function panelPriceCheckIsP448SaleParserCorrection(currentItem, nextItem) {
+function panelPriceCheckIsP448FullPriceCorrection(currentItem, nextItem) {
   if (!panelPriceCheckIsP448Url(currentItem?.url || nextItem?.url)) {
     return false;
   }
@@ -155,37 +147,13 @@ function panelPriceCheckIsP448SaleParserCorrection(currentItem, nextItem) {
   const currentCurrency = cleanText(current.currency).toUpperCase();
   const nextCurrency = cleanText(next.currency).toUpperCase();
   const currentAmount = numericPrice(current.amount);
-  const nextAmount = numericPrice(next.amount);
-  const nextCompareAtAmount = numericPrice(next.compareAtAmount);
-  return Boolean(
-    currentCurrency &&
-      currentCurrency === nextCurrency &&
-      next.isSale === true &&
-      Number.isFinite(currentAmount) &&
-      Number.isFinite(nextAmount) &&
-      Number.isFinite(nextCompareAtAmount) &&
-      nextAmount < nextCompareAtAmount &&
-      Math.abs(currentAmount - nextCompareAtAmount) < 0.01 &&
-      !current.isSale
-  );
-}
-
-function panelPriceCheckShouldKeepCurrentP448Sale(currentItem, checkedPrice) {
-  if (!panelPriceCheckIsP448Url(currentItem?.url)) {
-    return false;
-  }
-
-  const current = normalizePanelItem(currentItem).price || {};
-  const currentCurrency = cleanText(current.currency).toUpperCase();
-  const nextCurrency = cleanText(checkedPrice?.currency).toUpperCase();
-  const currentAmount = numericPrice(current.amount);
   const currentCompareAtAmount = numericPrice(current.compareAtAmount);
-  const nextAmount = numericPrice(checkedPrice?.amount);
+  const nextAmount = numericPrice(next.amount);
   return Boolean(
     currentCurrency &&
       currentCurrency === nextCurrency &&
       current.isSale === true &&
-      checkedPrice?.isSale !== true &&
+      next.isSale !== true &&
       Number.isFinite(currentAmount) &&
       Number.isFinite(currentCompareAtAmount) &&
       Number.isFinite(nextAmount) &&

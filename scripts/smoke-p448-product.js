@@ -85,7 +85,7 @@ const normalizedTinyPollutedPrice = sandbox.normalizePrice({
 });
 assert.equal(normalizedTinyPollutedPrice.amount, 275);
 assert.equal(normalizedTinyPollutedPrice.compareAtAmount, undefined);
-const p448VisibleSalePrice = sandbox.bestProductPrice({
+const p448ShippingThresholdPrice = sandbox.bestProductPrice({
   url: "https://p448.com/products/s26monza1-w-420",
   pagePriceProduct: {
     priceText: "165 € 275 €",
@@ -106,9 +106,9 @@ const p448VisibleSalePrice = sandbox.bestProductPrice({
     { priceText: "275 €", priceAmount: 275, currency: "EUR" }
   ]
 });
-assert.equal(p448VisibleSalePrice.amount, 165);
-assert.equal(p448VisibleSalePrice.compareAtAmount, 275);
-assert.equal(p448VisibleSalePrice.isSale, true);
+assert.equal(p448ShippingThresholdPrice.amount, 275);
+assert.equal(p448ShippingThresholdPrice.compareAtAmount, undefined);
+assert.equal(p448ShippingThresholdPrice.isSale, undefined);
 assert.equal(
   sandbox.parsePricesFromText("FREE SHIPPING ON EU ORDERS €165+").length,
   0

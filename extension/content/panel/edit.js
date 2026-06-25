@@ -7,6 +7,7 @@ function renderEditItemDialog() {
   const price = item.price || {};
   const priceAmount = editPriceAmountValue(price);
   const currency = editCurrencyCode(price.currency || item.currency);
+  const autofocusField = editAutofocusField(item);
 
   return `
     <div class="wp-dialog-backdrop" role="presentation" data-cancel-edit-item></div>
@@ -17,16 +18,16 @@ function renderEditItemDialog() {
       </div>
       <label class="wp-edit-field">
         <span>${escapeHtml(t("Brand"))}</span>
-        <input name="brand" type="text" value="${escapeAttribute(item.brand)}" maxlength="80" autocomplete="off" data-autofocus>
+        <input name="brand" type="text" value="${escapeAttribute(item.brand)}" maxlength="80" autocomplete="off"${renderEditAutofocus("brand", autofocusField)}>
       </label>
       <label class="wp-edit-field">
         <span>${escapeHtml(t("Name"))}</span>
-        <input name="title" type="text" value="${escapeAttribute(item.title)}" maxlength="140" autocomplete="off">
+        <input name="title" type="text" value="${escapeAttribute(item.title)}" maxlength="140" autocomplete="off"${renderEditAutofocus("title", autofocusField)}>
       </label>
       <div class="wp-edit-price-row">
         <label class="wp-edit-field">
           <span>${escapeHtml(t("Price"))}</span>
-          <input name="price" type="text" value="${escapeAttribute(priceAmount)}" maxlength="40" inputmode="decimal" autocomplete="off">
+          <input name="price" type="text" value="${escapeAttribute(priceAmount)}" maxlength="40" inputmode="decimal" autocomplete="off"${renderEditAutofocus("price", autofocusField)}>
         </label>
         <label class="wp-edit-field">
           <span>${escapeHtml(t("Currency"))}</span>
@@ -37,7 +38,7 @@ function renderEditItemDialog() {
       </div>
       <label class="wp-edit-field">
         <span>${escapeHtml(t("Image URL"))}</span>
-        <input name="imageUrl" type="url" value="${escapeAttribute(item.imageUrl || "")}" maxlength="2048" autocomplete="off">
+        <input name="imageUrl" type="url" value="${escapeAttribute(item.imageUrl || "")}" maxlength="2048" autocomplete="off"${renderEditAutofocus("image", autofocusField)}>
       </label>
       <div class="wp-edit-field">
         <span>${escapeHtml(t("Category"))}</span>
@@ -51,6 +52,18 @@ function renderEditItemDialog() {
       </div>
     </form>
   `;
+}
+
+function editAutofocusField(item) {
+  return ["brand", "title", "price", "image"].find((field) => editFieldNeedsReview(item, field)) || "brand";
+}
+
+function editFieldNeedsReview(item, field) {
+  return Boolean(item?.extraction?.fields?.[field]?.needsReview);
+}
+
+function renderEditAutofocus(field, autofocusField) {
+  return field === autofocusField ? " data-autofocus" : "";
 }
 
 function editPriceAmountValue(price) {
@@ -147,6 +160,7 @@ async function savePanelEditedItem(form) {
   const title = editedTitle(formData, current, brand);
   const price = editedPrice(formData, current);
   const imageUrl = cleanText(formData.get("imageUrl")) || current.imageUrl;
+  const normalizedImageUrl = toAbsoluteUrl(imageUrl);
   const category = cleanText(formData.get("category"));
   const nextItem = {
     ...panelState.items[index],
@@ -157,8 +171,9 @@ async function savePanelEditedItem(form) {
     url: current.url,
     title,
     brand,
-    imageUrl: toAbsoluteUrl(imageUrl),
+    imageUrl: normalizedImageUrl,
     imageUrls: normalizeProductImageUrls(current.imageUrls, imageUrl, SAVED_IMAGE_URL_LIMIT),
+    extraction: manualPanelExtractionQuality({ brand, title, price, imageUrl: normalizedImageUrl }),
     category: hasCategory(panelState.categories, category) ? category : current.category,
     price: editedStoredPrice(price),
     priceText: price.originalText,
@@ -209,5 +224,71 @@ function editedStoredPrice(price) {
     compareAtAmount: price.compareAtAmount,
     compareAtText: price.compareAtText,
     isSale: price.isSale
+  };
+}
+
+function manualPanelExtractionQuality({ brand, title, price, imageUrl }) {
+  const fields = {
+    brand: manualPanelExtractionField("brand", brand),
+    title: manualPanelExtractionField("title", title),
+    price: manualPanelPriceExtractionField(price),
+    image: manualPanelExtractionField("image", imageUrl)
+  };
+  const confidenceValues = Object.values(fields)
+    .map((field) => field.confidence)
+    .filter((value) => Number.isFinite(value));
+
+  return compactObject({
+    version: "manual-edit-v1",
+    reviewThreshold: 72,
+    needsReview: Object.values(fields).some((field) => field.needsReview),
+    overallConfidence: confidenceValues.length
+      ? Math.round(confidenceValues.reduce((sum, value) => sum + value, 0) / confidenceValues.length)
+      : 0,
+    fields,
+    debug: typeof extractionDebugSnapshot === "function"
+      ? extractionDebugSnapshot(fields)
+      : manualPanelExtractionDebug(fields)
+  });
+}
+
+function manualPanelExtractionField(field, value, extra = {}) {
+  const text = cleanText(value);
+  return compactObject({
+    field,
+    value: text,
+    confidence: text ? 99 : 0,
+    source: "manual",
+    needsReview: !text,
+    ...extra
+  });
+}
+
+function manualPanelPriceExtractionField(price) {
+  const amount = numericPrice(price?.amount);
+  return manualPanelExtractionField("price", price?.originalText, {
+    amount,
+    currency: price?.currency,
+    originalText: price?.originalText,
+    compareAtAmount: price?.compareAtAmount,
+    compareAtText: price?.compareAtText,
+    isSale: price?.isSale
+  });
+}
+
+function manualPanelExtractionDebug(fields) {
+  return {
+    fields: Object.fromEntries(
+      Object.entries(fields).map(([field, quality]) => [
+        field,
+        {
+          selectedSource: "manual",
+          confidence: quality.confidence,
+          reason: quality.needsReview ? `needs-review:${field}:manual` : `selected:${field}:manual`,
+          fallbackReason: quality.value ? "single-usable-candidate" : "no-usable-candidate",
+          candidateCount: quality.value ? 1 : 0
+        }
+      ])
+    )
   };
 }

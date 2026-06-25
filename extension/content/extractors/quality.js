@@ -33,7 +33,8 @@ function buildExtractionQuality(product, sources = [product]) {
     overallConfidence: confidenceValues.length
       ? Math.round(confidenceValues.reduce((sum, value) => sum + value, 0) / confidenceValues.length)
       : 0,
-    fields
+    fields,
+    debug: extractionDebugSnapshot(fields)
   });
 }
 
@@ -272,5 +273,59 @@ function extractionCandidate(field, value, confidence, source, extra = {}) {
     confidence: clamp(Math.round(confidence), 0, 99),
     source,
     ...extra
+  });
+}
+
+function extractionDebugSnapshot(fields) {
+  return compactObject({
+    fields: Object.fromEntries(
+      Object.entries(fields || {}).map(([field, quality]) => [
+        field,
+        extractionDebugField(field, quality)
+      ])
+    )
+  });
+}
+
+function extractionDebugField(field, quality = {}) {
+  const alternatives = Array.isArray(quality.alternatives) ? quality.alternatives : [];
+  const selectedSource = cleanText(quality.source) || "unknown";
+  const selectedValue = cleanText(quality.value);
+  return compactObject({
+    selectedSource,
+    confidence: quality.confidence,
+    reason: extractionDebugReason(field, quality, selectedSource, selectedValue),
+    fallbackReason: extractionDebugFallbackReason(alternatives, selectedValue),
+    candidateCount: alternatives.length + (selectedValue ? 1 : 0),
+    alternatives: alternatives.slice(0, 2).map(extractionDebugAlternative)
+  });
+}
+
+function extractionDebugReason(field, quality, selectedSource, selectedValue) {
+  if (!selectedValue) {
+    return "missing";
+  }
+  if (quality.needsReview) {
+    return `needs-review:${field}:${selectedSource}`;
+  }
+  return `selected:${field}:${selectedSource}`;
+}
+
+function extractionDebugFallbackReason(alternatives, selectedValue) {
+  if (!selectedValue) {
+    return "no-usable-candidate";
+  }
+  if (!alternatives.length) {
+    return "single-usable-candidate";
+  }
+  const source = cleanText(alternatives[0]?.source) || "alternative";
+  return `selected-over:${source}`;
+}
+
+function extractionDebugAlternative(candidate) {
+  return compactObject({
+    value: candidate.value,
+    source: candidate.source,
+    confidence: candidate.confidence
   });
 }

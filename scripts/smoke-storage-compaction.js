@@ -28,6 +28,10 @@ const storageQuotaSource = fs.readFileSync(
   path.join(root, "extension/content/storage-quota.js"),
   "utf8"
 );
+const storageUpsertSource = fs.readFileSync(
+  path.join(root, "extension/content/storage-upsert.js"),
+  "utf8"
+);
 
 const sampleItem = {
   id: "item-1",
@@ -121,6 +125,7 @@ vm.runInContext(storagePriceCheckSource, sandbox, { filename: "content/storage-p
 vm.runInContext(storageEchoSource, sandbox, { filename: "content/storage-echo.js" });
 vm.runInContext(storageSource, sandbox, { filename: "content/storage.js" });
 vm.runInContext(storageQuotaSource, sandbox, { filename: "content/storage-quota.js" });
+vm.runInContext(storageUpsertSource, sandbox, { filename: "content/storage-upsert.js" });
 
 async function run() {
   sandbox.sampleItem = sampleItem;
@@ -236,6 +241,10 @@ async function run() {
         url: "https://shop.example/products/cloudmonster-2?variant=111",
         title: "Old Cloudmonster",
         brand: "On",
+        category: "shoes",
+        createdAt: "2026-06-01T00:00:00.000Z",
+        shortlistedAt: "2026-06-02T00:00:00.000Z",
+        decision: { state: "bought", decidedAt: "2026-06-03T00:00:00.000Z" },
         price: {}
       },
       {
@@ -252,14 +261,34 @@ async function run() {
     url: "https://shop.example/products/cloudmonster-2?variant=222&utm_source=feed",
     title: "New Cloudmonster",
     brand: "On",
+    category: "tops",
     price: {}
   };
 
-  await vm.runInContext("upsertItem(nextItem)", sandbox);
+  const repeatedSave = await vm.runInContext("upsertItemWithResult(nextItem)", sandbox);
 
   const dedupedItems = sandbox.payload["tuckio.items.v1"];
+  assert.equal(repeatedSave.state, "updated");
+  assert.equal(repeatedSave.item.id, "old-cloudmonster");
   assert.equal(dedupedItems.length, 2);
   assert.deepEqual(Array.from(dedupedItems, (item) => item.title), ["New Cloudmonster", "Cloudsurfer"]);
+  assert.equal(dedupedItems[0].id, "old-cloudmonster");
+  assert.equal(dedupedItems[0].category, "shoes");
+  assert.equal(dedupedItems[0].createdAt, "2026-06-01T00:00:00.000Z");
+  assert.equal(dedupedItems[0].shortlistedAt, "2026-06-02T00:00:00.000Z");
+  assert.equal(dedupedItems[0].decision.state, "bought");
+
+  sandbox.currentStored = { "tuckio.items.v1": [] };
+  sandbox.freshItem = {
+    id: "fresh",
+    url: "https://shop.example/products/fresh",
+    title: "Fresh",
+    brand: "On",
+    price: {}
+  };
+  const freshSave = await vm.runInContext("upsertItemWithResult(freshItem)", sandbox);
+  assert.equal(freshSave.state, "created");
+  assert.equal(freshSave.items.length, 1);
 
   console.log("storage compaction smoke passed");
 }

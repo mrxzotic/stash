@@ -93,8 +93,9 @@ function panelStylesChunk5() {
 
     .wp-brand-cloud-item {
       position: relative;
-      min-height: 28px;
-      padding: 0 5px 5px;
+      z-index: 1;
+      min-height: 32px;
+      padding: 2px 5px 5px;
       border: 0;
       border-radius: 8px;
       background: transparent;
@@ -103,6 +104,7 @@ function panelStylesChunk5() {
       cursor: pointer;
       overflow: visible;
       isolation: isolate;
+      pointer-events: auto;
       transition:
         color 160ms ease,
         opacity 160ms ease,
@@ -157,13 +159,12 @@ function panelStylesChunk5() {
       z-index: -1;
       border-radius: inherit;
       background:
-        radial-gradient(circle at 18% 18%, rgba(115, 196, 255, 0.72), transparent 38%),
-        radial-gradient(circle at 82% 16%, rgba(255, 144, 221, 0.64), transparent 42%),
-        radial-gradient(circle at 52% 100%, rgba(174, 255, 196, 0.54), transparent 42%),
-        rgba(255, 255, 255, 0.5);
+        linear-gradient(105deg, rgba(116, 196, 255, 0.28), rgba(255, 151, 218, 0.24) 54%, rgba(179, 255, 207, 0.2)),
+        linear-gradient(22deg, transparent 12%, rgba(255, 255, 255, 0.42) 48%, transparent 84%);
       opacity: 0;
       transform: scaleX(0.74);
       transform-origin: left center;
+      pointer-events: none;
       transition:
         opacity 180ms ease,
         transform 240ms cubic-bezier(.16, 1, .3, 1);
@@ -180,6 +181,7 @@ function panelStylesChunk5() {
       opacity: 0.5;
       transform: scaleX(0);
       transform-origin: left;
+      pointer-events: none;
       transition: transform 180ms cubic-bezier(.16, 1, .3, 1);
     }
 
@@ -192,7 +194,7 @@ function panelStylesChunk5() {
 
     .wp-brand-cloud-item:hover::before,
     .wp-brand-cloud-item:focus-visible::before {
-      opacity: 0.72;
+      opacity: 0.5;
       transform: scaleX(1);
     }
 

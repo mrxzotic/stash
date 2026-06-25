@@ -1,8 +1,9 @@
 var SAVED_OVERLAY_DURATION_MS = 8000;
 
-function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
+function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES, options = {}) {
   const root = getOverlayRoot();
   const dismiss = () => dismissSavedOverlay(root);
+  const title = savedOverlayTitle(options);
 
   clearOverlayTimers(root);
   unbindSavedOverlayImageEvents(root);
@@ -12,7 +13,7 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
       ${renderSavedOverlaySkeleton()}
       <header class="wl-header">
         <div class="wl-title-block">
-          <p class="wl-kicker">${escapeHtml(t("Saved"))}</p>
+          <p class="wl-kicker">${escapeHtml(title)}</p>
           <div class="wl-timer-line">
             <p class="wl-countdown" data-countdown aria-hidden="true">${escapeHtml(t("Auto-close in {seconds}s", { seconds: Math.ceil(SAVED_OVERLAY_DURATION_MS / 1000) }))}</p>
             <button class="wl-timer-button" type="button" data-toggle-timer aria-label="${escapeAttribute(t("Pause auto-close"))}" aria-pressed="false" title="${escapeAttribute(t("Pause auto-close"))}">
@@ -31,19 +32,7 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
         ${renderSavedOverlayImage(item)}
         <dl class="wl-fields">${renderSavedOverlayFields(item)}</dl>
       </article>
-      <div class="wl-actions">
-        <div class="wl-action-group is-left">
-          <button class="wl-cancel-button" type="button" aria-label="${escapeAttribute(t("Undo save"))}" data-cancel-addition>
-            <span>${escapeHtml(t("Undo"))}</span>
-          </button>
-        </div>
-        <div class="wl-action-group is-right">
-          <button class="wl-open-button" type="button" aria-label="${escapeAttribute(t("Open Tuckio panel"))}" data-open-tuckio>
-            ${phosphorLinkIcon("wl-button-icon")}
-            <span>${escapeHtml(t("Open Tuckio"))}</span>
-          </button>
-        </div>
-      </div>
+      ${renderSavedOverlayActions(options)}
     </section>
   `;
 
@@ -55,12 +44,44 @@ function showSavedOverlay(item, items, categories = DEFAULT_CATEGORIES) {
     dismissSavedOverlay(root);
     safelyRunPanelAction(() => openTuckioPanel());
   });
-  root.querySelector("[data-cancel-addition]")?.addEventListener("click", () => {
-    safelyRunPanelAction(() => cancelSavedOverlayAddition(root, item));
-  });
+  if (savedOverlayIsNewSave(options)) {
+    root.querySelector("[data-cancel-addition]")?.addEventListener("click", () => {
+      safelyRunPanelAction(() => cancelSavedOverlayAddition(root, item));
+    });
+  }
   bindSavedOverlayImageEvents(root, item);
   bindImageFallbacks(root);
   startSavedOverlayCountdown(root, SAVED_OVERLAY_DURATION_MS);
+}
+
+function renderSavedOverlayActions(options = {}) {
+  const undoButton = savedOverlayIsNewSave(options)
+    ? `
+          <button class="wl-cancel-button" type="button" aria-label="${escapeAttribute(t("Undo save"))}" data-cancel-addition>
+            <span>${escapeHtml(t("Undo"))}</span>
+          </button>
+        `
+    : "";
+
+  return `
+      <div class="wl-actions">
+        <div class="wl-action-group is-left">${undoButton}</div>
+        <div class="wl-action-group is-right">
+          <button class="wl-open-button" type="button" aria-label="${escapeAttribute(t("Open Tuckio panel"))}" data-open-tuckio>
+            ${phosphorLinkIcon("wl-button-icon")}
+            <span>${escapeHtml(t("Open Tuckio"))}</span>
+          </button>
+        </div>
+      </div>
+  `;
+}
+
+function savedOverlayTitle(options = {}) {
+  return savedOverlayIsNewSave(options) ? t("Saved") : t("Saved again");
+}
+
+function savedOverlayIsNewSave(options = {}) {
+  return options.saveState !== "updated";
 }
 
 function showErrorOverlay(error) {
