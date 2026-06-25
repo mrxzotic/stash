@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-25-price-missed-hidden-v113";
+var CONTENT_VERSION = "2026-06-25-price-status-icons-v114";
 
 
 var STORAGE_KEY = "tuckio.items.v1";
