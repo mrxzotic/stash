@@ -10,6 +10,7 @@ const constantsSource = read("extension/content/constants.js");
 const lifecycleSource = read("extension/content/lifecycle.js");
 const renderSource = read("extension/content/panel/render.js");
 const filtersSource = read("extension/content/panel/filters.js");
+const filterRailSource = read("extension/content/panel/filter-rail.js");
 const emptySource = read("extension/content/panel/empty.js");
 const searchSource = read("extension/content/panel/search.js");
 const compactViewSource = read("extension/content/panel/compact-view.js");
@@ -24,6 +25,7 @@ const panelMotionSource = read("extension/content/panel/motion.js");
 const panelStylesSource = read("extension/content/styles/panel.js");
 const panelContentStylesSource = read("extension/content/styles/panel-content.js");
 const panelChunk5Styles = read("extension/content/styles/panel-5.js");
+const panelLayoutTailStyles = read("extension/content/styles/panel-layout-tail.js");
 const panelCurrencyStyles = read("extension/content/styles/panel-currency.js");
 const panelRebuildMotionStyles = read("extension/content/styles/panel-rebuild-motion.js");
 const panelMotionStyles = read("extension/content/styles/panel-save-motion.js");
@@ -39,8 +41,8 @@ assert.ok(
   backgroundSource.includes(`CONTENT_SCRIPT_VERSION = "${contentVersion}"`),
   "Background should inject the active panel save motion version"
 );
-assert.match(backgroundSource, /"content\/panel\/empty\.js",\s*"content\/panel\/motion\.js",\s*"content\/panel\/filters\.js",\s*"content\/panel\/preferences\.js",\s*"content\/panel\/render\.js",\s*"content\/panel\/reorder\.js"/, "Panel motion, filter, preference, and reorder helpers should load before item-only flows");
-assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content\/styles\/panel-decision-ui\.js",\s*"content\/styles\/panel-decision-motion\.js",\s*"content\/styles\/panel-edit\.js",\s*"content\/styles\/panel-rebuild-motion\.js",\s*"content\/styles\/panel-save-motion\.js",\s*"content\/styles\/panel-interaction-motion\.js",\s*"content\/styles\/panel-hints\.js",\s*"content\/styles\/panel\.js"/, "Panel motion styles should load before panel style composition");
+assert.match(backgroundSource, /"content\/panel\/empty\.js",\s*"content\/panel\/motion\.js",\s*"content\/panel\/filters\.js",\s*"content\/panel\/filter-rail\.js",\s*"content\/panel\/preferences\.js",\s*"content\/panel\/render\.js",\s*"content\/panel\/reorder\.js"/, "Panel motion, filter, preference, and reorder helpers should load before item-only flows");
+assert.match(backgroundSource, /"content\/styles\/panel-release\.js",\s*"content\/styles\/panel-decision-ui\.js",\s*"content\/styles\/panel-decision-motion\.js",\s*"content\/styles\/panel-edit\.js",\s*"content\/styles\/panel-rebuild-motion\.js",\s*"content\/styles\/panel-save-motion\.js",\s*"content\/styles\/panel-interaction-motion\.js",\s*"content\/styles\/panel-price-checker\.js",\s*"content\/styles\/panel-hints\.js",\s*"content\/styles\/panel\.js"/, "Panel motion styles should load before panel style composition");
 
 assert.match(constantsSource, /displacedItemId: ""/, "Panel state should track the card displaced by an open-panel save");
 assert.match(constantsSource, /rebuildMotion: ""/, "Panel state should track transient rebuild motion");
@@ -76,12 +78,12 @@ assert.match(renderSource, /const filtersNav = renderPanelFiltersNav\(filterCate
 assert.match(filtersSource, /if \(!railControls\.trim\(\) && !viewControls\.trim\(\)\) \{[\s\S]*?return "";/, "Zero-item panels should not render an empty filter rail");
 assert.match(sortSource, /function panelShouldShowSearchControl\(items = panelState\.items\)[\s\S]*?panelSearchableItems\(items\)\.length >= 3;/, "Search should appear only for a meaningful searchable scope");
 assert.match(renderSource, /function renderPanelSearchTrigger\(\)[\s\S]*?panelShouldShowSearchControl\(\)/, "Topbar search trigger should render from the search threshold");
-assert.match(panelChunk5Styles, /\.wp-empty\s*\{[\s\S]*?top: var\(--wp-items-padding-top, 112px\);/, "Empty CTA should center from the measured chrome padding");
+assert.match(panelLayoutTailStyles, /\.wp-empty\s*\{[\s\S]*?top: var\(--wp-items-padding-top, 112px\);/, "Empty CTA should center from the measured chrome padding");
 assert.match(emptySource, /Use \+ or right-click a product page\./, "First-save empty copy should stay short");
 assert.match(emptySource, /No active products[\s\S]*?data-archive-view-toggle/, "No-active-items empty state should offer a direct archive action when archive has items");
-assert.match(panelChunk5Styles, /\.wp-empty-action\s*\{[\s\S]*?background: transparent;[\s\S]*?pointer-events: auto;/, "Empty archive action should stay as text while remaining clickable");
+assert.match(panelLayoutTailStyles, /\.wp-empty-action\s*\{[\s\S]*?background: transparent;[\s\S]*?pointer-events: auto;/, "Empty archive action should stay as text while remaining clickable");
 assert.match(filtersSource, /class="wp-filter-rail"[\s\S]*?data-filter-rail/, "Category filters should render inside a horizontal rail");
-assert.match(filtersSource, /function syncPanelFilterRail[\s\S]*?scrollIntoView/, "Active category should be kept visible in the horizontal rail");
+assert.match(filterRailSource, /function syncPanelFilterRail[\s\S]*?scrollIntoView/, "Active category should be kept visible in the horizontal rail");
 assert.match(renderSource, /renderPanelNewItemSkeleton\(\)/, "New card should render a skeleton layer");
 assert.match(searchSource, /renderPanelTopbarOnly\(root, "search"\)/, "Search open/close should update only the topbar");
 assert.doesNotMatch(searchSource, /syncPanelWithRebuildMotion\(root, "search"/, "Search should not trigger rebuild motion or item movement");

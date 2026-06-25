@@ -50,6 +50,7 @@ async function smokeRateFallback() {
     [
       "extension/content/constants.js",
       "extension/content/utils.js",
+      "extension/content/storage-echo.js",
       "extension/content/storage.js",
       "extension/content/pricing/rates.js"
     ]
@@ -95,6 +96,7 @@ async function smokeCategoryMigration() {
     [
       "extension/content/constants.js",
       "extension/content/utils.js",
+      "extension/content/storage-echo.js",
       "extension/content/storage.js",
       "extension/content/storage-settings.js"
     ]
@@ -121,6 +123,7 @@ async function smokeLegacyStorageKeyMigration() {
     [
       "extension/content/constants.js",
       "extension/content/utils.js",
+      "extension/content/storage-echo.js",
       "extension/content/storage.js"
     ]
   );

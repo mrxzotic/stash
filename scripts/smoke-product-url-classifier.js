@@ -77,8 +77,24 @@ assert.equal(
   "Existing /products/ product URLs should remain supported"
 );
 
+assert.equal(
+  sandbox.productIdentityKey("https://shop.example/products/cloudmonster-2?variant=111&utm_source=feed"),
+  "https://shop.example/products/cloudmonster-2",
+  "Shopify product identity should ignore variant and tracking query params"
+);
+assert.equal(
+  sandbox.productId("https://shop.example/products/cloudmonster-2?variant=111"),
+  sandbox.productId("https://shop.example/products/cloudmonster-2?variant=222"),
+  "Product IDs should use canonical product identity"
+);
+
 const sneakerUrl =
   "https://www.farfetch.com/shopping/men/dsquared2-dc-642-sneakers-item-30107002.aspx?storeid=123";
+assert.equal(
+  sandbox.productIdentityKey(sneakerUrl),
+  "https://www.farfetch.com/shopping/men/dsquared2-dc-642-sneakers-item-30107002.aspx",
+  "Product-like marketplace URLs should dedupe without query noise"
+);
 
 sandbox.findJsonLdProduct = () => ({
   title: "Jersey T-Shirt With Logo",

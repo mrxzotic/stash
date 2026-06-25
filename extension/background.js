@@ -3,7 +3,7 @@ const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const COMMAND_SAVE_CURRENT = "save-to-tuckio";
 const COMMAND_TOGGLE_PANEL = "toggle-tuckio";
-const CONTENT_SCRIPT_VERSION = "2026-06-25-price-checker-live-sale-v105";
+const CONTENT_SCRIPT_VERSION = "2026-06-25-price-missed-hidden-v113";
 const MESSAGE_PING = "TUCKIO_PING_V2";
 const MESSAGE_SAVE = "TUCKIO_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "TUCKIO_TOGGLE_PANEL_V2";
@@ -12,6 +12,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/lifecycle.js",
   "content/panel/decisions.js",
   "content/panel/archive.js",
+  "content/panel/shortlist-sync.js",
   "content/panel/filter-controls.js",
   "content/panel/sort.js",
   "content/panel/promo.js",
@@ -23,6 +24,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/panel/empty.js",
   "content/panel/motion.js",
   "content/panel/filters.js",
+  "content/panel/filter-rail.js",
   "content/panel/preferences.js",
   "content/panel/render.js",
   "content/panel/reorder.js",
@@ -34,6 +36,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/panel/items.js",
   "content/panel/prices.js",
   "content/panel/edit.js",
+  "content/panel/price-check-results.js",
   "content/panel/price-checker.js",
   "content/panel/export.js",
   "content/panel/export-xlsx.js",
@@ -52,6 +55,8 @@ const CONTENT_SCRIPT_FILES = [
   "content/extractors/enrich.js",
   "content/extractors/anchors.js",
   "content/extractors/context.js",
+  "content/storage-price-check.js",
+  "content/storage-echo.js",
   "content/storage.js",
   "content/storage-quota.js",
   "content/overlay-fields.js",
@@ -64,12 +69,15 @@ const CONTENT_SCRIPT_FILES = [
   "content/styles/panel-3.js",
   "content/styles/panel-4.js",
   "content/styles/panel-search.js",
+  "content/styles/panel-dialog.js",
   "content/styles/panel-content.js",
   "content/styles/panel-images.js",
   "content/styles/panel-compact.js",
   "content/styles/panel-5.js",
+  "content/styles/panel-layout-tail.js",
   "content/styles/panel-currency.js",
   "content/styles/panel-filter-menu.js",
+  "content/styles/panel-filter-menu-popover.js",
   "content/styles/panel-sort.js",
   "content/styles/panel-save-current.js",
   "content/styles/panel-promo.js",

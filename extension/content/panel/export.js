@@ -190,6 +190,7 @@ function normalizeImportedBackupItem(item, categories, importedAt) {
     isSale: normalized.price.isSale,
     rubPriceText: normalized.price.rubText,
     rubPriceAmount: normalized.price.rubAmount,
+    extraction: normalizeExtractionQuality(item.extraction),
     imageUrl: normalized.imageUrls[0] || "",
     imageUrls: normalized.imageUrls,
     category,
@@ -208,7 +209,7 @@ function mergeImportedItems(importedItems) {
     ...(Array.isArray(panelState.items) ? panelState.items.map(normalizePanelItem) : [])
   ]
     .filter((item) => {
-      const key = productId(item.url) || item.id;
+      const key = productIdentityKey(item.url) || item.id;
       if (!key || seen.has(key)) {
         return false;
       }

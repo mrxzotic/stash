@@ -202,6 +202,7 @@ function renderSitePriceHtml(item, namespace) {
   const lineClass = namespace === "wl" ? "wl-price-line" : "wp-price-line";
   const nativeClass = namespace === "wl" ? "wl-native-price" : "wp-native-price";
   const nativeLine = renderNativePriceHtml(display, nativeClass, isOverlay);
+  const checkLine = namespace === "wp" ? renderPanelPriceCheckLineHtml(item) : "";
 
   if (!display.primaryText) {
     return "";
@@ -215,6 +216,7 @@ function renderSitePriceHtml(item, namespace) {
           <span class="${compareClass}">(<s>${escapeHtml(display.primaryCompareAtText)}</s>)</span>
         </span>
         ${nativeLine}
+        ${checkLine}
       </span>
     `;
   }
@@ -225,8 +227,103 @@ function renderSitePriceHtml(item, namespace) {
         <span class="${baseClass}">${escapeHtml(display.primaryText)}</span>
       </span>
       ${nativeLine}
+      ${checkLine}
     </span>
   `;
+}
+
+function renderPanelPriceCheckLineHtml(item) {
+  const model = panelPriceCheckDisplayModel(item);
+  if (!model) {
+    return "";
+  }
+
+  return `
+    <span class="wp-price-check-line is-${escapeAttribute(model.state)}">
+      <span class="wp-price-check-detail">${escapeHtml(model.detail)}</span>
+      <span class="wp-price-check-compact">${escapeHtml(model.compact)}</span>
+    </span>
+  `;
+}
+
+function panelPriceCheckDisplayModel(item) {
+  const state = cleanText(item?.priceCheck?.state).toLowerCase();
+  if (!/^(up|down|updated)$/.test(state)) {
+    return null;
+  }
+
+  const checkedLabel = panelPriceCheckCheckedLabel(item.priceCheck.checkedAt);
+  if (state === "updated") {
+    return {
+      compact: t("updated"),
+      detail: t("Price updated · {checked}", { checked: checkedLabel }),
+      state
+    };
+  }
+
+  const delta = panelPriceCheckDisplayDelta(item.priceCheck);
+  if (!delta) {
+    return null;
+  }
+
+  const arrow = state === "down" ? "↓" : "↑";
+  return {
+    compact: `${arrow} ${delta}`,
+    detail: t("{arrow} {delta} since last check · {checked}", {
+      arrow,
+      delta,
+      checked: checkedLabel
+    }),
+    state
+  };
+}
+
+function panelPriceCheckDisplayDelta(priceCheck) {
+  const target = isSummaryCurrency(panelState.summaryCurrency)
+    ? panelState.summaryCurrency
+    : DEFAULT_SETTINGS.summaryCurrency;
+  const amountDelta = numericPrice(priceCheck?.deltaAmount);
+  const currency = cleanText(priceCheck?.current?.currency || priceCheck?.previous?.currency).toUpperCase();
+  if (Number.isFinite(amountDelta) && currency && currency === target) {
+    return formatOriginalPrice(Math.abs(amountDelta), currency);
+  }
+
+  const rubDelta = numericPrice(priceCheck?.deltaRubAmount);
+  if (Number.isFinite(rubDelta)) {
+    const converted = convertRubToDisplayAmount(rubDelta, target);
+    return Number.isFinite(converted) ? formatSummaryCurrency(Math.abs(converted), target) : "";
+  }
+
+  if (Number.isFinite(amountDelta) && currency) {
+    return formatOriginalPrice(Math.abs(amountDelta), currency);
+  }
+
+  return "";
+}
+
+function panelPriceCheckCheckedLabel(value) {
+  const time = Date.parse(value || "");
+  if (!Number.isFinite(time)) {
+    return t("checked");
+  }
+
+  const checked = new Date(time);
+  if (checked.toDateString() === new Date().toDateString()) {
+    return t("checked today");
+  }
+
+  return t("checked {date}", { date: panelPriceCheckDateLabel(checked) });
+}
+
+function panelPriceCheckDateLabel(date) {
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      day: "numeric",
+      month: "short"
+    }).format(date);
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
 }
 
 function shouldRenderNativePrice(display) {

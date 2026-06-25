@@ -383,9 +383,7 @@ function isUsableProductImageUrl(value) {
     !/(?:blank|placeholder|transparent|spacer|sprite|pixel|loader|loading|logo|favicon|icon)\.(?:gif|png|svg|webp|jpg|jpeg)(?:[?#]|$)/i.test(text);
 }
 function looksLikeSiteFallbackImage(value) {
-  return /(?:fallback[-_/]?image|default[-_/]?image|site[-_/]?image|brand[-_/]?image|\/static\/fallback|AcneStudios\.png)(?:[?#/]|$)/i.test(
-    cleanText(value)
-  );
+  return /(?:fallback[-_/]?image|default[-_/]?image|site[-_/]?image|brand[-_/]?image|\/static\/fallback|AcneStudios\.png)(?:[?#/]|$)/i.test(cleanText(value));
 }
 
 function parseSrcset(srcset) {

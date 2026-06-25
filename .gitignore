@@ -18,4 +18,5 @@ npm-debug.log*
 # Build/package outputs
 dist/
 build/
+output/
 *.zip

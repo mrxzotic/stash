@@ -4,6 +4,10 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
+const resultsSource = fs.readFileSync(
+  path.join(root, "extension/content/panel/price-check-results.js"),
+  "utf8"
+);
 const source = fs.readFileSync(
   path.join(root, "extension/content/panel/price-checker.js"),
   "utf8"
@@ -69,6 +73,11 @@ const sandbox = {
         price: { amount: 100, currency: "USD", rubAmount: 9000 }
       },
       {
+        id: "missing",
+        url: "https://shop.test/product-c",
+        price: { amount: 45, currency: "USD", originalText: "$45", rubAmount: 4050 }
+      },
+      {
         id: "archived",
         url: "https://shop.test/product-b",
         price: { amount: 120, currency: "USD", rubAmount: 10800 },
@@ -85,6 +94,9 @@ const sandbox = {
   },
   renderPanelItemsOnly: () => {
     sandbox.renderedItems = true;
+  },
+  renderPanelPricesOnly: () => {
+    sandbox.renderedPrices = true;
   },
   renderPanelSummaryOnly: (options) => {
     sandbox.summaryOptions = options;
@@ -104,6 +116,7 @@ const sandbox = {
 };
 
 vm.createContext(sandbox);
+vm.runInContext(resultsSource, sandbox, { filename: "content/panel/price-check-results.js" });
 vm.runInContext(source, sandbox, { filename: "content/panel/price-checker.js" });
 
 sandbox.extractProduct = () => ({
@@ -122,7 +135,7 @@ assert.match(buttonHtml, /data-panel-hint="Check prices"/);
 assert.doesNotMatch(buttonHtml, /\stitle=/);
 assert.deepEqual(
   Array.from(vm.runInContext("panelPriceCheckItems().map((item) => item.id)", sandbox)),
-  ["active"]
+  ["active", "missing"]
 );
 assert.equal(
   vm.runInContext("panelPriceCheckState(panelState.items[0], { ...panelState.items[0] })", sandbox),
@@ -135,6 +148,18 @@ assert.equal(
 assert.match(
   vm.runInContext("renderPanelPriceCheckStatusIcon('down')", sandbox),
   /is-down[\s\S]*is-arrow-down/
+);
+assert.equal(
+  vm.runInContext("panelPriceCheckShouldRenderCardStatus('missed')", sandbox),
+  false
+);
+assert.equal(
+  vm.runInContext("panelPriceCheckShouldRenderCardStatus('same')", sandbox),
+  false
+);
+assert.equal(
+  vm.runInContext("panelPriceCheckShouldRenderCardStatus('updated')", sandbox),
+  true
 );
 assert.equal(
   vm.runInContext("panelPriceCheckSummaryStateFor([{ state: 'same' }, { state: 'missed' }])", sandbox),
@@ -150,14 +175,16 @@ assert.equal(
 );
 
 vm.runInContext(`
-  fetchPanelItemPrice = async () => ({
-    amount: 80,
-    currency: "USD",
-    originalText: "$80",
-    compareAtAmount: 100,
-    compareAtText: "$100",
-    isSale: true
-  });
+  fetchPanelItemPrice = async (item) => item.id === "missing"
+    ? null
+    : {
+        amount: 80,
+        currency: "USD",
+        originalText: "$80",
+        compareAtAmount: 100,
+        compareAtText: "$100",
+        isSale: true
+      };
   animatePanelPriceCheckCards = (root, checked) => {
     checkedResults = checked;
   };
@@ -168,13 +195,37 @@ vm.runInContext("checkPanelPrices()", sandbox)
     assert.equal(sandbox.stored.key, "tuckio.items.v1");
     assert.equal(sandbox.panelState.items[0].price.amount, 80);
     assert.equal(sandbox.panelState.items[0].rubPriceAmount, 7200);
-    assert.equal(sandbox.panelState.items[1].price.amount, 120);
+    assert.equal(sandbox.panelState.items[0].priceCheck.state, "down");
+    assert.equal(sandbox.panelState.items[0].priceCheck.previous.amount, 100);
+    assert.equal(sandbox.panelState.items[0].priceCheck.current.amount, 80);
+    assert.equal(sandbox.panelState.items[0].priceCheck.deltaAmount, -20);
+    assert.equal(sandbox.panelState.items[0].priceCheck.deltaRubAmount, -1800);
+    assert.equal(sandbox.panelState.items[1].price.amount, 45);
+    assert.equal(sandbox.panelState.items[1].priceCheck.state, "missed");
+    assert.equal(sandbox.panelState.items[1].priceCheck.current.amount, 45);
+    assert.equal(sandbox.panelState.items[2].price.amount, 120);
     assert.equal(sandbox.renderedItems, true);
     assert.deepEqual({ ...sandbox.summaryOptions }, { animate: true });
     assert.equal(sandbox.refreshedSummaryRate, true);
-    assert.deepEqual(JSON.parse(JSON.stringify(sandbox.checkedResults)), [{ id: "active", state: "down" }]);
+    assert.deepEqual(JSON.parse(JSON.stringify(sandbox.checkedResults)), [
+      { id: "active", state: "down" },
+      { id: "missing", state: "missed" }
+    ]);
     assert.equal(button.attributes.disabled, undefined);
     assert.equal(button.attributes["aria-busy"], "false");
+    sandbox.renderedItems = false;
+    sandbox.renderedPrices = false;
+    sandbox.summaryOptions = undefined;
+    sandbox.refreshedSummaryRate = false;
+    sandbox.fetchPanelItemPrice = async () => null;
+    return vm.runInContext("checkPanelPrices()", sandbox);
+  })
+  .then(() => {
+    assert.equal(sandbox.renderedItems, false);
+    assert.equal(sandbox.renderedPrices, true);
+    assert.equal(sandbox.summaryOptions, undefined);
+    assert.equal(sandbox.refreshedSummaryRate, false);
+    assert.equal(sandbox.panelState.items[0].priceCheck.state, "missed");
     console.log("panel price checker smoke passed");
   })
   .catch((error) => {
