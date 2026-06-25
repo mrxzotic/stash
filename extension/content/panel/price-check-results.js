@@ -1,17 +1,12 @@
 async function panelItemWithCheckedPrice(item, price, checkedAt = new Date().toISOString()) {
   const previousPrice = normalizePanelItem(item).price || {};
-  const rubPrice = await convertPriceToRub(price);
   const nextPrice = {
     amount: price.amount,
     currency: price.currency,
     originalText: price.originalText,
     compareAtAmount: price.compareAtAmount,
     compareAtText: price.compareAtText,
-    isSale: price.isSale,
-    rubAmount: rubPrice.amount,
-    rubText: rubPrice.text,
-    rate: rubPrice.rate,
-    rateSource: rubPrice.source
+    isSale: price.isSale
   };
   const nextItem = {
     ...item,
@@ -22,8 +17,6 @@ async function panelItemWithCheckedPrice(item, price, checkedAt = new Date().toI
     compareAtPriceText: price.compareAtText,
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
-    rubPriceText: rubPrice.text,
-    rubPriceAmount: rubPrice.amount,
     updatedAt: checkedAt
   };
   const currentPrice = normalizePanelItem(nextItem).price || nextPrice;
@@ -53,8 +46,7 @@ function panelItemPriceChanged(currentItem, nextItem) {
     "currency",
     "compareAtAmount",
     "compareAtText",
-    "isSale",
-    "rubAmount"
+    "isSale"
   ].some((key) => cleanText(current[key]) !== cleanText(next[key]));
 }
 
@@ -72,12 +64,6 @@ function panelPriceCheckState(currentItem, nextItem) {
 }
 
 function panelPriceCheckPriceDelta(current, next) {
-  const currentRub = numericPrice(current.rubAmount);
-  const nextRub = numericPrice(next.rubAmount);
-  if (Number.isFinite(currentRub) && Number.isFinite(nextRub)) {
-    return nextRub - currentRub;
-  }
-
   const currentCurrency = cleanText(current.currency).toUpperCase();
   const nextCurrency = cleanText(next.currency).toUpperCase();
   const currentAmount = numericPrice(current.amount);
@@ -103,8 +89,7 @@ function panelPriceCheckMeta(previousPrice, currentPrice, state, checkedAt) {
     state: panelPriceCheckSafeResultState(state),
     previous,
     current,
-    deltaAmount: panelPriceCheckAmountDelta(previous, current),
-    deltaRubAmount: panelPriceCheckRubDelta(previous, current)
+    deltaAmount: panelPriceCheckAmountDelta(previous, current)
   });
 }
 
@@ -115,9 +100,7 @@ function panelPriceCheckSnapshot(price) {
     originalText: cleanText(price?.originalText),
     compareAtAmount: panelPriceCheckFiniteNumber(price?.compareAtAmount),
     compareAtText: cleanText(price?.compareAtText),
-    isSale: price?.isSale === true ? true : undefined,
-    rubAmount: panelPriceCheckFiniteNumber(price?.rubAmount),
-    rubText: cleanText(price?.rubText)
+    isSale: price?.isSale === true ? true : undefined
   });
 }
 
@@ -130,14 +113,6 @@ function panelPriceCheckAmountDelta(previous, current) {
   const currentAmount = panelPriceCheckFiniteNumber(current.amount);
   return Number.isFinite(previousAmount) && Number.isFinite(currentAmount)
     ? currentAmount - previousAmount
-    : undefined;
-}
-
-function panelPriceCheckRubDelta(previous, current) {
-  const previousRub = panelPriceCheckFiniteNumber(previous?.rubAmount);
-  const currentRub = panelPriceCheckFiniteNumber(current?.rubAmount);
-  return Number.isFinite(previousRub) && Number.isFinite(currentRub)
-    ? currentRub - previousRub
     : undefined;
 }
 

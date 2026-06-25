@@ -1,35 +1,7 @@
-async function convertPriceToRub(price) {
-  if (!Number.isFinite(price.amount) || !price.currency) {
-    return {};
-  }
-
-  if (price.currency === "RUB") {
-    return {
-      amount: Math.round(price.amount),
-      text: formatRubPrice(price.amount),
-      rate: 1,
-      source: "original"
-    };
-  }
-
-  const rate = await getRubRate(price.currency);
-  if (!Number.isFinite(rate.value)) {
-    return {};
-  }
-
-  const amount = Math.round(price.amount * rate.value);
-  return {
-    amount,
-    text: formatRubPrice(amount),
-    rate: rate.value,
-    source: rate.source
-  };
-}
-
-async function getRubRate(currency) {
+async function getCurrencyRate(currency) {
   const code = cleanText(currency).toUpperCase();
   if (code === "RUB") {
-    return { value: 1, source: "original", updatedAt: Date.now() };
+    return { currency: code, value: 1, source: "base", updatedAt: Date.now() };
   }
 
   const now = Date.now();
@@ -37,7 +9,7 @@ async function getRubRate(currency) {
   const cache = stored[RATE_STORAGE_KEY] || {};
   const cached = cache[code];
   if (cached && now - cached.updatedAt < RATE_MAX_AGE_MS) {
-    return { value: cached.value, source: cached.source, updatedAt: cached.updatedAt };
+    return { currency: code, value: cached.value, source: cached.source, updatedAt: cached.updatedAt };
   }
 
   try {
@@ -49,33 +21,17 @@ async function getRubRate(currency) {
         ...cache,
         [code]: { value, source: "open.er-api.com", updatedAt: now }
       });
-      return { value, source: "open.er-api.com", updatedAt: now };
+      return { currency: code, value, source: "open.er-api.com", updatedAt: now };
     }
   } catch {
-    // Fall back below; saving should never fail because rate lookup failed.
   }
 
   return {
-    value: DEFAULT_RUB_RATES[code],
-    source: DEFAULT_RUB_RATES[code] ? "fallback" : "",
+    currency: code,
+    value: DEFAULT_CURRENCY_RATES[code],
+    source: DEFAULT_CURRENCY_RATES[code] ? "default" : "",
     updatedAt: now
   };
-}
-
-function formatRubPrice(value) {
-  if (!Number.isFinite(value)) {
-    return "";
-  }
-
-  try {
-    return new Intl.NumberFormat("ru-RU", {
-      style: "currency",
-      currency: "RUB",
-      maximumFractionDigits: 0
-    }).format(value);
-  } catch {
-    return `${Math.round(value)} RUB`;
-  }
 }
 
 function formatOriginalPrice(value, currency) {
@@ -117,20 +73,13 @@ function panelPriceDisplayModel(item, targetCurrency = panelState.summaryCurrenc
     compareAtAmount,
     currency
   ) || item.price?.compareAtText || item.compareAtPriceText;
-  const rubAmount = numericPrice(item.price?.rubAmount ?? item.rubPriceAmount);
-  const convertedAmount = convertRubToDisplayAmount(rubAmount, target);
+  const convertedAmount = convertPriceToDisplayAmount(currentAmount, nativeCurrency, target);
   const primaryText = isNativeTarget && currentText
     ? currentText
     : Number.isFinite(convertedAmount)
     ? formatSummaryCurrency(convertedAmount, target)
     : currentText;
-  const compareRubAmount = comparableCompareAtRubAmount({
-    compareAtAmount,
-    currentAmount,
-    nativeCurrency,
-    rubAmount
-  });
-  const convertedCompareAt = convertRubToDisplayAmount(compareRubAmount, target);
+  const convertedCompareAt = convertPriceToDisplayAmount(compareAtAmount, nativeCurrency, target);
   const primaryCompareAtText = isNativeTarget && compareAtText
     ? compareAtText
     : Number.isFinite(convertedCompareAt)
@@ -154,16 +103,27 @@ function panelPriceDisplayModel(item, targetCurrency = panelState.summaryCurrenc
   };
 }
 
-function convertRubToDisplayAmount(rubAmount, targetCurrency) {
-  if (!Number.isFinite(rubAmount)) {
+function convertPriceToDisplayAmount(amount, sourceCurrency, targetCurrency) {
+  const sourceAmount = numericPrice(amount);
+  const source = cleanText(sourceCurrency).toUpperCase();
+  const target = isSummaryCurrency(targetCurrency)
+    ? cleanText(targetCurrency).toUpperCase()
+    : DEFAULT_SETTINGS.summaryCurrency;
+  if (!Number.isFinite(sourceAmount) || !isSummaryCurrency(source) || !isSummaryCurrency(target)) {
     return undefined;
   }
+  if (source === target) {
+    return sourceAmount;
+  }
 
-  const rate = panelDisplayCurrencyRubRate(targetCurrency);
-  return Number.isFinite(rate) && rate > 0 ? rubAmount / rate : undefined;
+  const sourceRate = panelDisplayCurrencyRate(source);
+  const targetRate = panelDisplayCurrencyRate(target);
+  return Number.isFinite(sourceRate) && sourceRate > 0 && Number.isFinite(targetRate) && targetRate > 0
+    ? (sourceAmount * sourceRate) / targetRate
+    : undefined;
 }
 
-function panelDisplayCurrencyRubRate(currency) {
+function panelDisplayCurrencyRate(currency) {
   const code = isSummaryCurrency(currency)
     ? cleanText(currency).toUpperCase()
     : DEFAULT_SETTINGS.summaryCurrency;
@@ -171,26 +131,14 @@ function panelDisplayCurrencyRubRate(currency) {
     return 1;
   }
 
+  const cached = panelState.currencyRates?.[code];
+  if (Number.isFinite(cached?.value)) {
+    return cached.value;
+  }
+
   return panelState.summaryRate?.currency === code && Number.isFinite(panelState.summaryRate.value)
     ? panelState.summaryRate.value
-    : DEFAULT_RUB_RATES[code];
-}
-
-function comparableCompareAtRubAmount({ compareAtAmount, currentAmount, nativeCurrency, rubAmount }) {
-  if (!Number.isFinite(compareAtAmount)) {
-    return undefined;
-  }
-
-  if (Number.isFinite(rubAmount) && Number.isFinite(currentAmount) && currentAmount > 0) {
-    return Math.round(rubAmount * (compareAtAmount / currentAmount));
-  }
-
-  if (nativeCurrency === "RUB") {
-    return Math.round(compareAtAmount);
-  }
-
-  const rate = DEFAULT_RUB_RATES[nativeCurrency];
-  return Number.isFinite(rate) && rate > 0 ? Math.round(compareAtAmount * rate) : undefined;
+    : DEFAULT_CURRENCY_RATES[code];
 }
 
 function renderSitePriceHtml(item, namespace) {
@@ -288,14 +236,9 @@ function panelPriceCheckDisplayDelta(priceCheck) {
     return formatOriginalPrice(Math.abs(amountDelta), currency);
   }
 
-  const rubDelta = numericPrice(priceCheck?.deltaRubAmount);
-  if (Number.isFinite(rubDelta)) {
-    const converted = convertRubToDisplayAmount(rubDelta, target);
-    return Number.isFinite(converted) ? formatSummaryCurrency(Math.abs(converted), target) : "";
-  }
-
   if (Number.isFinite(amountDelta) && currency) {
-    return formatOriginalPrice(Math.abs(amountDelta), currency);
+    const converted = convertPriceToDisplayAmount(Math.abs(amountDelta), currency, target);
+    return Number.isFinite(converted) ? formatSummaryCurrency(Math.abs(converted), target) : "";
   }
 
   return "";

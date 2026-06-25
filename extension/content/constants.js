@@ -1,15 +1,15 @@
-var CONTENT_VERSION = "2026-06-25-save-flicker-fix-v115";
+var CONTENT_VERSION = "2026-06-25-native-currency-display-v117";
 
 
 var STORAGE_KEY = "tuckio.items.v1";
-var RATE_STORAGE_KEY = "tuckio.rubRates.v1";
+var RATE_STORAGE_KEY = "tuckio.currencyRates.v1";
 var CATEGORY_STORAGE_KEY = "tuckio.categories.v1";
 var CATEGORY_SCHEMA_STORAGE_KEY = "tuckio.categories.schema.v1";
 var CATEGORY_SCHEMA_VERSION = 2;
 var SETTINGS_STORAGE_KEY = "tuckio.settings.v1";
 var LEGACY_STORAGE_KEYS = new Map([
   [STORAGE_KEY, "stash.items.v1"],
-  [RATE_STORAGE_KEY, "stash.rubRates.v1"],
+  [RATE_STORAGE_KEY, "tuckio.rubRates.v1"],
   [CATEGORY_STORAGE_KEY, "stash.categories.v1"],
   [CATEGORY_SCHEMA_STORAGE_KEY, "stash.categories.schema.v1"],
   [SETTINGS_STORAGE_KEY, "stash.settings.v1"]
@@ -23,6 +23,7 @@ var ALLOWED_STORAGE_KEYS = new Set([
   CATEGORY_STORAGE_KEY,
   CATEGORY_SCHEMA_STORAGE_KEY,
   SETTINGS_STORAGE_KEY,
+  "stash.rubRates.v1",
   ...LEGACY_STORAGE_KEYS.values()
 ]);
 var STORAGE_MAX_DEPTH = 8;
@@ -71,7 +72,7 @@ var DEFAULT_CATEGORIES = [
   { id: "bags", label: "Bags" },
   { id: "accessories", label: "Accessories" }
 ];
-var DEFAULT_RUB_RATES = {
+var DEFAULT_CURRENCY_RATES = {
   RUB: 1,
   USD: 89,
   EUR: 96,
@@ -216,10 +217,11 @@ var panelState = {
   summaryCurrency: DEFAULT_SETTINGS.summaryCurrency,
   summaryRate: {
     currency: DEFAULT_SETTINGS.summaryCurrency,
-    value: DEFAULT_RUB_RATES[DEFAULT_SETTINGS.summaryCurrency],
-    source: "fallback",
+    value: DEFAULT_CURRENCY_RATES[DEFAULT_SETTINGS.summaryCurrency],
+    source: "default",
     updatedAt: 0
   },
+  currencyRates: {},
   summaryRateLoading: "",
   backgroundTheme: DEFAULT_SETTINGS.backgroundTheme,
   compactView: DEFAULT_SETTINGS.compactView,

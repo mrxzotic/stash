@@ -22,12 +22,22 @@ const sandbox = {
     shortlistOpen: false,
     filterMenuOpen: false
   },
+  cleanText: (value) => String(value || "").trim(),
+  convertPriceToDisplayAmount: (amount, sourceCurrency, targetCurrency) => {
+    const rates = { RUB: 1, USD: 89, EUR: 96 };
+    const source = String(sourceCurrency || "").trim().toUpperCase();
+    const target = String(targetCurrency || "USD").trim().toUpperCase();
+    const value = Number(amount);
+    return Number.isFinite(value) && rates[source] && rates[target]
+      ? (value * rates[source]) / rates[target]
+      : undefined;
+  },
   normalizeComparableText: (value) => String(value || "").toLowerCase().trim(),
   numericPrice: (value) => {
     const amount = Number(value);
     return Number.isFinite(amount) ? amount : undefined;
   },
-  normalizePanelPrice: (item) => item.price || { amount: item.priceAmount, rubAmount: item.rubPriceAmount },
+  normalizePanelPrice: (item) => item.price || { amount: item.priceAmount, currency: item.currency },
   t: (key, replacements = {}) => String(key || "").replace(/\{([A-Za-z0-9_]+)\}/g, (match, name) =>
     Object.prototype.hasOwnProperty.call(replacements, name) ? String(replacements[name]) : match
   )
@@ -510,16 +520,28 @@ const items = [
     title: "Cabin",
     brand: "RIMOWA",
     createdAt: "2026-06-18T10:00:00.000Z",
-    price: { rubAmount: 300 },
-    priceCheck: { state: "down", deltaRubAmount: -50, checkedAt: "2026-06-23T10:00:00.000Z" }
+    price: { amount: 300, currency: "USD" },
+    priceCheck: {
+      state: "down",
+      previous: { amount: 350, currency: "USD" },
+      current: { amount: 300, currency: "USD" },
+      deltaAmount: -50,
+      checkedAt: "2026-06-23T10:00:00.000Z"
+    }
   },
-  { title: "Alpha Bag", brand: "Loewe", createdAt: "2026-06-20T10:00:00.000Z", price: { rubAmount: 100 } },
+  { title: "Alpha Bag", brand: "Loewe", createdAt: "2026-06-20T10:00:00.000Z", price: { amount: 100, currency: "USD" } },
   {
     title: "Zip Hoodie",
     brand: "LIME",
     createdAt: "2026-06-19T10:00:00.000Z",
-    price: { rubAmount: 200 },
-    priceCheck: { state: "down", deltaRubAmount: -200, checkedAt: "2026-06-24T10:00:00.000Z" }
+    price: { amount: 200, currency: "USD" },
+    priceCheck: {
+      state: "down",
+      previous: { amount: 400, currency: "USD" },
+      current: { amount: 200, currency: "USD" },
+      deltaAmount: -200,
+      checkedAt: "2026-06-24T10:00:00.000Z"
+    }
   }
 ];
 

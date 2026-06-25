@@ -14,8 +14,7 @@ function compactStoragePriceCheck(value) {
     state,
     previous: compactStoragePriceCheckSnapshot(value.previous),
     current: compactStoragePriceCheckSnapshot(value.current),
-    deltaAmount: compactStorageFiniteNumber(value.deltaAmount),
-    deltaRubAmount: compactStorageFiniteNumber(value.deltaRubAmount)
+    deltaAmount: compactStorageFiniteNumber(value.deltaAmount)
   });
 }
 
@@ -30,9 +29,7 @@ function compactStoragePriceCheckSnapshot(value) {
     originalText: cleanText(value.originalText),
     compareAtAmount: compactStorageFiniteNumber(value.compareAtAmount),
     compareAtText: cleanText(value.compareAtText),
-    isSale: value.isSale === true ? true : undefined,
-    rubAmount: compactStorageFiniteNumber(value.rubAmount),
-    rubText: cleanText(value.rubText)
+    isSale: value.isSale === true ? true : undefined
   });
 }
 

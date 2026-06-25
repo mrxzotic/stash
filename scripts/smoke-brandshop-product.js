@@ -215,16 +215,14 @@ const repairedStoredPrice = sandbox.normalizePanelPrice({
     originalText: "47 422 ₽",
     compareAtAmount: 189690,
     compareAtText: "189 690 ₽",
-    isSale: true,
-    rubAmount: 47422,
-    rubText: "47 422 ₽"
+    isSale: true
   }
 });
 assert.equal(repairedStoredPrice.amount, 189690);
 assert.equal(sandbox.cleanText(repairedStoredPrice.originalText), "189 690 ₽");
 assert.equal(repairedStoredPrice.compareAtAmount, undefined);
 assert.equal(repairedStoredPrice.isSale, false);
-assert.equal(repairedStoredPrice.rubAmount, 189690);
-assert.equal(sandbox.cleanText(repairedStoredPrice.rubText), "189 690 ₽");
+assert.equal(repairedStoredPrice.rubAmount, undefined);
+assert.equal(repairedStoredPrice.rubText, undefined);
 
 console.log("brandshop product smoke passed");

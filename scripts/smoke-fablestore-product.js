@@ -120,8 +120,7 @@ const saleItem = {
     originalText: "8 330 ₽",
     compareAtAmount: 11900,
     compareAtText: "11 900 ₽",
-    isSale: true,
-    rubAmount: 8330
+    isSale: true
   }
 };
 sandbox.panelState.summaryCurrency = "GBP";

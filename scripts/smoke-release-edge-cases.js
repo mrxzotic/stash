@@ -30,7 +30,7 @@ function storageApi(store) {
   };
 }
 
-async function smokeRateFallback() {
+async function smokeCurrencyRateDefaults() {
   const store = {
     "tuckio.rubRates.v1": {
       EUR: { value: 100, source: "cached", updatedAt: Date.now() }
@@ -57,24 +57,24 @@ async function smokeRateFallback() {
   );
 
   const cached = await vm.runInContext(
-    'convertPriceToRub({ amount: 2, currency: "EUR" })',
+    'getCurrencyRate("EUR")',
     sandbox
   );
-  assert.equal(cached.amount, 200);
+  assert.equal(cached.value, 100);
   assert.equal(cached.source, "cached");
 
-  const fallback = await vm.runInContext(
-    'convertPriceToRub({ amount: 2, currency: "USD" })',
+  const defaultRate = await vm.runInContext(
+    'getCurrencyRate("USD")',
     sandbox
   );
-  assert.equal(fallback.amount, 178);
-  assert.equal(fallback.source, "fallback");
+  assert.equal(defaultRate.value, 89);
+  assert.equal(defaultRate.source, "default");
 
   const unknown = await vm.runInContext(
-    'convertPriceToRub({ amount: 2, currency: "ZZZ" })',
+    'getCurrencyRate("ZZZ")',
     sandbox
   );
-  assert.equal(Object.keys(unknown).length, 0);
+  assert.equal(Number.isFinite(unknown.value), false);
 }
 
 async function smokeCategoryMigration() {
@@ -369,7 +369,7 @@ function smokeBrandNoiseFilter() {
 }
 
 (async () => {
-  await smokeRateFallback();
+  await smokeCurrencyRateDefaults();
   await smokeCategoryMigration();
   await smokeLegacyStorageKeyMigration();
   smokePanelThreeHundredItems();

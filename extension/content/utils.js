@@ -256,7 +256,7 @@ function formatPrice(price, currency) {
 
 function formatCollectionTotal(items) {
   const priced = items.filter((item) =>
-    Number.isFinite(item.price?.rubAmount ?? item.rubPriceAmount)
+    Number.isFinite(panelPriceAmountInCurrency(item, "RUB"))
   );
 
   if (!priced.length) {
@@ -264,28 +264,35 @@ function formatCollectionTotal(items) {
   }
 
   const total = priced.reduce(
-    (sum, item) => sum + (item.price?.rubAmount ?? item.rubPriceAmount),
+    (sum, item) => sum + panelPriceAmountInCurrency(item, "RUB"),
     0
   );
-  return formatRubPrice(total);
+  return formatSummaryCurrency(total, "RUB");
 }
 
 function formatPanelSummaryTotal(items, currency = DEFAULT_SETTINGS.summaryCurrency) {
-  const totalRub = items.reduce((sum, item) => {
-    const amount = item.price?.rubAmount ?? item.rubPriceAmount;
-    return Number.isFinite(amount) ? sum + amount : sum;
-  }, 0);
-
   const selectedCurrency = isSummaryCurrency(currency)
     ? cleanText(currency).toUpperCase()
     : DEFAULT_SETTINGS.summaryCurrency;
-  const rate =
-    panelState.summaryRate?.currency === selectedCurrency &&
-    Number.isFinite(panelState.summaryRate.value)
-      ? panelState.summaryRate.value
-      : DEFAULT_RUB_RATES[selectedCurrency];
-  const converted = Number.isFinite(rate) && rate > 0 ? totalRub / rate : 0;
-  return formatSummaryCurrency(converted, selectedCurrency);
+  const total = items.reduce((sum, item) => {
+    const amount = panelPriceAmountInCurrency(item, selectedCurrency);
+    return Number.isFinite(amount) ? sum + amount : sum;
+  }, 0);
+  return formatSummaryCurrency(total, selectedCurrency);
+}
+
+function panelPriceAmountInCurrency(item, currency = panelState.summaryCurrency) {
+  const target = isSummaryCurrency(currency)
+    ? cleanText(currency).toUpperCase()
+    : DEFAULT_SETTINGS.summaryCurrency;
+  const price = item?.price || {};
+  const amount = numericPrice(price.amount ?? item?.priceAmount);
+  const source = cleanText(price.currency ?? item?.currency).toUpperCase();
+  if (Number.isFinite(amount) && isSummaryCurrency(source)) {
+    return convertPriceToDisplayAmount(amount, source, target);
+  }
+
+  return undefined;
 }
 
 function formatSummaryCurrency(value, currency) {

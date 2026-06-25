@@ -23,7 +23,7 @@ vm.runInContext([
 ].join("\n"), sandbox);
 const backgroundSource = read("extension/background.js");
 const eventsSource = read("extension/content/panel/events.js");
-const itemsSource = read("extension/content/panel/items.js");
+const rateSyncSource = read("extension/content/panel/rate-sync.js");
 const panelPricesSource = read("extension/content/panel/prices.js");
 const panelBaseStyles = read("extension/content/styles/panel-1.js");
 const panelChromeStyles = read("extension/content/styles/panel-2.js");
@@ -41,16 +41,14 @@ const saleItem = {
     originalText: "50 \u20ac",
     compareAtAmount: 72,
     compareAtText: "72 \u20ac",
-    isSale: true,
-    rubAmount: 4800
+    isSale: true
   },
   priceCheck: {
     checkedAt: new Date().toISOString(),
     state: "down",
-    previous: { amount: 72, currency: "EUR", originalText: "72 \u20ac", rubAmount: 6912 },
-    current: { amount: 50, currency: "EUR", originalText: "50 \u20ac", rubAmount: 4800 },
-    deltaAmount: -22,
-    deltaRubAmount: -2112
+    previous: { amount: 72, currency: "EUR", originalText: "72 \u20ac" },
+    current: { amount: 50, currency: "EUR", originalText: "50 \u20ac" },
+    deltaAmount: -22
   }
 };
 
@@ -80,6 +78,24 @@ assert.match(overlayHtml, /wl-price-stack/);
 assert.match(overlayHtml, /wl-price-line[\s\S]*wl-site-price is-sale[^>]*>\$54<[\s\S]*wl-native-price[\s\S]*>50 \u20ac<[\s\S]*72 \u20ac/);
 assert.doesNotMatch(overlayHtml, /price-check-line/);
 
+sandbox.staleEuroItem = {
+  price: {
+    amount: 321,
+    currency: "EUR",
+    originalText: "321 \u20ac"
+  }
+};
+assert.equal(
+  vm.runInContext("panelPriceDisplayModel(staleEuroItem, 'USD').primaryText", sandbox),
+  "$347",
+  "Converted card prices should use the saved native amount/currency"
+);
+assert.equal(
+  vm.runInContext("formatPanelSummaryTotal([staleEuroItem], 'USD')", sandbox),
+  "$347",
+  "Summary totals should use the same native-to-target conversion as cards"
+);
+
 sandbox.sameItem = {
   price: saleItem.price,
   priceCheck: { ...saleItem.priceCheck, state: "same" }
@@ -101,20 +117,19 @@ assert.doesNotMatch(
 );
 
 sandbox.usdDeltaItem = {
-  price: { amount: 80, currency: "USD", originalText: "$80", rubAmount: 7200 },
+  price: { amount: 80, currency: "USD", originalText: "$80" },
   priceCheck: {
     checkedAt: new Date().toISOString(),
     state: "down",
-    previous: { amount: 100, currency: "USD", originalText: "$100", rubAmount: 9000 },
-    current: { amount: 80, currency: "USD", originalText: "$80", rubAmount: 7200 },
-    deltaAmount: -20,
-    deltaRubAmount: -1800
+    previous: { amount: 100, currency: "USD", originalText: "$100" },
+    current: { amount: 80, currency: "USD", originalText: "$80" },
+    deltaAmount: -20
   }
 };
 assert.match(
   vm.runInContext("renderSitePriceHtml(usdDeltaItem, 'wp')", sandbox),
   />\u2193 \$20 since last check/,
-  "Same-currency deltas should not drift through RUB fallback conversion"
+  "Same-currency deltas should stay in native currency when it matches the target"
 );
 
 sandbox.panelState.summaryCurrency = "EUR";
@@ -127,9 +142,9 @@ const nativeHomeHtml = vm.runInContext("renderSitePriceHtml(saleItem, 'wp')", sa
 assert.match(nativeHomeHtml, />50 \u20ac</);
 assert.doesNotMatch(nativeHomeHtml, /wp-native-price/, "Native price should not duplicate the home-currency primary price");
 
-assert.match(backgroundSource, /"content\/panel\/items\.js",\s*"content\/panel\/prices\.js",\s*"content\/panel\/edit\.js"/, "Panel price sync should load after item helpers and before edit flows");
+assert.match(backgroundSource, /"content\/panel\/items\.js",\s*"content\/panel\/rate-sync\.js",\s*"content\/panel\/prices\.js",\s*"content\/panel\/edit\.js"/, "Panel rate and price sync should load after item helpers and before edit flows");
 assert.match(eventsSource, /if \(shouldAnimateSummary\) \{[\s\S]*?renderPanelPricesOnly\(\{[\s\S]*?animate: true/, "Currency changes should retarget visible card prices with animation");
-assert.match(itemsSource, /renderPanelPricesOnly\(\{[\s\S]*?animate: options\.animateSummary/, "Rate refresh should retarget visible card prices");
+assert.match(rateSyncSource, /renderPanelPricesOnly\(\{[\s\S]*?animate: options\.animateSummary/, "Rate refresh should retarget visible card prices");
 assert.match(panelPricesSource, /function renderPanelPricesOnly[\s\S]*?restartPanelPriceCount/, "Panel price sync should animate changed price rows");
 assert.match(panelCurrencyStyles, /\.wp-price-row\.is-price-recounting[\s\S]*?@keyframes wpCardPriceCount/, "Card prices should have a recount animation");
 assert.match(panelCardStyles, /\.wp-price-line[\s\S]*?flex-wrap: nowrap/, "Card price parts should remain on one row");

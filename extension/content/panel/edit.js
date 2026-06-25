@@ -146,7 +146,6 @@ async function savePanelEditedItem(form) {
   const brand = editedBrand(formData, current);
   const title = editedTitle(formData, current, brand);
   const price = editedPrice(formData, current);
-  const rubPrice = await convertPriceToRub(price);
   const imageUrl = cleanText(formData.get("imageUrl")) || current.imageUrl;
   const category = cleanText(formData.get("category"));
   const nextItem = {
@@ -161,15 +160,13 @@ async function savePanelEditedItem(form) {
     imageUrl: toAbsoluteUrl(imageUrl),
     imageUrls: normalizeProductImageUrls(current.imageUrls, imageUrl, SAVED_IMAGE_URL_LIMIT),
     category: hasCategory(panelState.categories, category) ? category : current.category,
-    price: editedStoredPrice(price, rubPrice),
+    price: editedStoredPrice(price),
     priceText: price.originalText,
     priceAmount: price.amount,
     currency: price.currency,
     compareAtPriceText: price.compareAtText,
     compareAtPriceAmount: price.compareAtAmount,
     isSale: price.isSale,
-    rubPriceText: rubPrice.text,
-    rubPriceAmount: rubPrice.amount,
     updatedAt: new Date().toISOString()
   };
 
@@ -204,17 +201,13 @@ function editedPrice(formData, current) {
   });
 }
 
-function editedStoredPrice(price, rubPrice) {
+function editedStoredPrice(price) {
   return {
     amount: price.amount,
     currency: price.currency,
     originalText: price.originalText,
     compareAtAmount: price.compareAtAmount,
     compareAtText: price.compareAtText,
-    isSale: price.isSale,
-    rubAmount: rubPrice.amount,
-    rubText: rubPrice.text,
-    rate: rubPrice.rate,
-    rateSource: rubPrice.source
+    isSale: price.isSale
   };
 }

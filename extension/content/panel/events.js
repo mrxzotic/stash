@@ -301,7 +301,7 @@ async function savePanelSettings(nextSettings, options = {}) {
     language: panelState.language,
     ...nextSettings
   });
-  Object.assign(panelState, { summaryCurrency: settings.summaryCurrency, summaryRate: fallbackSummaryRate(settings.summaryCurrency), backgroundTheme: settings.backgroundTheme, compactView: settings.compactView, hoverHints: settings.hoverHints, language: settings.language });
+  Object.assign(panelState, { summaryCurrency: settings.summaryCurrency, summaryRate: defaultSummaryRate(settings.summaryCurrency), backgroundTheme: settings.backgroundTheme, compactView: settings.compactView, hoverHints: settings.hoverHints, language: settings.language });
   if (options.rerender === false) {
     const shouldAnimateSummary =
       options.animateSummary || previousCurrency !== settings.summaryCurrency;

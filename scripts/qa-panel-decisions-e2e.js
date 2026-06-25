@@ -1236,7 +1236,6 @@ function seededItems() {
         originalText: "3 999 ₽",
         compareAtAmount: 6999,
         compareAtText: "6 999 ₽",
-        rubAmount: 3999,
         isSale: true
       },
       priceText: "3 999 ₽",

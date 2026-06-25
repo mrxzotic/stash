@@ -93,7 +93,7 @@ function normalizePanelSettings(value) {
 }
 
 function summaryCurrencyOptions() {
-  return Object.keys(DEFAULT_RUB_RATES);
+  return Object.keys(DEFAULT_CURRENCY_RATES);
 }
 
 function summaryCurrencyPickerOptions(currentCurrency = "") {
