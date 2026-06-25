@@ -43,6 +43,24 @@ function isP448ProductUrl(value) {
   }
 }
 
+function bestP448ProductPrice(visibleSources, priceSources) {
+  const visiblePrice = bestPriceFromSources(visibleSources);
+  const structuredPrice = bestPriceFromSources(priceSources);
+  if (
+    visiblePrice.isSale &&
+    Number.isFinite(structuredPrice.amount) &&
+    Math.abs(structuredPrice.amount - numericPrice(visiblePrice.compareAtAmount)) < 0.01
+  ) {
+    return priceWithoutCompareAt(structuredPrice);
+  }
+  if (Number.isFinite(visiblePrice.amount) && visiblePrice.currency) {
+    return visiblePrice.isSale ? visiblePrice : priceWithoutCompareAt(visiblePrice);
+  }
+  return Number.isFinite(structuredPrice.amount) && structuredPrice.currency
+    ? priceWithoutCompareAt(structuredPrice)
+    : {};
+}
+
 function looksLikeSkuProductPath(url) {
   const segments = url.pathname.split("/").filter(Boolean);
   const skuSegment = segments.at(-1) || "";

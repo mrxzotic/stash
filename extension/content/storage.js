@@ -1,20 +1,3 @@
-async function upsertItem(item) {
-  const stored = await getLocalStorageValue(STORAGE_KEY);
-  const currentItems = Array.isArray(stored[STORAGE_KEY])
-    ? stored[STORAGE_KEY]
-    : [];
-  const itemKey = productIdentityKey(item.url) || item.url;
-  const nextItems = [
-    item,
-    ...currentItems.filter((existing) =>
-      (productIdentityKey(existing.url) || existing.url) !== itemKey
-    )
-  ].slice(0, 300);
-
-  const storedItems = await setLocalStorageValue(STORAGE_KEY, nextItems);
-  return Array.isArray(storedItems) ? storedItems : nextItems;
-}
-
 async function setLocalStorageValue(key, value) {
   assertKnownStorageKeys(key);
   const sanitized = sanitizeStorageValue(storageValueForWrite(key, value));

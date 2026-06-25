@@ -136,6 +136,7 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["Save products from any shop into a compact local wishlist.", "Guarda productos de cualquier tienda en una wishlist local compacta.", "Speichere Produkte aus jedem Shop in einer kompakten lokalen Wunschliste.", "Enregistre des produits de n’importe quelle boutique dans une wishlist locale compacte.", "Сохраняйте товары из любых магазинов в компактный локальный wishlist."],
   ["Save your first product", "Guarda tu primer producto", "Speichere dein erstes Produkt", "Enregistre ton premier produit", "Сохраните первый товар"],
   ["Saved", "Guardado", "Gespeichert", "Enregistré", "Сохранено"],
+  ["Saved again", "Guardado de nuevo", "Erneut gespeichert", "Enregistré à nouveau", "Сохранено снова"],
   ["Saved products that match this view will appear here.", "Los productos guardados que coincidan con esta vista aparecerán aquí.", "Gespeicherte Produkte, die zu dieser Ansicht passen, erscheinen hier.", "Les produits enregistrés correspondant à cette vue apparaîtront ici.", "Сохранённые товары для этого вида появятся здесь."],
   ["Search", "Buscar", "Suchen", "Rechercher", "Поиск"],
   ["Search saved", "Buscar guardados", "Gespeicherte durchsuchen", "Rechercher dans les enregistrés", "Поиск по сохранённым"],

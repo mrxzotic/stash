@@ -138,7 +138,10 @@ function bestProductPrice({ commonSelectorProduct, pagePriceProduct, contextualP
       return priceWithoutCompareAt(visiblePrice);
     }
   }
-  if (hasVariantSelectionParam(url) || isAllSaintsProductUrl(url) || isP448ProductUrl(url)) {
+  if (isP448ProductUrl(url)) {
+    return bestP448ProductPrice([pagePriceProduct, commonSelectorProduct], priceSources);
+  }
+  if (hasVariantSelectionParam(url) || isAllSaintsProductUrl(url)) {
     const visiblePrice = bestPriceFromSources([pagePriceProduct, commonSelectorProduct]);
     if (Number.isFinite(visiblePrice.amount) && visiblePrice.currency) {
       return visiblePrice.isSale ? visiblePrice : priceWithoutCompareAt(visiblePrice);
@@ -171,20 +174,17 @@ function titleSourceCandidate(source, index, brand, productUrl, fallbackTitle) {
     return null;
   }
   const urlTitle = cleanTitle(productTitleFromUrl(source?.url || productUrl), brand);
-
   return {
     title: titleSourceValue(source.title, cleaned, urlTitle),
     score: titleSourceScore(cleaned, urlTitle, index, fallbackTitle, source, productUrl, brand)
   };
 }
-
 function titleSourceValue(rawTitle, cleanedTitle, urlTitle) {
   if (urlTitle && hasTrailingTitleFacet(cleanedTitle, urlTitle)) {
     return urlTitle;
   }
   return rawTitle;
 }
-
 function titleSourceScore(title, urlTitle, index, fallbackTitle, source, productUrl, brand) {
   const wordCount = title.split(/\s+/).filter(Boolean).length;
   const titleText = cleanText(title).toLocaleLowerCase();
@@ -206,13 +206,11 @@ function titleSourceScore(title, urlTitle, index, fallbackTitle, source, product
   if (brandKey && (titleKey === brandKey || (brandKey.length >= 4 && titleKey.includes(brandKey) && !(brandText && titleText.startsWith(brandText))))) score -= titleKey === brandKey ? 36 : 18;
   return score;
 }
-
 function hasTrailingTitleFacet(title, urlTitle) {
   const titleKey = normalizeComparableText(title);
   const urlKey = normalizeComparableText(urlTitle);
   return Boolean(titleKey && urlKey && titleKey.startsWith(`${urlKey} `) && /\s\|\s/.test(title));
 }
-
 function titleMatchesUrlTitle(title, urlTitle) {
   const titleKey = normalizeComparableText(title);
   const urlKey = normalizeComparableText(urlTitle);

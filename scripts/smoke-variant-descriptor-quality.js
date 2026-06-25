@@ -90,6 +90,11 @@ const suspicious = sandbox.attachExtractionQuality({
 assert.equal(suspicious.extraction.fields.brand.needsReview, true);
 assert.equal(suspicious.extraction.fields.title.value, "Marte Sneakers Grey White");
 assert.equal(suspicious.extraction.fields.title.needsReview, false);
+assert.equal(suspicious.extraction.debug.fields.brand.selectedSource, "selected");
+assert.equal(suspicious.extraction.debug.fields.brand.reason, "needs-review:brand:selected");
+assert.equal(suspicious.extraction.debug.fields.title.reason, "selected:title:selected");
+assert.equal(suspicious.extraction.debug.fields.price.candidateCount, 1);
+assert.equal(suspicious.extraction.debug.fields.image.fallbackReason, "single-usable-candidate");
 
 const noUrlSuspicious = sandbox.attachExtractionQuality({
   title: "MARTE GREY WHITE",

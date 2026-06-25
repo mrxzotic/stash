@@ -64,7 +64,8 @@ assert.doesNotMatch(decisionsSource, /function togglePanelDecisionTray\(id\)[\s\
 assert.match(imageSource, /panelProductImageAlt\(item\)/, "Product images should use item-specific alt text");
 assert.match(imageSource, /Previous image\{label\}/, "Image slider controls should include item context");
 assert.match(editSource, /data-panel-modal/, "Edit dialog should be marked as a trapped modal");
-assert.match(editSource, /data-autofocus/, "Edit dialog should define an initial focus target");
+assert.match(editSource, /editAutofocusField\(item\)/, "Edit dialog should focus the first field that needs review");
+assert.match(editSource, /manualPanelExtractionQuality/, "Manual edits should replace parser-risk extraction metadata");
 assert.ok(fs.existsSync(path.join(root, "extension/assets/phosphor-light/magnifying-glass-minus.svg")), "Search empty state icon should use a vendored Phosphor Light asset");
 assert.match(iconsSource, /searchMinus: "magnifying-glass-minus"/, "Icon registry should expose the search-minus Phosphor asset");
 assert.match(iconsSource, /function phosphorSearchMinusIcon/, "Search empty state should use a named Phosphor helper");

@@ -47,11 +47,16 @@ assert.ok(
 assert.match(overlaySource, /Auto-close in/, "Saved overlay timer should describe auto-close behavior");
 assert.doesNotMatch(overlaySource, /class="wl-progress"/, "Saved overlay timer should not be a top-edge meter");
 assert.match(overlaySource, /wl-timer-track[\s\S]*?data-timer-progress/, "Saved overlay timer should live inside the card header");
+assert.match(overlaySource, /savedOverlayTitle\(options\)/, "Saved overlay should derive the header from the save state");
+assert.match(overlaySource, /t\("Saved again"\)/, "Repeated saves should get a soft saved-again title");
+assert.match(overlaySource, /function renderSavedOverlayActions\(options = \{\}\)/, "Saved overlay actions should be state-aware");
+assert.match(overlaySource, /if \(savedOverlayIsNewSave\(options\)\)[\s\S]*?data-cancel-addition/, "Undo should only bind for a new save");
 assert.doesNotMatch(fieldSource, /wl-confidence-summary|>Confidence</, "Saved overlay should not show extraction confidence");
 assert.doesNotMatch(fieldStyles, /\.wl-confidence/, "Saved overlay should not style visible confidence controls");
 assert.doesNotMatch(fieldSource, /data-field-alternative|wl-alternates/, "Saved overlay should not show review choices while auto-closing");
 assert.doesNotMatch(fieldStyles, /\.wl-alt-button|\.wl-alternates/, "Saved overlay should not style review choices");
-assert.match(overlaySource, /wl-action-group is-left[\s\S]*?data-cancel-addition/, "Undo should be separated on the left");
+assert.match(overlaySource, /wl-action-group is-left[^`]*?\$\{undoButton\}/, "Undo slot should stay separated on the left");
+assert.match(overlaySource, /const undoButton = savedOverlayIsNewSave\(options\)[\s\S]*?data-cancel-addition/, "Undo should render only for a new save");
 assert.match(overlaySource, /wl-timer-line[\s\S]*?data-toggle-timer/, "Pause should be paired with the auto-close copy");
 assert.match(overlaySource, /wl-action-group is-right[\s\S]*?data-open-tuckio/, "Open Tuckio should be grouped on the right");
 assert.doesNotMatch(overlaySource, /data-edit-saved-item|wl-edit-button|>Edit</, "Saved overlay should not show an edit decision while auto-closing");

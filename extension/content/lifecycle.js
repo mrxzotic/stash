@@ -13,14 +13,16 @@ async function saveCurrentProduct(message) {
       : inferCategory(product, categories);
   const summaryAnimationFrom = panelState.open ? panelSummaryTextForItems(panelState.items) : "";
   const item = await normalizeItem(product, category, categories);
-  const items = await upsertItem(item);
+  const saveResult = await upsertItemWithResult(item);
+  const items = saveResult.items;
+  const savedItem = saveResult.item || item;
 
   if (panelState.open) {
-    showSavedItemInPanel(item, items, categories, { summaryAnimationFrom });
+    showSavedItemInPanel(savedItem, items, categories, { summaryAnimationFrom, saveState: saveResult.state });
   } else {
-    showSavedOverlay(item, items, categories);
+    showSavedOverlay(savedItem, items, categories, { saveState: saveResult.state });
   }
-  return { ok: true, item };
+  return { ok: true, item: savedItem, saveState: saveResult.state };
 }
 
 async function toggleTuckioPanel() {

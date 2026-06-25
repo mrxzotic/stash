@@ -144,8 +144,8 @@ assert.equal(
     { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 275, currency: 'EUR', originalText: '275 €' } },
     { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 165, currency: 'EUR', originalText: '165 €', compareAtAmount: 275, compareAtText: '275 €', isSale: true } }
   )`, sandbox),
-  "same",
-  "P448 sale parser correction should not report the sale discount as a price drop"
+  "down",
+  "P448 should not hide a future true sale"
 );
 assert.equal(
   vm.runInContext(`panelPriceCheckState(
@@ -153,7 +153,7 @@ assert.equal(
     { url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 275, currency: 'EUR', originalText: '275 €' } }
   )`, sandbox),
   "same",
-  "P448 fetched full price should not report the current sale as a price increase"
+  "P448 stale shipping-threshold sale should be corrected quietly"
 );
 assert.match(
   vm.runInContext("renderPanelPriceCheckStatusIcon('down')", sandbox),
@@ -214,16 +214,16 @@ vm.runInContext(`panelItemWithCheckedPrice(
 )`, sandbox)
   .then((p448Item) => {
     assert.equal(p448Item.price.amount, 165);
-    assert.equal(p448Item.priceCheck.state, "same");
-    assert.equal(p448Item.priceCheck.deltaAmount, undefined);
+    assert.equal(p448Item.priceCheck.state, "down");
+    assert.equal(p448Item.priceCheck.deltaAmount, -110);
     return vm.runInContext(`panelItemWithCheckedPrice(
       { id: 'p448-sale', url: 'https://p448.com/products/s26monza1-w-420', price: { amount: 165, currency: 'EUR', originalText: '165 €', compareAtAmount: 275, compareAtText: '275 €', isSale: true } },
       { amount: 275, currency: 'EUR', originalText: '275 €' }
     )`, sandbox);
   })
   .then((p448Item) => {
-    assert.equal(p448Item.price.amount, 165);
-    assert.equal(p448Item.price.compareAtAmount, 275);
+    assert.equal(p448Item.price.amount, 275);
+    assert.equal(p448Item.price.compareAtAmount, undefined);
     assert.equal(p448Item.priceCheck.state, "same");
     assert.equal(p448Item.priceCheck.deltaAmount, undefined);
     return vm.runInContext("checkPanelPrices()", sandbox);

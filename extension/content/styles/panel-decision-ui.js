@@ -232,12 +232,13 @@ function panelDecisionUiStyles() {
     }
 
     .wp-decision-drop-tray .wp-decision-pill {
-      pointer-events: auto;
+      pointer-events: none;
     }
 
     .wp-shell.is-decision-mode .wp-decision-drop-tray .wp-decision-pill,
     .wp-shell.is-decision-dragging .wp-decision-drop-tray .wp-decision-pill {
       opacity: 1;
+      pointer-events: auto;
       transform: translateY(0) scale(1);
       transition-duration: 190ms;
     }

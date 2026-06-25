@@ -340,6 +340,27 @@ async function main() {
       const brandViewMotionClass = root.querySelector(".wp-shell").classList.contains("is-view-rebuild");
       const brandCloudItem = root.querySelector(".wp-brand-cloud-item");
       const brandCloudItemAnimationName = brandCloudItem ? getComputedStyle(brandCloudItem).animationName : "";
+      const brandCloudItemPointerEvents = brandCloudItem ? getComputedStyle(brandCloudItem).pointerEvents : "";
+      const brandCloudItemBeforePointerEvents = brandCloudItem ? getComputedStyle(brandCloudItem, "::before").pointerEvents : "";
+      const brandCloudItemBeforeBackground = brandCloudItem ? getComputedStyle(brandCloudItem, "::before").backgroundImage : "";
+      const brandCloudItemAfterPointerEvents = brandCloudItem ? getComputedStyle(brandCloudItem, "::after").pointerEvents : "";
+      const brandCloudItems = Array.from(root.querySelectorAll(".wp-brand-cloud-item"));
+      const brandCloudHitResults = brandCloudItems.map((item) => {
+        const rect = item.getBoundingClientRect();
+        const hit = root.elementFromPoint(rect.left + (rect.width / 2), rect.top + (rect.height / 2));
+        return {
+          ok: item === hit || item.contains(hit),
+          item: item.textContent.trim().replace(/\s+/g, " "),
+          hit: hit?.className || hit?.tagName || ""
+        };
+      });
+      const brandCloudItemMinHeight = Math.min(
+        ...brandCloudItems.map((item) => item.getBoundingClientRect().height)
+      );
+      const brandCloudCenterHitAll = brandCloudHitResults.every((result) => result.ok);
+      const brandCloudCenterHitMisses = brandCloudHitResults.filter((result) => !result.ok);
+      const brandCloudDecisionScrimPointerEvents = getComputedStyle(root.querySelector(".wp-decision-scrim")).pointerEvents;
+      const brandCloudDecisionTrayPointerEvents = getComputedStyle(root.querySelector(".wp-decision-drop-tray")).pointerEvents;
       const brandTopbarStable = root.querySelector(".wp-topbar") === stableTopbar;
       const brandTopbarAnimationName = getComputedStyle(stableTopbar).animationName;
       const brandFiltersAnimationName = getComputedStyle(root.querySelector(".wp-filters")).animationName;
@@ -769,6 +790,15 @@ async function main() {
         brandActiveBackgroundColor,
         brandActiveColor,
         brandActiveClearExists,
+        brandCloudItemMinHeight,
+        brandCloudItemPointerEvents,
+        brandCloudItemBeforePointerEvents,
+        brandCloudItemBeforeBackground,
+        brandCloudItemAfterPointerEvents,
+        brandCloudCenterHitAll,
+        brandCloudCenterHitMisses,
+        brandCloudDecisionScrimPointerEvents,
+        brandCloudDecisionTrayPointerEvents,
         brandWheelScrollable,
         brandWheelOverflowY,
         brandWheelSnapType,
@@ -1025,6 +1055,18 @@ async function main() {
     assert.match(metrics.brandActiveBackgroundColor, /rgba?\(8, 11, 16, 0\.86\)/, "Active Brands should use the selected black surface");
     assert.match(metrics.brandActiveColor, /rgb\(255, 255, 255\)|rgba\(255, 255, 255, 1\)/, "Active Brands should use selected foreground text");
     assert.equal(metrics.brandActiveClearExists, true, "Active Brands should expose an inline close affordance");
+    assert.ok(metrics.brandCloudItemMinHeight >= 30, `Brand cloud items should keep a forgiving hover target: ${metrics.brandCloudItemMinHeight}px`);
+    assert.equal(metrics.brandCloudItemPointerEvents, "auto", "Brand cloud items should accept pointer events directly");
+    assert.equal(metrics.brandCloudItemBeforePointerEvents, "none", "Brand cloud glow should not intercept hover hit testing");
+    assert.match(metrics.brandCloudItemBeforeBackground, /linear-gradient/i, "Brand cloud hover should keep a subtle iridescent wash");
+    assert.equal(metrics.brandCloudItemAfterPointerEvents, "none", "Brand cloud underline should not intercept hover hit testing");
+    assert.equal(
+      metrics.brandCloudCenterHitAll,
+      true,
+      `Brand cloud item centers should hit their own button, not an overlay: ${JSON.stringify(metrics.brandCloudCenterHitMisses)}`
+    );
+    assert.equal(metrics.brandCloudDecisionScrimPointerEvents, "none", "Inactive decision scrim should not block Brand cloud hover");
+    assert.equal(metrics.brandCloudDecisionTrayPointerEvents, "none", "Inactive decision tray should not block Brand cloud hover");
     assert.equal(metrics.brandWheelScrollable, true, "Sorted brand list should scroll internally when brands overflow");
     assert.equal(metrics.brandWheelOverflowY, "auto", "Sorted brand list should accept mouse-wheel scrolling");
     assert.match(metrics.brandWheelSnapType, /y/, "Sorted brand list should use vertical scroll snap");

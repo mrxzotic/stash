@@ -3,7 +3,7 @@ const PAGE_PATTERNS = ["http://*/*", "https://*/*"];
 const CONTEXTS = ["page", "image", "link", "selection"];
 const COMMAND_SAVE_CURRENT = "save-to-tuckio";
 const COMMAND_TOGGLE_PANEL = "toggle-tuckio";
-const CONTENT_SCRIPT_VERSION = "2026-06-25-p448-price-check-v118";
+const CONTENT_SCRIPT_VERSION = "2026-06-25-brand-cloud-hitbox-v121";
 const MESSAGE_PING = "TUCKIO_PING_V2";
 const MESSAGE_SAVE = "TUCKIO_SAVE_V2";
 const MESSAGE_TOGGLE_PANEL = "TUCKIO_TOGGLE_PANEL_V2";
@@ -60,6 +60,7 @@ const CONTENT_SCRIPT_FILES = [
   "content/storage-echo.js",
   "content/storage.js",
   "content/storage-quota.js",
+  "content/storage-upsert.js",
   "content/overlay-fields.js",
   "content/overlay-images.js",
   "content/overlay-motion.js",
