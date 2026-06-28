@@ -297,16 +297,12 @@ function startPanelDecisionDrag(root, event) {
   if (rect && event.dataTransfer.setDragImage) {
     event.dataTransfer.setDragImage(item, Math.max(0, event.clientX - rect.left), Math.max(0, event.clientY - rect.top));
   }
-  item.classList.add("is-decision-drag-source");
-  root.querySelector(".wp-shell")?.classList.add("is-decision-dragging");
+  syncPanelDecisionMode(root);
 }
 
 function endPanelDecisionDrag(root) {
   panelState.decisionDragItemId = "";
-  root.querySelector(".wp-shell")?.classList.remove("is-decision-dragging");
-  root.querySelectorAll(".is-decision-drag-source").forEach((item) => {
-    item.classList.remove("is-decision-drag-source");
-  });
+  syncPanelDecisionMode(root);
 }
 
 function handlePanelArchiveViewToggle(event) {

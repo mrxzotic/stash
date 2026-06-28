@@ -7,15 +7,15 @@ function renderPanelCardActions(item) {
   const isArchived = isPanelItemArchived(item);
   if (isArchived) {
     return `
-      <button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
-      <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>
+      <button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-panel-hint="${escapeAttribute(t("Restore"))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
+      <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-panel-hint="${escapeAttribute(t("Delete"))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>
     `;
   }
 
   return `
     ${renderPanelShortlistButton(item)}
-    <button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
-    <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-expanded="${panelState.decisionItemId === item.id}" data-decision-menu-id="${escapeAttribute(item.id)}">${phosphorArchiveIcon("wp-card-action-icon")}</button>
+    <button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-panel-hint="${escapeAttribute(t("Edit"))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
+    <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-expanded="${panelState.decisionItemId === item.id}" data-panel-hint="${escapeAttribute(t("Decide"))}" data-decision-menu-id="${escapeAttribute(item.id)}">${phosphorArchiveIcon("wp-card-action-icon")}</button>
   `;
 }
 
@@ -23,15 +23,15 @@ function renderPanelCompactActions(item) {
   const isArchived = isPanelItemArchived(item);
   if (isArchived) {
     return `
-      <button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
-      <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>
+      <button class="wp-restore" type="button" title="${escapeAttribute(panelItemActionLabel("Restore", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Restore", item))}" data-panel-hint="${escapeAttribute(t("Restore"))}" data-restore-id="${escapeAttribute(item.id)}">${phosphorUndoIcon("wp-card-action-icon")}</button>
+      <button class="wp-remove" type="button" title="${escapeAttribute(panelItemActionLabel("Delete", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Delete", item))}" data-panel-hint="${escapeAttribute(t("Delete"))}" data-remove-id="${escapeAttribute(item.id)}">${phosphorXIcon("wp-card-action-icon")}</button>
     `;
   }
 
   return `
     ${renderPanelShortlistButton(item)}
-    <button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
-    <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-expanded="${panelState.decisionItemId === item.id}" data-decision-menu-id="${escapeAttribute(item.id)}">${phosphorArchiveIcon("wp-card-action-icon")}</button>
+    <button class="wp-edit" type="button" title="${escapeAttribute(panelItemActionLabel("Edit", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Edit", item))}" data-panel-hint="${escapeAttribute(t("Edit"))}" data-edit-id="${escapeAttribute(item.id)}">${phosphorPencilIcon("wp-card-action-icon")}</button>
+    <button class="wp-archive" type="button" title="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-label="${escapeAttribute(panelItemActionLabel("Decide", item))}" aria-expanded="${panelState.decisionItemId === item.id}" data-panel-hint="${escapeAttribute(t("Decide"))}" data-decision-menu-id="${escapeAttribute(item.id)}">${phosphorArchiveIcon("wp-card-action-icon")}</button>
   `;
 }
 
@@ -39,7 +39,7 @@ function renderPanelShortlistButton(item) {
   const active = panelItemIsShortlisted(item);
   const label = active ? "Remove from shortlist" : "Add to shortlist";
   return `
-    <button class="wp-shortlist${active ? " is-active" : ""}" type="button" title="${escapeAttribute(panelItemActionLabel(label, item))}" aria-label="${escapeAttribute(panelItemActionLabel(label, item))}" aria-pressed="${active}" data-shortlist-id="${escapeAttribute(item.id)}">${phosphorStarIcon("wp-card-action-icon")}</button>
+    <button class="wp-shortlist${active ? " is-active" : ""}" type="button" title="${escapeAttribute(panelItemActionLabel(label, item))}" aria-label="${escapeAttribute(panelItemActionLabel(label, item))}" aria-pressed="${active}" data-panel-hint="${escapeAttribute(t(label))}" data-shortlist-id="${escapeAttribute(item.id)}">${phosphorStarIcon("wp-card-action-icon")}</button>
   `;
 }
 
@@ -78,10 +78,11 @@ function renderPanelDecisionPill(itemId, action, options = {}) {
   const data = options.drop
     ? `data-decision-drop-action="${escapeAttribute(action.id)}"`
     : `data-panel-decision="${escapeAttribute(action.id)}" data-decision-id="${escapeAttribute(itemId)}"`;
+  const hint = panelDecisionActionHint(action);
   return `
-    <button class="wp-decision-pill ${escapeAttribute(action.className)}" type="button" ${data}>
+    <button class="wp-decision-pill ${escapeAttribute(action.className)}" type="button" aria-label="${escapeAttribute(t(hint))}" data-panel-hint="${escapeAttribute(t(hint))}" ${data}>
       ${renderPanelDecisionIcon(action)}
-      <span class="wp-decision-pill-label">${escapeHtml(t(action.label))}</span>
+      <span class="wp-decision-pill-label" aria-hidden="true">${escapeHtml(t(action.label))}</span>
     </button>
   `;
 }
@@ -98,10 +99,14 @@ function renderPanelDecisionIcon(action) {
 
 function panelDecisionActions() {
   return [
-    { id: PANEL_DECISION_BOUGHT, label: "Bought", className: "is-bought" },
+    { id: PANEL_DECISION_BOUGHT, label: "Bought", hint: "Mark as bought", className: "is-bought" },
     { id: PANEL_DECISION_SKIPPED, label: "Archive", className: "is-skipped" },
     { id: PANEL_DECISION_DELETE, label: "Delete", className: "is-delete" }
   ];
+}
+
+function panelDecisionActionHint(action) {
+  return action.hint || action.label;
 }
 
 function closePanelDecisionTray() {
@@ -119,17 +124,28 @@ function syncPanelDecisionMode(root = typeof document === "undefined" ? null : d
   if (!root) return;
   const activeId = panelState.decisionItemId || "";
   const dragId = panelState.decisionDragItemId || "";
+  const targetId = dragId || activeId;
   const shell = root.querySelector(".wp-shell");
-  shell?.classList.toggle("is-decision-mode", Boolean(activeId));
-  shell?.classList.toggle("is-decision-dragging", Boolean(dragId));
-  if (!dragId) {
-    root.querySelectorAll(".is-decision-drag-source").forEach((item) => {
-      item.classList.remove("is-decision-drag-source");
-    });
-  }
+  togglePanelDecisionClass(shell, "is-decision-mode", Boolean(activeId));
+  togglePanelDecisionClass(shell, "is-decision-dragging", Boolean(dragId));
+  root.querySelectorAll("[data-panel-item-id]").forEach((item) => {
+    const isTarget = Boolean(targetId && item.dataset.panelItemId === targetId);
+    togglePanelDecisionClass(item, "is-decision-target", isTarget);
+    togglePanelDecisionClass(item, "is-decision-drag-source", Boolean(dragId && item.dataset.panelItemId === dragId));
+  });
   root.querySelectorAll("[data-decision-menu-id]").forEach((button) => {
     button.setAttribute("aria-expanded", String(button.dataset.decisionMenuId === activeId));
   });
+}
+
+function togglePanelDecisionClass(element, className, enabled) {
+  if (!element?.classList) return;
+  if (typeof element.classList.toggle === "function") {
+    element.classList.toggle(className, enabled);
+    return;
+  }
+  const method = enabled ? "add" : "remove";
+  element.classList[method]?.(className);
 }
 
 function panelDecisionTargetId() {

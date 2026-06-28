@@ -8,19 +8,34 @@ function normalizePanelItem(item) {
   const title = shouldSwapBrandTitle ? rawBrand : rawTitle;
   const brand = shouldSwapBrandTitle ? rawTitle : rawBrand;
   const cleanBrand = cleanBrandName(brand) || sourceNameFromUrl(url);
+  const category = cleanText(item.category);
+  const normalizedTitle =
+    manualPanelItemTitle(item, title) ||
+    cleanProductTitle(title, cleanBrand, url) ||
+    "Saved Product";
 
   return {
     ...item,
     id: item.id || productId(url),
     url,
-    title: cleanProductTitle(title, cleanBrand, url) || "Saved Product",
+    title: normalizedTitle,
     brand: cleanBrand,
-    category: item.category || panelState.categories[0]?.id || "tops",
+    category,
     sourceDomain,
     faviconUrl: faviconUrlForSource(url, item.faviconUrl),
     imageUrls: normalizeProductImageUrls(item.imageUrls, item.imageUrl, SAVED_IMAGE_URL_LIMIT),
     price
   };
+}
+
+function manualPanelItemTitle(item, title) {
+  const value = cleanText(title);
+  const titleField = item?.extraction?.fields?.title;
+  if (!value || (item?.extraction?.version !== "manual-edit-v1" && titleField?.source !== "manual")) {
+    return "";
+  }
+
+  return value;
 }
 
 function normalizePanelPrice(item) {

@@ -34,6 +34,7 @@ function syncPanelShortlistButton(button, item, active) {
     const actionLabel = panelItemActionLabel(label, item);
     button.setAttribute("aria-label", actionLabel);
     button.setAttribute("title", actionLabel);
+    button.dataset.panelHint = t(label);
     syncPanelItemRenderSignature(button.closest("[data-panel-item-id]"), item);
   }
 

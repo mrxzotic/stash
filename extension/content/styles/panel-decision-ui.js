@@ -51,20 +51,18 @@ function panelDecisionUiStyles() {
 
     .wp-decision-pill {
       position: relative;
-      width: 76px;
-      height: 76px;
+      width: 52px;
+      height: 52px;
       display: inline-grid;
       place-items: center;
       padding: 0;
-      border: 1px solid rgba(255, 255, 255, 0.42);
+      border: 1px solid rgba(60, 60, 67, 0.13);
       border-radius: var(--radius);
-      color: rgba(8, 11, 16, 0.78);
-      background: rgba(255, 255, 255, 0.58);
-      -webkit-backdrop-filter: blur(16px) saturate(1.08);
-      backdrop-filter: blur(16px) saturate(1.08);
-      box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.26),
-        0 18px 40px rgba(8, 11, 16, 0.16);
+      color: rgba(8, 11, 16, 0.72);
+      background: rgba(255, 255, 255, 0.52);
+      -webkit-backdrop-filter: blur(22px) saturate(1.18);
+      backdrop-filter: blur(22px) saturate(1.18);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66), 0 10px 26px rgba(15, 23, 42, 0.1);
       font-size: var(--text-caption);
       font-weight: 780;
       line-height: 1;
@@ -72,74 +70,79 @@ function panelDecisionUiStyles() {
       opacity: 0;
       overflow: hidden;
       touch-action: manipulation;
-      transform: translateY(10px) scale(0.94);
+      transform: translateY(8px) scale(0.86);
       white-space: nowrap;
-      transition: background 140ms ease, border-color 140ms ease, box-shadow 160ms ease, color 140ms ease, opacity 140ms ease, transform 160ms cubic-bezier(.16, 1, .3, 1);
+      transition: background 180ms cubic-bezier(.16, 1, .3, 1), border-color 180ms cubic-bezier(.16, 1, .3, 1), box-shadow 220ms cubic-bezier(.16, 1, .3, 1), color 180ms cubic-bezier(.16, 1, .3, 1), opacity 180ms ease, transform 260ms cubic-bezier(.18, .95, .24, 1.16);
       will-change: opacity, transform;
     }
 
     .wp-decision-pill-icon {
-      width: 28px;
-      height: 28px;
+      width: 23px;
+      height: 23px;
       font-size: inherit;
-      stroke-width: 1.9;
-      transition: transform 160ms cubic-bezier(.16, 1, .3, 1);
+      stroke-width: 2;
+      transition: transform 220ms cubic-bezier(.16, 1, .3, 1);
     }
 
     .wp-decision-pill-label {
       position: absolute;
-      bottom: 9px;
-      left: 50%;
-      max-width: calc(100% - 14px);
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      border: 0;
       opacity: 0;
       overflow: hidden;
-      font-size: var(--text-caption);
-      font-weight: 820;
-      line-height: 1;
-      text-align: center;
-      text-overflow: ellipsis;
-      transform: translate(-50%, 4px);
-      transition: opacity 140ms ease, transform 160ms cubic-bezier(.16, 1, .3, 1);
-      pointer-events: none;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
     }
 
     .wp-decision-pill.is-bought {
-      color: #17633a;
-      border-color: rgba(23, 99, 58, 0.16);
-      background: rgba(221, 244, 232, 0.84);
+      color: #14643d;
+      border-color: rgba(20, 100, 61, 0.14);
+      background: rgba(244, 253, 248, 0.58);
     }
 
     .wp-decision-pill.is-skipped {
-      color: rgba(8, 11, 16, 0.62);
-      border-color: rgba(8, 11, 16, 0.1);
-      background: rgba(255, 255, 255, 0.64);
+      color: rgba(8, 11, 16, 0.58);
+      border-color: rgba(60, 60, 67, 0.12);
+      background: rgba(255, 255, 255, 0.5);
     }
 
     .wp-decision-pill.is-delete {
-      color: #b42318;
-      border-color: rgba(180, 35, 24, 0.16);
-      background: rgba(253, 231, 230, 0.84);
+      color: #bd2c22;
+      border-color: rgba(189, 44, 34, 0.14);
+      background: rgba(255, 255, 255, 0.5);
     }
 
     .wp-decision-pill:hover,
     .wp-decision-pill:focus-visible {
       outline: 0;
       filter: none;
-      box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.32),
-        0 22px 46px rgba(8, 11, 16, 0.2);
-      transform: translateY(-2px) scale(1);
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 15px 34px rgba(15, 23, 42, 0.14);
+      transform: translateY(-2px) scale(1.04);
+    }
+
+    .wp-decision-pill.is-bought:hover,
+    .wp-decision-pill.is-bought:focus-visible {
+      background: rgba(235, 251, 243, 0.78);
+    }
+
+    .wp-decision-pill.is-delete:hover,
+    .wp-decision-pill.is-delete:focus-visible {
+      background: rgba(255, 244, 243, 0.78);
+    }
+
+    .wp-decision-pill:active {
+      transform: translateY(0) scale(0.94);
+      transition-duration: 90ms;
     }
 
     .wp-decision-pill:hover .wp-decision-pill-icon,
     .wp-decision-pill:focus-visible .wp-decision-pill-icon {
-      transform: translateY(-8px) scale(0.94);
-    }
-
-    .wp-decision-pill:hover .wp-decision-pill-label,
-    .wp-decision-pill:focus-visible .wp-decision-pill-label {
-      opacity: 1;
-      transform: translate(-50%, 0);
+      transform: scale(1.04);
     }
 
     .wp-decision-status {
@@ -152,7 +155,7 @@ function panelDecisionUiStyles() {
       justify-content: start;
       gap: 4px;
       padding: 0 6px;
-      border-radius: 999px;
+      border-radius: var(--radius);
       color: rgba(8, 11, 16, 0.62);
       background: rgba(8, 11, 16, 0.06);
       font-family: var(--ui-font);
@@ -188,13 +191,14 @@ function panelDecisionUiStyles() {
       position: absolute;
       inset: 0;
       z-index: 8;
-      background:
-        linear-gradient(to bottom, rgba(8, 11, 16, 0.14) 0%, rgba(8, 11, 16, 0.24) 42%, rgba(8, 11, 16, 0.4) 100%);
-      -webkit-backdrop-filter: blur(2px) saturate(0.92);
-      backdrop-filter: blur(2px) saturate(0.92);
+      background: rgba(8, 11, 16, 0.1);
+      -webkit-backdrop-filter: blur(4px) saturate(0.98);
+      backdrop-filter: blur(4px) saturate(0.98);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 180ms cubic-bezier(.22, 1, .36, 1);
+      transition:
+        opacity 220ms cubic-bezier(.22, 1, .36, 1),
+        backdrop-filter 220ms cubic-bezier(.22, 1, .36, 1);
     }
 
     .wp-shell.is-decision-mode .wp-decision-scrim,
@@ -205,30 +209,34 @@ function panelDecisionUiStyles() {
 
     .wp-decision-drop-tray {
       position: absolute;
-      inset: 0;
-      z-index: 9;
+      top: clamp(236px, 46%, 420px);
+      left: 50%;
+      z-index: 12;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 18px;
-      padding: 112px 22px 84px;
-      border: 0;
+      gap: 8px;
+      max-width: calc(100% - 64px);
+      padding: 8px;
+      border: 1px solid rgba(60, 60, 67, 0.12);
       border-radius: var(--radius);
-      background: transparent;
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-      box-shadow: none;
+      background: rgba(255, 255, 255, 0.44);
+      -webkit-backdrop-filter: blur(28px) saturate(1.2);
+      backdrop-filter: blur(28px) saturate(1.2);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 18px 46px rgba(15, 23, 42, 0.14);
       opacity: 0;
       pointer-events: none;
-      transform: translateY(10px) scale(0.98);
-      transition: opacity 180ms ease, transform 220ms cubic-bezier(.16, 1, .3, 1);
+      transform: translate3d(-50%, 14px, 0) scale(0.94);
+      transform-origin: 50% 50%;
+      transition: opacity 180ms ease, transform 320ms cubic-bezier(.18, .95, .24, 1.12);
+      will-change: opacity, transform;
     }
 
     .wp-shell.is-decision-mode .wp-decision-drop-tray,
     .wp-shell.is-decision-dragging .wp-decision-drop-tray {
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(0) scale(1);
+      transform: translate3d(-50%, 0, 0) scale(1);
     }
 
     .wp-decision-drop-tray .wp-decision-pill {
@@ -240,7 +248,7 @@ function panelDecisionUiStyles() {
       opacity: 1;
       pointer-events: auto;
       transform: translateY(0) scale(1);
-      transition-duration: 190ms;
+      transition-duration: 240ms;
     }
 
     .wp-shell.is-decision-mode .wp-decision-drop-tray .wp-decision-pill:nth-child(1),
@@ -256,6 +264,37 @@ function panelDecisionUiStyles() {
     .wp-shell.is-decision-mode .wp-decision-drop-tray .wp-decision-pill:nth-child(3),
     .wp-shell.is-decision-dragging .wp-decision-drop-tray .wp-decision-pill:nth-child(3) {
       transition-delay: 72ms;
+    }
+
+    .wp-shell.is-decision-mode .wp-items,
+    .wp-shell.is-decision-dragging .wp-items {
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .wp-shell.is-decision-mode .wp-item,
+    .wp-shell.is-decision-dragging .wp-item {
+      transition: opacity 220ms cubic-bezier(.16, 1, .3, 1), filter 220ms cubic-bezier(.16, 1, .3, 1), transform 280ms cubic-bezier(.18, .95, .24, 1.08);
+    }
+
+    .wp-shell.is-decision-mode .wp-item:not(.is-decision-target),
+    .wp-shell.is-decision-dragging .wp-item:not(.is-decision-target) {
+      opacity: 0.28;
+      filter: blur(2.2px) saturate(0.78);
+      transform: scale(0.992);
+    }
+
+    .wp-shell.is-decision-mode .wp-item.is-decision-target,
+    .wp-shell.is-decision-dragging .wp-item.is-decision-target {
+      z-index: 2;
+      opacity: 1;
+      filter: none;
+      transform: translateY(-4px) scale(1.012);
+    }
+
+    .wp-shell.is-decision-mode .wp-item.is-decision-target::before,
+    .wp-shell.is-decision-dragging .wp-item.is-decision-target::before {
+      opacity: 0.1;
     }
 
     .wp-shell.is-decision-mode .wp-decision-drop-tray .wp-decision-pill:hover,
@@ -283,28 +322,55 @@ function panelDecisionUiStyles() {
 
     .wp-theme-graphite .wp-decision-pill {
       border-color: rgba(244, 244, 240, 0.14);
-      background: rgba(244, 244, 240, 0.12);
-      box-shadow:
-        inset 0 0 0 1px rgba(244, 244, 240, 0.06),
-        0 18px 40px rgba(0, 0, 0, 0.28);
+      color: rgba(244, 244, 240, 0.76);
+      background: rgba(244, 244, 240, 0.1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 14px 34px rgba(0, 0, 0, 0.3);
     }
 
     .wp-theme-graphite .wp-decision-pill.is-bought {
       color: #baf1cf;
-      border-color: rgba(186, 241, 207, 0.16);
-      background: rgba(74, 222, 128, 0.16);
+      border-color: rgba(186, 241, 207, 0.14);
+      background: rgba(74, 222, 128, 0.12);
     }
 
     .wp-theme-graphite .wp-decision-pill.is-skipped {
       color: rgba(244, 244, 240, 0.72);
       border-color: rgba(244, 244, 240, 0.14);
-      background: rgba(244, 244, 240, 0.1);
+      background: rgba(244, 244, 240, 0.08);
     }
 
     .wp-theme-graphite .wp-decision-pill.is-delete {
       color: #fecaca;
-      border-color: rgba(254, 202, 202, 0.16);
-      background: rgba(248, 113, 113, 0.16);
+      border-color: rgba(254, 202, 202, 0.14);
+      background: rgba(244, 244, 240, 0.08);
+    }
+
+    .wp-theme-graphite .wp-decision-pill:hover,
+    .wp-theme-graphite .wp-decision-pill:focus-visible {
+      background: rgba(244, 244, 240, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 18px 40px rgba(0, 0, 0, 0.36);
+    }
+
+    .wp-theme-graphite .wp-decision-pill.is-bought:hover,
+    .wp-theme-graphite .wp-decision-pill.is-bought:focus-visible {
+      background: rgba(74, 222, 128, 0.18);
+    }
+
+    .wp-theme-graphite .wp-decision-pill.is-delete:hover,
+    .wp-theme-graphite .wp-decision-pill.is-delete:focus-visible {
+      background: rgba(248, 113, 113, 0.14);
+    }
+
+    .wp-theme-graphite .wp-decision-scrim {
+      background: rgba(8, 11, 16, 0.26);
+      -webkit-backdrop-filter: blur(4px) saturate(0.98);
+      backdrop-filter: blur(4px) saturate(0.98);
+    }
+
+    .wp-theme-graphite .wp-decision-drop-tray {
+      border-color: rgba(244, 244, 240, 0.13);
+      background: rgba(22, 23, 27, 0.62);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 20px 48px rgba(0, 0, 0, 0.38);
     }
 
     .wp-theme-graphite .wp-decision-status {

@@ -99,7 +99,7 @@ function syncPanelItemsTopOffset(root, options = {}) {
     const baseTop = filters
       ? (panelState.compactView ? 96 : 104)
       : 80;
-    const measuredTop = Number.isFinite(chromeBottom) ? chromeBottom + 8 : baseTop;
+    const measuredTop = Number.isFinite(chromeBottom) ? chromeBottom + 7 : baseTop;
     const nextTop = `${roundPanelGridOffset(Math.max(baseTop, measuredTop))}px`;
     if (items.style.getPropertyValue("--wp-items-padding-top") !== nextTop) {
       items.style.setProperty("--wp-items-padding-top", nextTop);
@@ -201,7 +201,7 @@ function renderPanelSearchHtml() {
       ${phosphorSearchIcon("wp-inline-search-icon")}
       <label class="wp-inline-search-label" for="wp-panel-search-input">${escapeHtml(t("Search"))}</label>
       <input id="wp-panel-search-input" data-search type="text" inputmode="search" placeholder="${escapeAttribute(t("Search saved"))}" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
-      <button class="wp-clear-search is-visible" type="button" aria-label="${escapeAttribute(actionLabel)}" title="${escapeAttribute(actionLabel)}" data-clear-search>
+      <button class="wp-clear-search is-visible" type="button" aria-label="${escapeAttribute(actionLabel)}" title="${escapeAttribute(actionLabel)}" data-panel-hint="${escapeAttribute(actionLabel)}" data-clear-search>
         ${phosphorXIcon("wp-clear-search-icon")}
       </button>
     </div>
@@ -216,7 +216,7 @@ function renderPanelSummaryHtml(displayItems) {
       <span class="wp-summary-capsule">
         ${renderPanelSummaryLead(displayItems)}
         <div class="wp-currency-select" data-currency-root>
-          <button class="wp-total" type="button" aria-label="${escapeAttribute(t("Choose summary currency"))}" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
+          <button class="wp-total" type="button" aria-label="${escapeAttribute(t("Choose summary currency"))}" aria-haspopup="menu" aria-expanded="false" data-panel-hint="${escapeAttribute(t("Currency"))}" data-currency-trigger>
             ${renderPanelPriceCheckSummaryStatus()}
             <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(valueItems, panelState.summaryCurrency))}</span>
             ${phosphorChevronDownIcon("wp-total-chevron")}
@@ -238,7 +238,7 @@ function renderPanelSearchTrigger() {
   }
 
   return `
-    <button class="wp-icon-button wp-search-button" type="button" aria-label="${escapeAttribute(t("Search"))}" aria-expanded="${panelState.searchOpen}" data-panel-search>
+    <button class="wp-icon-button wp-search-button" type="button" aria-label="${escapeAttribute(t("Search"))}" aria-expanded="${panelState.searchOpen}" data-panel-hint="${escapeAttribute(t("Search"))}" data-panel-search>
       ${phosphorSearchIcon()}
     </button>
   `;
@@ -248,7 +248,7 @@ function renderPanelOverflowMenu() {
   const isOpen = panelState.settingsOpen;
   return `
     <div class="wp-overflow${isOpen ? " is-open" : ""}" style="${escapeAttribute(PANEL_OVERFLOW_ROOT_INLINE_STYLE)}" data-panel-overflow-root>
-      <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("More options"))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-overflow-trigger>
+      <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("More options"))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-hint="${escapeAttribute(t("More options"))}" data-panel-overflow-trigger>
         ${phosphorDotsThreeIcon("wp-overflow-button-icon")}
       </button>
       <div class="wp-overflow-menu" style="${escapeAttribute(panelOverflowMenuInlineStyle(isOpen))}" role="menu" ${isOpen ? "" : "hidden"} data-panel-overflow-menu>

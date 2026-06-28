@@ -90,6 +90,7 @@ function panelStylesChunk1() {
 
     .wp-shell {
       position: fixed;
+      z-index: 1;
       top: var(--panel-top);
       right: var(--panel-right);
       width: min(420px, calc(100vw - 32px), calc((100vh - var(--panel-vertical-space)) * 9 / 16));

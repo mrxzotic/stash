@@ -4,9 +4,9 @@ function panelDialogStyles() {
       position: absolute;
       inset: 0;
       z-index: 10;
-      background: rgba(8, 11, 16, 0.1);
-      -webkit-backdrop-filter: blur(8px) saturate(1.02);
-      backdrop-filter: blur(8px) saturate(1.02);
+      background: rgba(8, 11, 16, 0.18);
+      -webkit-backdrop-filter: blur(14px) saturate(0.98);
+      backdrop-filter: blur(14px) saturate(0.98);
     }
 
     .wp-confirm-dialog {

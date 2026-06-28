@@ -12,6 +12,8 @@ assert.match(backupSource, /schema:\s*BACKUP_SCHEMA/, "Backup export should writ
 assert.match(backupSource, /LEGACY_BACKUP_SCHEMA/, "Backup import should accept legacy exports");
 assert.match(backupSource, /file\.size > 6 \* 1024 \* 1024/, "Backup import should reject oversized files");
 assert.match(backupSource, /id:\s*productId\(normalized\.url\)/, "Imported items should use canonical URL-derived IDs");
+assert.match(backupSource, /function normalizedImportedCategory\(categories, category\)/, "Backup import should normalize category through the shared helper");
+assert.match(backupSource, /if \(!id\) \{\s*return "";\s*\}/, "Backup import should preserve uncategorized saved items");
 assert.match(backupSource, /const key = productIdentityKey\(item\.url\) \|\| item\.id;/, "Import merge should dedupe by product identity first");
 assert.match(backupSource, /\.slice\(0, 300\)/, "Import merge should keep the local storage cap");
 

@@ -100,6 +100,7 @@ var TUCKIO_I18N_MESSAGE_ROWS = [
   ["List view off", "Vista de lista desactivada", "Listenansicht aus", "Vue liste désactivée", "Список выключен"],
   ["List view on", "Vista de lista activada", "Listenansicht an", "Vue liste activée", "Список включён"],
   ["Local JSON backup", "Copia JSON local", "Lokale JSON-Sicherung", "Sauvegarde JSON locale", "Локальный JSON-бэкап"],
+  ["Mark as bought", "Marcar como comprado", "Als gekauft markieren", "Marquer comme acheté", "Отметить как купленное"],
   ["More options", "Más opciones", "Weitere Optionen", "Plus d’options", "Ещё"],
   ["Name", "Nombre", "Name", "Nom", "Название"],
   ["Name A-Z", "Nombre A-Z", "Name A-Z", "Nom A-Z", "Название А-Я"],
