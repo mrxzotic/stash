@@ -29,6 +29,9 @@ function bindPanelEvents(root) {
     event.preventDefault();
     event.stopPropagation();
     rememberPanelFocus(button);
+    if (event.detail > 0) {
+      button.blur();
+    }
     panelState.categoryComposerOpen = false;
     panelState.deleteCategoryId = "";
     panelState.deleteItemId = button.dataset.removeId;
@@ -273,10 +276,61 @@ async function removePanelItem(id) {
     throw error;
   });
   panelState.items = Array.isArray(storedItems) ? storedItems : nextItems;
+  resetPanelHomeScopeAfterLastShortlistDelete(panelState.items);
   panelState.deleteItemId = "";
   panelState.decisionItemId = "";
   syncPanelArchiveAvailability();
   renderTuckioPanel({ summaryAnimationFrom: previousSummary });
+  mutePanelDeleteHoverAfterRender();
+}
+
+function resetPanelHomeScopeAfterLastShortlistDelete(items) {
+  if (
+    !panelState.shortlistOpen ||
+    typeof panelShortlistCount !== "function" ||
+    panelShortlistCount(items) > 0
+  ) {
+    return;
+  }
+
+  panelState.shortlistOpen = false;
+  panelState.activeCategory = "all";
+  panelState.brandCloudOpen = false;
+  panelState.brandCloudSortList = false;
+  panelState.brandFilterKey = "";
+  panelState.brandFilterLabel = "";
+  panelState.searchOpen = false;
+  panelState.searchQuery = "";
+  panelState.filterMenuOpen = false;
+  panelState.sortMenuOpen = false;
+  panelState.categoryComposerOpen = false;
+  closePanelArchivedView();
+}
+
+function mutePanelDeleteHoverAfterRender() {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  const root = document.getElementById("tuckio-panel-root")?.shadowRoot;
+  if (!root) {
+    return;
+  }
+
+  const muteHoveredItems = () => {
+    root.querySelectorAll(".wp-item:hover").forEach((item) => {
+      if (typeof mutePanelLayoutHoverUntilExit === "function") {
+        mutePanelLayoutHoverUntilExit(item);
+      }
+    });
+  };
+
+  if (typeof window !== "undefined" && window.requestAnimationFrame) {
+    window.requestAnimationFrame(muteHoveredItems);
+    return;
+  }
+
+  muteHoveredItems();
 }
 
 function safelyRunPanelAction(action) {

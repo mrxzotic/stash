@@ -1,3 +1,5 @@
+var PANEL_OPEN_STATIC_MS = 760;
+
 function renderTuckioPanel(options = {}) {
   if (tuckioPanelRenderSuppressedForLocalWrite()) return;
   const root = getPanelRoot();
@@ -45,6 +47,25 @@ function renderTuckioPanel(options = {}) {
   panelState.hasRenderedPanel = true;
   finishPanelRebuildMotion(root);
   animatePanelItemLayout(root, previousItemRects);
+  schedulePanelStaticClass(root);
+}
+
+function schedulePanelStaticClass(root) {
+  const shell = root.querySelector(".wp-shell");
+  if (!shell || shell.classList.contains("is-static")) {
+    return;
+  }
+
+  window.clearTimeout(root.__tuckioPanelStaticTimer);
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+    shell.classList.add("is-static");
+    return;
+  }
+
+  root.__tuckioPanelStaticTimer = window.setTimeout(() => {
+    root.querySelector(".wp-shell")?.classList.add("is-static");
+    root.__tuckioPanelStaticTimer = 0;
+  }, PANEL_OPEN_STATIC_MS);
 }
 
 function animatePanelSummaryAfterRender(root, displayItems, previousValue) {
@@ -72,12 +93,13 @@ function syncPanelItemsTopOffset(root, options = {}) {
   }
 
   const applyOffset = () => {
-    const shellTop = shell.getBoundingClientRect().top;
-    const chromeBottom = filters ? panelVisibleFiltersBottom(filters) : topbar.getBoundingClientRect().bottom;
+    const chromeBottom = filters
+      ? panelVisibleFiltersBottom(shell, filters)
+      : panelElementLayoutBottomWithinShell(shell, topbar);
     const baseTop = filters
-      ? (panelState.compactView ? 96 : 112)
+      ? (panelState.compactView ? 96 : 104)
       : 80;
-    const measuredTop = chromeBottom - shellTop + 16;
+    const measuredTop = Number.isFinite(chromeBottom) ? chromeBottom + 7 : baseTop;
     const nextTop = `${roundPanelGridOffset(Math.max(baseTop, measuredTop))}px`;
     if (items.style.getPropertyValue("--wp-items-padding-top") !== nextTop) {
       items.style.setProperty("--wp-items-padding-top", nextTop);
@@ -96,13 +118,16 @@ function roundPanelGridOffset(value) {
   return Math.ceil(value / 8) * 8;
 }
 
-function panelVisibleFiltersBottom(filters) {
+function panelVisibleFiltersBottom(shell, filters) {
   const visibleBottoms = Array.from(filters.children)
-    .map((child) => panelVisibleFilterChildBottom(filters, child))
+    .map((child) => panelVisibleFilterChildBottom(shell, filters, child))
     .filter((bottom) => Number.isFinite(bottom));
-  return visibleBottoms.length ? Math.max(...visibleBottoms) : filters.getBoundingClientRect().bottom;
+  return visibleBottoms.length
+    ? Math.max(...visibleBottoms)
+    : panelElementLayoutBottomWithinShell(shell, filters);
 }
-function panelVisibleFilterChildBottom(filters, child) {
+
+function panelVisibleFilterChildBottom(shell, filters, child) {
   if (panelIsFloatingFilterControl(child)) {
     return NaN;
   }
@@ -117,7 +142,21 @@ function panelVisibleFilterChildBottom(filters, child) {
   if (style && (style.display === "none" || style.visibility === "hidden")) {
     return NaN;
   }
-  return rect.bottom;
+  return panelElementLayoutBottomWithinShell(shell, child);
+}
+
+function panelElementLayoutBottomWithinShell(shell, element) {
+  const height = Number(element?.offsetHeight);
+  if (!shell || !element || !Number.isFinite(height) || height <= 0) {
+    return NaN;
+  }
+
+  let top = 0;
+  let node = element;
+  for (; node && node !== shell; node = node.offsetParent) {
+    top += Number(node.offsetTop) || 0;
+  }
+  return node === shell ? top + height : NaN;
 }
 
 function panelIsFloatingFilterControl(child) {
@@ -153,46 +192,6 @@ function renderCategoryComposer() {
   `;
 }
 
-function renderDeleteCategoryDialog() {
-  const category = panelState.categories.find((item) => item.id === panelState.deleteCategoryId);
-  if (!category) {
-    return "";
-  }
-
-  return `
-    <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-category></div>
-    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-delete-category-title" data-panel-modal>
-      <h3 id="wp-delete-category-title">${escapeHtml(t("Delete {category}?", { category: panelCategoryDisplayLabel(category) }))}</h3>
-      <p>${escapeHtml(t("Items stay saved and move back to All."))}</p>
-      <div class="wp-confirm-actions">
-        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-category>${escapeHtml(t("Cancel"))}</button>
-        <button class="wp-confirm-delete" type="button" data-confirm-delete-category="${escapeAttribute(category.id)}">${escapeHtml(t("Delete"))}</button>
-      </div>
-    </section>
-  `;
-}
-
-function renderDeleteItemDialog() {
-  const item = panelState.items
-    .map(normalizePanelItem)
-    .find((savedItem) => savedItem.id === panelState.deleteItemId);
-  if (!item) {
-    return "";
-  }
-
-  return `
-    <div class="wp-dialog-backdrop" role="presentation" data-cancel-delete-item></div>
-    <section class="wp-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-delete-item-title" data-panel-modal>
-      <h3 id="wp-delete-item-title">${escapeHtml(t("Delete {item}?", { item: item.title }))}</h3>
-      <p>${escapeHtml(t("This removes it from Tuckio."))}</p>
-      <div class="wp-confirm-actions">
-        <button class="wp-confirm-cancel" type="button" data-autofocus data-cancel-delete-item>${escapeHtml(t("Cancel"))}</button>
-        <button class="wp-confirm-delete" type="button" data-confirm-delete-item="${escapeAttribute(item.id)}">${escapeHtml(t("Delete"))}</button>
-      </div>
-    </section>
-  `;
-}
-
 function renderPanelSearchHtml() {
   const hasQuery = Boolean(panelState.searchQuery);
   const actionLabel = hasQuery ? t("Clear search") : t("Close search");
@@ -202,7 +201,7 @@ function renderPanelSearchHtml() {
       ${phosphorSearchIcon("wp-inline-search-icon")}
       <label class="wp-inline-search-label" for="wp-panel-search-input">${escapeHtml(t("Search"))}</label>
       <input id="wp-panel-search-input" data-search type="text" inputmode="search" placeholder="${escapeAttribute(t("Search saved"))}" autocomplete="off" value="${escapeAttribute(panelState.searchQuery)}">
-      <button class="wp-clear-search is-visible" type="button" aria-label="${escapeAttribute(actionLabel)}" title="${escapeAttribute(actionLabel)}" data-clear-search>
+      <button class="wp-clear-search is-visible" type="button" aria-label="${escapeAttribute(actionLabel)}" title="${escapeAttribute(actionLabel)}" data-panel-hint="${escapeAttribute(actionLabel)}" data-clear-search>
         ${phosphorXIcon("wp-clear-search-icon")}
       </button>
     </div>
@@ -217,7 +216,7 @@ function renderPanelSummaryHtml(displayItems) {
       <span class="wp-summary-capsule">
         ${renderPanelSummaryLead(displayItems)}
         <div class="wp-currency-select" data-currency-root>
-          <button class="wp-total" type="button" aria-label="${escapeAttribute(t("Choose summary currency"))}" aria-haspopup="menu" aria-expanded="false" data-currency-trigger>
+          <button class="wp-total" type="button" aria-label="${escapeAttribute(t("Choose summary currency"))}" aria-haspopup="menu" aria-expanded="false" data-panel-hint="${escapeAttribute(t("Currency"))}" data-currency-trigger>
             ${renderPanelPriceCheckSummaryStatus()}
             <span class="wp-total-value" data-total-value>${escapeHtml(formatPanelSummaryTotal(valueItems, panelState.summaryCurrency))}</span>
             ${phosphorChevronDownIcon("wp-total-chevron")}
@@ -239,7 +238,7 @@ function renderPanelSearchTrigger() {
   }
 
   return `
-    <button class="wp-icon-button wp-search-button" type="button" aria-label="${escapeAttribute(t("Search"))}" aria-expanded="${panelState.searchOpen}" data-panel-search>
+    <button class="wp-icon-button wp-search-button" type="button" aria-label="${escapeAttribute(t("Search"))}" aria-expanded="${panelState.searchOpen}" data-panel-hint="${escapeAttribute(t("Search"))}" data-panel-search>
       ${phosphorSearchIcon()}
     </button>
   `;
@@ -249,7 +248,7 @@ function renderPanelOverflowMenu() {
   const isOpen = panelState.settingsOpen;
   return `
     <div class="wp-overflow${isOpen ? " is-open" : ""}" style="${escapeAttribute(PANEL_OVERFLOW_ROOT_INLINE_STYLE)}" data-panel-overflow-root>
-      <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("More options"))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-overflow-trigger>
+      <button class="wp-icon-button wp-overflow-button${isOpen ? " is-active" : ""}" type="button" aria-label="${escapeAttribute(t("More options"))}" aria-haspopup="menu" aria-expanded="${isOpen}" data-panel-hint="${escapeAttribute(t("More options"))}" data-panel-overflow-trigger>
         ${phosphorDotsThreeIcon("wp-overflow-button-icon")}
       </button>
       <div class="wp-overflow-menu" style="${escapeAttribute(panelOverflowMenuInlineStyle(isOpen))}" role="menu" ${isOpen ? "" : "hidden"} data-panel-overflow-menu>

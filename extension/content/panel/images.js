@@ -55,10 +55,10 @@ function renderMissingProductImage(namespace = "wp") {
 function renderPanelImageSliderControls(urls, item = null) {
   const label = item ? t(" for {item}", { item: panelItemAccessibleName(item) }) : "";
   return `
-    <button class="wp-image-slider-button is-prev" type="button" aria-label="${escapeAttribute(t("Previous image{label}", { label }))}" data-image-slide="previous">
+    <button class="wp-image-slider-button is-prev" type="button" aria-label="${escapeAttribute(t("Previous image{label}", { label }))}" data-panel-hint="${escapeAttribute(t("Previous image{label}", { label: "" }))}" data-image-slide="previous">
       ${phosphorChevronLeftIcon("wp-image-slider-icon")}
     </button>
-    <button class="wp-image-slider-button is-next" type="button" aria-label="${escapeAttribute(t("Next image{label}", { label }))}" data-image-slide="next">
+    <button class="wp-image-slider-button is-next" type="button" aria-label="${escapeAttribute(t("Next image{label}", { label }))}" data-panel-hint="${escapeAttribute(t("Next image{label}", { label: "" }))}" data-image-slide="next">
       ${phosphorChevronRightIcon("wp-image-slider-icon")}
     </button>
     <span class="wp-image-slider-tray">
@@ -81,7 +81,7 @@ function renderPanelImageSliderDots(urls) {
 function renderPanelImageDeleteButton(item = null) {
   const label = item ? t(" from {item}", { item: panelItemAccessibleName(item) }) : "";
   return `
-    <button class="wp-image-delete-button" type="button" aria-label="${escapeAttribute(t("Remove current image{label}", { label }))}" title="${escapeAttribute(t("Remove image"))}" data-image-delete>
+    <button class="wp-image-delete-button" type="button" aria-label="${escapeAttribute(t("Remove current image{label}", { label }))}" title="${escapeAttribute(t("Remove image"))}" data-panel-hint="${escapeAttribute(t("Remove image"))}" data-image-delete>
       ${phosphorImageOffIcon("wp-image-delete-icon")}
     </button>
   `;

@@ -90,6 +90,7 @@ function panelStylesChunk1() {
 
     .wp-shell {
       position: fixed;
+      z-index: 1;
       top: var(--panel-top);
       right: var(--panel-right);
       width: min(420px, calc(100vw - 32px), calc((100vh - var(--panel-vertical-space)) * 9 / 16));
@@ -113,11 +114,16 @@ function panelStylesChunk1() {
       transform: translateZ(0);
       backface-visibility: hidden;
       scrollbar-width: none;
-      animation: wpPanelIn 260ms cubic-bezier(.16, 1, .3, 1) both;
+      animation: wpPanelIn 320ms cubic-bezier(.16, 1, .3, 1) both;
     }
 
     .wp-shell {
       font-family: var(--ui-font);
+    }
+
+    .wp-shell.is-closing {
+      pointer-events: none;
+      animation: wpPanelOut 180ms cubic-bezier(.32, 0, .67, 0) both;
     }
 
     .wp-theme-white {
@@ -277,8 +283,8 @@ function panelStylesChunk1() {
       );
     }
 
-    .wp-shell.is-static,
-    .wp-shell.is-static .wp-item {
+    .wp-shell.is-static:not(.is-closing),
+    .wp-shell.is-static:not(.is-closing) .wp-item {
       animation: none;
     }
 

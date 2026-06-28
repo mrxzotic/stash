@@ -5,10 +5,10 @@ function panelHintStyles() {
       top: 0;
       left: 0;
       z-index: 18;
-      max-width: min(220px, calc(100% - 24px));
+      max-width: min(220px, calc(100% - 40px));
       padding: 7px 10px;
       border: 1px solid rgba(8, 11, 16, 0.1);
-      border-radius: 999px;
+      border-radius: var(--radius);
       background: rgba(255, 255, 255, 0.88);
       color: rgba(8, 11, 16, 0.7);
       -webkit-backdrop-filter: blur(22px) saturate(1.18);

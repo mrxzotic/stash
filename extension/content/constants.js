@@ -1,4 +1,4 @@
-var CONTENT_VERSION = "2026-06-25-brand-cloud-hitbox-v121";
+var CONTENT_VERSION = "2026-06-28-p457-delete-favorites-home-v149";
 
 
 var STORAGE_KEY = "tuckio.items.v1";

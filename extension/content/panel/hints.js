@@ -1,4 +1,6 @@
 var PANEL_HINT_DELAY_MS = 760;
+var PANEL_HINT_DECISION_DELAY_MS = 140;
+var PANEL_HINT_EDGE_GUTTER_PX = 20;
 var PANEL_HINT_FOCUS_DELAY_MS = 520;
 var PANEL_HINT_HIDE_MS = 160;
 
@@ -42,8 +44,16 @@ function bindPanelHintEvents(root) {
 }
 
 function panelHintTarget(target) {
-  const control = target?.closest?.("[data-panel-hint]");
-  return control?.dataset?.panelHint ? control : null;
+  const explicit = target?.closest?.("[data-panel-hint]");
+  if (panelHintText(explicit)) {
+    return explicit;
+  }
+
+  const control = target?.closest?.("button[aria-label]");
+  if (!control || !panelHintButtonLooksIconOnly(control)) {
+    return null;
+  }
+  return panelHintText(control) ? control : null;
 }
 
 function schedulePanelHint(root, control, delay) {
@@ -59,7 +69,10 @@ function schedulePanelHint(root, control, delay) {
   }
 
   root.__tuckioHintTarget = control;
-  root.__tuckioHintTimer = window.setTimeout(() => showPanelHint(root, control), delay);
+  root.__tuckioHintTimer = window.setTimeout(
+    () => showPanelHint(root, control),
+    panelHintDelayMs(control, delay)
+  );
 }
 
 function showPanelHint(root, control) {
@@ -69,7 +82,7 @@ function showPanelHint(root, control) {
 
   const layer = root.querySelector("[data-panel-hint-layer]");
   const shell = root.querySelector(".wp-shell");
-  const text = control?.dataset?.panelHint || "";
+  const text = panelHintText(control);
   if (!layer || !shell || !text) {
     return;
   }
@@ -87,8 +100,8 @@ function showPanelHint(root, control) {
   const height = Math.ceil(hintRect.height);
   const x = clampPanelHintPosition(
     controlRect.left - shellRect.left + controlRect.width / 2 - width / 2,
-    12,
-    Math.max(12, shellRect.width - width - 12)
+    PANEL_HINT_EDGE_GUTTER_PX,
+    Math.max(PANEL_HINT_EDGE_GUTTER_PX, shellRect.width - width - PANEL_HINT_EDGE_GUTTER_PX)
   );
   const y = panelHintVerticalPosition(shellRect, controlRect, height);
   layer.style.setProperty("--wp-hint-x", `${Math.round(x)}px`);
@@ -128,6 +141,32 @@ function panelHintVerticalPosition(shellRect, controlRect, hintHeight) {
 
 function clampPanelHintPosition(value, min, max) {
   return Math.min(Math.max(value, min), max);
+}
+
+function panelHintDelayMs(control, fallbackDelay) {
+  if (control?.classList?.contains("wp-decision-pill")) {
+    return PANEL_HINT_DECISION_DELAY_MS;
+  }
+
+  return fallbackDelay;
+}
+
+function panelHintButtonLooksIconOnly(control) {
+  const text = panelHintCleanText(control?.textContent || "");
+  return !text || /^[\d\s.,+-]+$/.test(text);
+}
+
+function panelHintText(control) {
+  return panelHintCleanText(
+    control?.dataset?.panelHint ||
+    control?.getAttribute?.("aria-label") ||
+    control?.getAttribute?.("title") ||
+    ""
+  );
+}
+
+function panelHintCleanText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
 }
 
 function panelHoverHintsEnabled() {

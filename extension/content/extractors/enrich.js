@@ -108,7 +108,8 @@ function extractFromFetchedProductPage(doc, productUrl) {
   const jsonProduct = findJsonLdProductInDocument(doc, productUrl);
   const metaProduct = extractMetaProductFromDocument(doc, productUrl);
   const priceProduct = extractPriceFromFetchedDocument(doc, productUrl);
-  return mergeProducts([jsonProduct, metaProduct, priceProduct]);
+  const product = mergeProducts([jsonProduct, metaProduct, priceProduct]);
+  return isP448ProductUrl(productUrl) ? p448ProductWithFetchedPrice(product, jsonProduct, metaProduct, priceProduct) : product;
 }
 
 function extractPyeProductFromFetchedPage(doc, productUrl) {

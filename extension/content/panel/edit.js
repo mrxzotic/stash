@@ -14,7 +14,7 @@ function renderEditItemDialog() {
     <form class="wp-edit-dialog" role="dialog" aria-modal="true" aria-labelledby="wp-edit-item-title" data-panel-modal data-edit-item-form>
       <div class="wp-edit-head">
         <h3 id="wp-edit-item-title">${escapeHtml(t("Edit item"))}</h3>
-        <button class="wp-edit-close" type="button" aria-label="${escapeAttribute(t("Cancel edit"))}" data-cancel-edit-item>${phosphorXIcon("wp-edit-close-icon")}</button>
+        <button class="wp-edit-close" type="button" aria-label="${escapeAttribute(t("Cancel edit"))}" data-panel-hint="${escapeAttribute(t("Cancel edit"))}" data-cancel-edit-item>${phosphorXIcon("wp-edit-close-icon")}</button>
       </div>
       <label class="wp-edit-field">
         <span>${escapeHtml(t("Brand"))}</span>
@@ -42,7 +42,7 @@ function renderEditItemDialog() {
       </label>
       <div class="wp-edit-field">
         <span>${escapeHtml(t("Category"))}</span>
-        <div class="wp-edit-category-list" role="radiogroup" aria-label="${escapeAttribute(t("Category"))}">
+        <div class="wp-edit-category-list" role="group" aria-label="${escapeAttribute(t("Category"))}" data-edit-category-list>
           ${renderEditCategoryOptions(item.category)}
         </div>
       </div>
@@ -96,15 +96,18 @@ function renderEditCurrencyOptions(selectedCurrency) {
 }
 
 function renderEditCategoryOptions(selectedCategory) {
-  return panelState.categories.map((category) => {
-    const isSelected = category.id === selectedCategory;
+  const selected = hasCategory(panelState.categories, selectedCategory) ? selectedCategory : "";
+  const hiddenInput = `<input type="hidden" name="category" value="${escapeAttribute(selected)}" data-edit-category-value>`;
+  const categoryButtons = panelState.categories.map((category) => {
+    const isSelected = category.id === selected;
+    const label = panelCategoryDisplayLabel(category);
     return `
-      <label class="wp-edit-category${isSelected ? " is-selected" : ""}">
-        <input type="radio" name="category" value="${escapeAttribute(category.id)}" ${isSelected ? "checked" : ""}>
-        <span>${escapeHtml(panelCategoryDisplayLabel(category))}</span>
-      </label>
+      <button class="wp-edit-category${isSelected ? " is-selected" : ""}" type="button" aria-pressed="${isSelected}" data-edit-category="${escapeAttribute(category.id)}" data-panel-hint="${escapeAttribute(label)}">
+        <span>${escapeHtml(label)}</span>
+      </button>
     `;
   }).join("");
+  return `${hiddenInput}${categoryButtons}`;
 }
 
 function editablePanelItem() {
@@ -134,14 +137,53 @@ function bindPanelEditEvents(root) {
 
   root.querySelector("[data-edit-item-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
-    safelyRunPanelAction(() => savePanelEditedItem(event.currentTarget));
+    const form = event.currentTarget;
+    safelyRunPanelAction(() => savePanelEditedItem(form));
   });
+
+  bindEditCategoryToggle(root);
 
   root.querySelectorAll("[data-cancel-edit-item]").forEach((button) => {
     button.addEventListener("click", () => {
       panelState.editItemId = "";
       renderTuckioPanel();
     });
+  });
+}
+
+function bindEditCategoryToggle(root) {
+  const list = root.querySelector("[data-edit-category-list]");
+  if (!list) {
+    return;
+  }
+
+  list.addEventListener("click", (event) => {
+    const button = editCategoryButtonFromEvent(event);
+    if (!button) {
+      return;
+    }
+
+    const valueInput = list.querySelector("[data-edit-category-value]");
+    if (!valueInput) {
+      return;
+    }
+
+    const category = cleanText(button.dataset.editCategory);
+    valueInput.value = valueInput.value === category ? "" : category;
+    syncEditCategorySelection(list);
+  });
+}
+
+function editCategoryButtonFromEvent(event) {
+  return event.target?.closest?.("[data-edit-category]");
+}
+
+function syncEditCategorySelection(list) {
+  const value = cleanText(list.querySelector("[data-edit-category-value]")?.value);
+  list.querySelectorAll("[data-edit-category]").forEach((button) => {
+    const isSelected = cleanText(button.dataset.editCategory) === value;
+    button.classList.toggle("is-selected", isSelected);
+    button.setAttribute("aria-pressed", String(isSelected));
   });
 }
 
@@ -162,6 +204,7 @@ async function savePanelEditedItem(form) {
   const imageUrl = cleanText(formData.get("imageUrl")) || current.imageUrl;
   const normalizedImageUrl = toAbsoluteUrl(imageUrl);
   const category = cleanText(formData.get("category"));
+  const nextCategory = hasCategory(panelState.categories, category) ? category : "";
   const nextItem = {
     ...panelState.items[index],
     id: current.id,
@@ -174,7 +217,7 @@ async function savePanelEditedItem(form) {
     imageUrl: normalizedImageUrl,
     imageUrls: normalizeProductImageUrls(current.imageUrls, imageUrl, SAVED_IMAGE_URL_LIMIT),
     extraction: manualPanelExtractionQuality({ brand, title, price, imageUrl: normalizedImageUrl }),
-    category: hasCategory(panelState.categories, category) ? category : current.category,
+    category: nextCategory,
     price: editedStoredPrice(price),
     priceText: price.originalText,
     priceAmount: price.amount,
@@ -200,7 +243,7 @@ function editedBrand(formData, current) {
 
 function editedTitle(formData, current, brand) {
   const value = cleanText(formData.get("title"));
-  return cleanProductTitle(value, brand, current.url) || current.title || "Saved Product";
+  return value || current.title || "Saved Product";
 }
 
 function editedPrice(formData, current) {

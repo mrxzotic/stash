@@ -45,7 +45,20 @@ function isP448ProductUrl(value) {
 
 function bestP448ProductPrice(visibleSources, priceSources) {
   const visiblePrice = bestPriceFromSources(visibleSources);
-  const structuredPrice = bestPriceFromSources(priceSources);
+  const structuredPrice = bestP448StructuredPrice(priceSources);
+  if (isP448ShippingThresholdSale(visiblePrice)) {
+    const fullPrice = p448FullPriceFromCompareAt(visiblePrice);
+    if (
+      Number.isFinite(structuredPrice.amount) &&
+      Math.abs(structuredPrice.amount - fullPrice.amount) < 0.01
+    ) {
+      return priceWithoutCompareAt(structuredPrice);
+    }
+    return fullPrice;
+  }
+  if (isP448InstallmentFragmentPrice(visiblePrice, structuredPrice)) {
+    return priceWithoutCompareAt(structuredPrice);
+  }
   if (
     visiblePrice.isSale &&
     Number.isFinite(structuredPrice.amount) &&
@@ -59,6 +72,79 @@ function bestP448ProductPrice(visibleSources, priceSources) {
   return Number.isFinite(structuredPrice.amount) && structuredPrice.currency
     ? priceWithoutCompareAt(structuredPrice)
     : {};
+}
+
+function p448ProductWithFetchedPrice(product, jsonProduct, metaProduct, priceProduct) {
+  const price = bestP448ProductPrice(
+    [priceProduct, metaProduct],
+    [jsonProduct, metaProduct, priceProduct]
+  );
+  if (!Number.isFinite(price.amount) || !price.currency) {
+    return product;
+  }
+
+  return compactObject({
+    ...product,
+    priceText: price.originalText,
+    priceAmount: price.amount,
+    currency: price.currency,
+    compareAtPriceText: price.compareAtText,
+    compareAtPriceAmount: price.compareAtAmount,
+    isSale: price.isSale
+  });
+}
+
+function bestP448StructuredPrice(priceSources) {
+  const jsonLdPrice = bestPriceFromSources(priceSources.filter((source) => source?.fromJsonLd));
+  return Number.isFinite(jsonLdPrice.amount) && jsonLdPrice.currency
+    ? jsonLdPrice
+    : bestPriceFromSources(priceSources);
+}
+
+function isP448ShippingThresholdSale(price) {
+  const amount = numericPrice(price?.amount);
+  const compareAtAmount = numericPrice(price?.compareAtAmount);
+  const currency = cleanText(price?.currency).toUpperCase();
+  return (
+    price?.isSale === true &&
+    currency === "EUR" &&
+    Math.abs(amount - 165) < 0.01 &&
+    Number.isFinite(compareAtAmount) &&
+    compareAtAmount > amount
+  );
+}
+
+function isP448InstallmentFragmentPrice(visiblePrice, structuredPrice) {
+  const visibleAmount = numericPrice(visiblePrice?.amount);
+  const structuredAmount = numericPrice(structuredPrice?.amount);
+  const visibleCurrency = cleanText(visiblePrice?.currency).toUpperCase();
+  const structuredCurrency = cleanText(structuredPrice?.currency).toUpperCase();
+  const ratio = structuredAmount / visibleAmount;
+  return Boolean(
+    visibleCurrency &&
+      visibleCurrency === structuredCurrency &&
+      Number.isFinite(visibleAmount) &&
+      Number.isFinite(structuredAmount) &&
+      visibleAmount > 0 &&
+      visibleAmount < structuredAmount &&
+      visiblePrice?.isSale !== true &&
+      !Number.isFinite(numericPrice(visiblePrice?.compareAtAmount)) &&
+      ratio >= 2.7 &&
+      ratio <= 3.3
+  );
+}
+
+function p448FullPriceFromCompareAt(price) {
+  const amount = numericPrice(price?.compareAtAmount);
+  const currency = cleanText(price?.currency).toUpperCase();
+  return compactObject({
+    amount,
+    currency,
+    originalText:
+      cleanText(price?.compareAtText) ||
+      formatOriginalPrice(amount, currency) ||
+      cleanText(price?.originalText)
+  });
 }
 
 function looksLikeSkuProductPath(url) {

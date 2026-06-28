@@ -168,9 +168,7 @@ function normalizeImportedBackupItem(item, categories, importedAt) {
 
   const imageUrls = normalizeImportedImageUrls(item.imageUrls, item.imageUrl);
   const normalized = normalizePanelItem({ ...item, url, imageUrl: imageUrls[0] || "", imageUrls });
-  const category = hasCategory(categories, normalized.category)
-    ? normalized.category
-    : categories[0]?.id || DEFAULT_CATEGORIES[0].id;
+  const category = normalizedImportedCategory(categories, normalized.category);
 
   return compactObject({
     ...item,
@@ -198,6 +196,17 @@ function normalizeImportedBackupItem(item, categories, importedAt) {
     updatedAt: normalizedImportDate(item.updatedAt),
     archivedAt: normalizedImportDate(item.archivedAt)
   });
+}
+
+function normalizedImportedCategory(categories, category) {
+  const id = cleanText(category);
+  if (!id) {
+    return "";
+  }
+
+  return hasCategory(categories, id)
+    ? id
+    : categories[0]?.id || DEFAULT_CATEGORIES[0].id;
 }
 
 function mergeImportedItems(importedItems) {

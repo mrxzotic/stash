@@ -54,6 +54,8 @@ assert.match(decisionsSource, /panelItemActionLabel\("Decide", item\)/, "Decisio
 assert.match(decisionsSource, /panelItemActionLabel\("Delete", item\)/, "Delete buttons should include item-specific labels");
 assert.match(decisionsSource, /panelItemActionLabel\(label, item\)/, "Shortlist buttons should include item-specific labels");
 assert.match(decisionsSource, /label: "Archive"/, "Archive decision should be named Archive instead of an ambiguous skipped label");
+assert.match(decisionsSource, /hint: "Mark as bought"/, "Bought decision should expose an explicit action hint");
+assert.match(decisionsSource, /function panelDecisionActionHint\(action\)/, "Decision pills should separate action hints from persisted status labels");
 assert.match(decisionsSource, /phosphorCheckIcon\("wp-decision-pill-icon"\)/, "Bought decision should render a Phosphor icon");
 assert.match(decisionsSource, /phosphorArchiveIcon\("wp-decision-pill-icon"\)/, "Archive decision should render a Phosphor icon");
 assert.match(decisionsSource, /phosphorTrashIcon\("wp-decision-pill-icon"\)/, "Delete decision should render a Phosphor icon");
@@ -64,6 +66,7 @@ assert.doesNotMatch(decisionsSource, /function togglePanelDecisionTray\(id\)[\s\
 assert.match(imageSource, /panelProductImageAlt\(item\)/, "Product images should use item-specific alt text");
 assert.match(imageSource, /Previous image\{label\}/, "Image slider controls should include item context");
 assert.match(editSource, /data-panel-modal/, "Edit dialog should be marked as a trapped modal");
+assert.match(panelEditStyles, /\.wp-edit-dialog\s*\{[\s\S]*?border-radius: var\(--radius\);/, "Edit sheet should use the 8px system radius");
 assert.match(editSource, /editAutofocusField\(item\)/, "Edit dialog should focus the first field that needs review");
 assert.match(editSource, /manualPanelExtractionQuality/, "Manual edits should replace parser-risk extraction metadata");
 assert.ok(fs.existsSync(path.join(root, "extension/assets/phosphor-light/magnifying-glass-minus.svg")), "Search empty state icon should use a vendored Phosphor Light asset");
@@ -98,8 +101,12 @@ assert.match(filtersSource, /data-shortlist-toggle/, "Shortlist chip should expo
 assert.match(filtersSource, /wp-shortlist-chip-count/, "Shortlist chip should be count-first and text-free");
 assert.match(panelFilterMenuStyles, /\.wp-filter-rail > \.wp-filter-shortlist\s*\{[\s\S]*?gap: 6px;/, "Shortlist chip should keep space between star icon and count");
 assert.match(renderSource, /data-panel-hint-layer/, "Panel should render one shared hint layer for delayed chip explanations");
+assert.doesNotMatch(renderSource, /wp-page-veil|data-panel-page-veil/, "Decision mode should not dim the host page outside the app panel");
+assert.doesNotMatch(panelBaseStyles, /wp-page-veil/, "Panel styles should not include a full-page decision veil");
 assert.match(eventsSource, /bindPanelHintEvents\(root\)/, "Panel should bind delayed hint behavior with the rest of the chrome events");
 assert.match(hintsSource, /PANEL_HINT_DELAY_MS = 760/, "Chip hints should wait before appearing so they do not nag on quick passes");
+assert.match(hintsSource, /PANEL_HINT_DECISION_DELAY_MS = 140/, "Decision action hints should appear faster than passive chip hints");
+assert.match(hintsSource, /PANEL_HINT_EDGE_GUTTER_PX = 20/, "Hint positioning should keep text away from the app edge");
 assert.match(constantsSource, /hoverHints: true/, "Hover hints should default on for discoverability");
 assert.match(settingsSource, /hoverHints: value\?\.hoverHints !== false/, "Hover hints settings should preserve an explicit off state while defaulting on");
 assert.match(renderSource, /data-panel-theme-toggle[\s\S]*?data-panel-hover-hints-toggle[\s\S]*?renderPanelLanguageSelect/, "Hover hints should live in the overflow menu before language");
@@ -111,8 +118,11 @@ assert.match(bootstrapSource, /if \(summaryCurrencyChanged\) \{[\s\S]*?renderPan
 assert.match(hintsSource, /event\.pointerType !== "mouse"[\s\S]*?event\.pointerType !== "pen"/, "Chip hints should stay hover-oriented instead of firing on touch");
 assert.match(hintsSource, /!panelHoverHintsEnabled\(\)[\s\S]*?hidePanelHint\(root\)/, "Disabled hover hints should not schedule a tooltip");
 assert.match(hintsSource, /function panelHoverHintsEnabled\(\)[\s\S]*?panelState\.hoverHints !== false/, "Hint manager should read the persisted hover hint setting");
+assert.match(hintsSource, /function panelHintDelayMs\(control, fallbackDelay\)[\s\S]*?wp-decision-pill[\s\S]*?PANEL_HINT_DECISION_DELAY_MS/, "Decision pills should use the faster hint delay");
+assert.match(hintsSource, /PANEL_HINT_EDGE_GUTTER_PX,[\s\S]*?shellRect\.width - width - PANEL_HINT_EDGE_GUTTER_PX/, "Hint horizontal clamp should use the app edge gutter on both sides");
 assert.match(hintsSource, /getAttribute\("aria-expanded"\) === "true"/, "Open menus should suppress competing chip hints");
 assert.match(panelHintStyles, /\.wp-hint-layer\s*\{[\s\S]*?position: absolute;[\s\S]*?pointer-events: none;/, "Chip hint layer should float over the panel without changing layout");
+assert.match(panelHintStyles, /\.wp-hint-layer\s*\{[\s\S]*?max-width: min\(220px, calc\(100% - 40px\)\);[\s\S]*?border-radius: var\(--radius\);/, "Chip hint text should honor the 8px radius system and edge gutter");
 assert.match(panelHintStyles, /\.wp-hint-layer\s*\{[\s\S]*?filter: blur\(5px\);[\s\S]*?opacity 190ms[\s\S]*?filter 240ms/, "Chip hints should dissolve in with opacity and blur");
 assert.doesNotMatch(panelHintStyles, /scale\(/, "Chip hints should not use a pop or scale animation");
 assert.match(filtersSource, /data-panel-hint="\$\{escapeAttribute\(panelShortlistChipHint\(\)\)\}"/, "Shortlist chip should expose a contextual delayed hint");
@@ -122,6 +132,7 @@ assert.match(filtersSource, /data-panel-hint="\$\{escapeAttribute\(panelArchiveC
 assert.match(filtersSource, /data-panel-hint="\$\{escapeAttribute\(panelViewToggleHint\(\)\)\}"/, "View toggle hint should name the current view state");
 assert.match(filtersSource, /function panelViewToggleHint\(\)[\s\S]*?panelState\.compactView \? t\("List view"\) : t\("Card view"\)/, "View toggle hint should distinguish Card view from List view");
 assert.match(i18nSource, /\["Card view"/, "Card view state hint should be localized");
+assert.match(i18nSource, /\["Mark as bought"/, "Bought action hint should be localized");
 assert.match(sortSource, /data-panel-hint="\$\{escapeAttribute\(t\("Sort: \{label\}"/, "Sort trigger should expose its current sort as a delayed hint");
 assert.doesNotMatch(filtersSource, /wp-view-toggle"[\s\S]{0,220}title=/, "View toggle should not use an immediate native title tooltip");
 assert.doesNotMatch(preferencesSource, /data-panel-view-toggle[\s\S]{0,360}setAttribute\("title"/, "View toggle sync should not re-add immediate native title tooltips");
@@ -159,7 +170,14 @@ assert.match(panelOverflowStyles, /\.wp-overflow-menu\[hidden\]\s*\{[\s\S]*?disp
 assert.match(panelOverflowStyles, /\.wp-overflow-option > span\s*\{[\s\S]*?min-width: 0;[\s\S]*?text-overflow: ellipsis;/, "Overflow menu labels should stay inside the option row");
 assert.match(panelOverflowStyles, /\.wp-overflow-language > span\s*\{[\s\S]*?line-height: 18px;/, "Overflow language label should leave room for descenders like g");
 assert.match(eventsSource, /closePanelOverflowMenu\(root\);[\s\S]*?closePanelSortMenu\(root\);[\s\S]*?closePanelFilterMenu\(root\);[\s\S]*?togglePanelCurrencySelect/, "Opening currency should close competing menus first");
-assert.match(panelEditStyles, /\.wp-edit-category input:focus-visible \+ span/, "Hidden category radios should focus the visible chip");
+assert.match(editSource, /type="hidden" name="category"[\s\S]*?data-edit-category-value/, "Edit categories should submit through one hidden category value");
+assert.match(editSource, /data-edit-category="\$\{escapeAttribute\(category\.id\)\}"/, "Visible category chips should be toggle buttons instead of native radios");
+assert.match(panelEditStyles, /\.wp-edit-dialog\s*\{[\s\S]*?box-shadow: none;/, "Edit sheet should not cast a drop shadow");
+assert.ok(
+  Array.from(panelEditStyles.matchAll(/box-shadow:\s*([^;]+);/g), (match) => match[1].trim()).every((value) => value === "none"),
+  "Edit sheet styles should not introduce control drop shadows"
+);
+assert.match(panelEditStyles, /\.wp-edit-category:focus-visible span/, "Category toggle buttons should focus the visible chip");
 assert.match(panelReleaseStyles, /\.wp-item:focus-within \.wp-archive/, "Archive action should reveal for keyboard focus");
 assert.match(panelReleaseStyles, /\.wp-item:focus-within \.wp-shortlist/, "Shortlist action should reveal for keyboard focus");
 assert.match(panelReleaseStyles, /\.wp-item:focus-within \.wp-remove/, "Delete action should reveal for keyboard focus");
@@ -178,12 +196,12 @@ assert.doesNotMatch(panelDecisionStyles, /wpShortlistSweep|wp-shortlist-sweep|is
 assert.doesNotMatch(decisionsSource, /renderPanelDecisionTray/, "Card-level decision trays should not render under individual cards");
 assert.doesNotMatch(panelDecisionStyles, /\.wp-decision-tray\b/, "Decision choices should live only in the global center tray");
 assert.match(panelDecisionStyles, /\.wp-decision-scrim\s*\{[\s\S]*?position: absolute;[\s\S]*?inset: 0;[\s\S]*?z-index: 8;/, "Decision mode should dim the full panel behind the center tray");
-assert.match(panelDecisionStyles, /\.wp-decision-drop-tray\s*\{[\s\S]*?inset: 0;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;/, "Decision tray should center actions in the panel");
+assert.match(panelDecisionStyles, /\.wp-decision-drop-tray\s*\{[\s\S]*?left: 50%;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;[\s\S]*?border-radius: var\(--radius\);/, "Decision dock should center compact 8px-radius actions in the panel");
 assert.match(panelDecisionStyles, /\.wp-shell\.is-decision-mode \.wp-decision-drop-tray,[\s\S]*?\.wp-shell\.is-decision-dragging \.wp-decision-drop-tray\s*\{[\s\S]*?opacity: 1;[\s\S]*?pointer-events: auto;/, "Clicking or dragging should reveal the same center decision tray");
-assert.match(panelDecisionStyles, /\.wp-decision-pill\s*\{[\s\S]*?width: 76px;[\s\S]*?height: 76px;[\s\S]*?border: 1px solid[\s\S]*?border-radius: var\(--radius\);[\s\S]*?background: rgba\(255, 255, 255, 0\.58\);/, "Decision actions should render as visible icon boxes");
+assert.match(panelDecisionStyles, /\.wp-decision-pill\s*\{[\s\S]*?width: 52px;[\s\S]*?height: 52px;[\s\S]*?border: 1px solid[\s\S]*?border-radius: var\(--radius\);[\s\S]*?background: rgba\(255, 255, 255, 0\.52\);/, "Decision actions should render as compact 8px-radius icon buttons");
 assert.doesNotMatch(panelDecisionStyles, /\.wp-decision-pill > span/, "Decision label positioning should not catch the icon span");
-assert.match(panelDecisionStyles, /\.wp-decision-pill-label\s*\{[\s\S]*?bottom: 9px;[\s\S]*?max-width: calc\(100% - 14px\);/, "Decision labels should live inside the action box");
-assert.match(panelDecisionStyles, /\.wp-decision-pill:hover \.wp-decision-pill-icon,[\s\S]*?transform: translateY\(-8px\) scale\(0\.94\);/, "Hover should make room for the in-box label by moving the icon inside the box");
+assert.match(panelDecisionStyles, /\.wp-decision-pill-label\s*\{[\s\S]*?width: 1px;[\s\S]*?opacity: 0;[\s\S]*?clip-path: inset\(50%\);/, "Decision labels should stay accessible without visual text inside the icon dock");
+assert.match(panelDecisionStyles, /\.wp-decision-pill:hover \.wp-decision-pill-icon,[\s\S]*?transform: scale\(1\.04\);/, "Hover should subtly lift the icon without revealing text inside the dock");
 assert.match(panelDecisionStyles, /\.wp-shell\.is-decision-mode \.wp-decision-drop-tray \.wp-decision-pill:nth-child\(3\),[\s\S]*?transition-delay: 72ms;/, "Decision action boxes should enter with a light stagger");
 assert.match(panelDecisionStyles, /\.wp-decision-status\s*\{[\s\S]*?grid-template-columns: 13px minmax\(0, auto\);/, "Archived cards should display the persisted decision state");
 assert.match(eventsSource, /panelState\.decisionItemId[\s\S]*?closePanelDecisionTray\(\);[\s\S]*?syncPanelDecisionMode\(root\);/, "Escape should close decision mode in place");
@@ -192,6 +210,9 @@ assert.doesNotMatch(panelRebuildStyles, /\.wp-shell\.is-view-rebuild::before|\.w
 assert.doesNotMatch(panelRebuildStyles, /is-theme-rebuild|wpPanelThemeContent|wpPanelThemeChrome/, "Dark mode should not use rebuild animation classes");
 assert.match(panelRebuildStyles, /\.wp-summary-capsule,[\s\S]*?\.wp-total,[\s\S]*?background 340ms cubic-bezier/, "Theme changes should transition key surface backgrounds in place");
 assert.match(archiveSource, /event\.detail > 0[\s\S]*?shortlistButton\.blur\(\);/, "Pointer shortlist clicks should not leave card hover actions stuck through focus-within");
+assert.match(eventsSource, /event\.detail > 0[\s\S]*?button\.blur\(\);[\s\S]*?panelState\.deleteItemId = button\.dataset\.removeId;/, "Pointer delete clicks should not leave card hover actions stuck through focus-within");
+assert.match(eventsSource, /function resetPanelHomeScopeAfterLastShortlistDelete\(items\)[\s\S]*?panelShortlistCount\(items\) > 0[\s\S]*?panelState\.shortlistOpen = false;[\s\S]*?panelState\.activeCategory = "all";/, "Deleting the last favorite should return to the home scope");
+assert.match(eventsSource, /function mutePanelDeleteHoverAfterRender\(\)[\s\S]*?\.wp-item:hover[\s\S]*?mutePanelLayoutHoverUntilExit\(item\)/, "Delete render should mute inherited card hover until the pointer leaves");
 assert.match(panelReleaseStyles, /\.wp-filter-rail > \.wp-filter-archive\s*\{[\s\S]*?background: rgba\(255, 255, 255, 0\.38\);[\s\S]*?color: rgba\(8, 11, 16, 0\.52\);/, "Archived count chip should be muted until it is the active scope");
 assert.match(panelReleaseStyles, /\.wp-filter-rail > \.wp-filter-archive\.is-active\s*\{[\s\S]*?border-style: solid;[\s\S]*?background: rgba\(8, 11, 16, 0\.86\);/, "Archived active pill should use the same solid outline grammar as the chip row");
 assert.match(panelReleaseStyles, /\.wp-archive-count\s*\{[\s\S]*?min-width: 1ch;[\s\S]*?font-variant-numeric: tabular-nums;/, "Archived count should reserve one tabular digit and grow naturally");

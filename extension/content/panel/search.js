@@ -51,4 +51,5 @@ function syncSearchClearButton(root) {
   clearButton.classList.add("is-visible");
   clearButton.setAttribute("aria-label", label);
   clearButton.setAttribute("title", label);
+  clearButton.dataset.panelHint = label;
 }
